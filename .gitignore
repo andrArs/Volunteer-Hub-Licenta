@@ -1,0 +1,15 @@
+**/volumes/
+**/*pgdata*/
+
+bin/
+obj/
+
+node_modules/
+
+.vscode/
+.idea/
+
+.DS_Store
+Thumbs.db
+
+.env

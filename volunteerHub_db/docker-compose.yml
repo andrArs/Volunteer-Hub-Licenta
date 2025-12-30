@@ -1,0 +1,15 @@
+services:
+  db:
+    image: postgres:16
+    container_name: volunteering_db
+    environment:
+      POSTGRES_USER: volunteering
+      POSTGRES_PASSWORD: volunteering
+      POSTGRES_DB: volunteering_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - volunteering_pgdata:/var/lib/postgresql/data
+
+volumes:
+  volunteering_pgdata:
