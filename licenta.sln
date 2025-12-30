@@ -1,0 +1,29 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "volunteerHub_backend", "volunteerHub_backend", "{BAA1E9E6-ABA4-B6BD-1F02-EEFF36E9B728}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VolunteerHub.Api", "volunteerHub_backend\VolunteerHub.Api\VolunteerHub.Api.csproj", "{534800A9-D09C-E490-DE83-A420A5407C15}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{534800A9-D09C-E490-DE83-A420A5407C15}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{534800A9-D09C-E490-DE83-A420A5407C15}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{534800A9-D09C-E490-DE83-A420A5407C15}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{534800A9-D09C-E490-DE83-A420A5407C15}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{534800A9-D09C-E490-DE83-A420A5407C15} = {BAA1E9E6-ABA4-B6BD-1F02-EEFF36E9B728}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0C1F394F-11AB-4BE7-9209-249A38C1523E}
+	EndGlobalSection
+EndGlobal
