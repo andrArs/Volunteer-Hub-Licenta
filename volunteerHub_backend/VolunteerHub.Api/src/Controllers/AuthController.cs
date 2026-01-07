@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using VolunteerHub.Api.src.DTO;
 using VolunteerHub.Api.src.Entities;
 using VolunteerHub.Api.src.Services;
+using Microsoft.AspNetCore.Authorization;
+
 
 
 namespace VolunteerHub.Api.src.Controllers;
@@ -72,4 +74,12 @@ public class AuthController : ControllerBase
         var roles= (await _userManager.GetRolesAsync(user)).ToArray();
         return Ok(new AuthResponse(token, user.Id, user.Email ?? "", roles.ToArray()));
     }
+
+    [Authorize]
+    [HttpPost("logout")]
+    public IActionResult Logout()
+    {
+        return Ok(new { message = "Logged out" });
+    }
+
 }
