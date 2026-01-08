@@ -53,6 +53,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddAuthorization();
 
 builder.Services.AddScoped<JwtTokenService>();
+builder.Services.AddScoped<IEventService, EventService>();
 
 
 var app = builder.Build();
