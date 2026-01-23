@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using VolunteerHub.Api.src.Entities;
 using VolunteerHub.Api.src.Entities.Enum;
 
+namespace VolunteerHub.Api.src.Entities;
 public class UserEvent
 {
     [Key]
