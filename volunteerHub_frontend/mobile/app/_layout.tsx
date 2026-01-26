@@ -34,22 +34,6 @@ export default function RootLayout() {
   }, [error]);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const handlePopState = (e: PopStateEvent) => {
-        e.preventDefault();
-        window.history.pushState(null, "", window.location.href);
-      };
-
-      window.history.pushState(null, "", window.location.href);
-      window.addEventListener("popstate", handlePopState);
-
-      return () => {
-        window.removeEventListener("popstate", handlePopState);
-      };
-    }
-  }, []);
-
-  useEffect(() => {
     async function initAuth() {
       try {
         const token = await getToken();
