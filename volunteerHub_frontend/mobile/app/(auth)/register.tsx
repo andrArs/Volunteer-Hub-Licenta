@@ -1,13 +1,14 @@
 import { register } from "@/src/api/auth.api";
 import { toAppError } from "@/src/api/errors";
 import { setAuth } from "@/src/store/auth.store";
+import { getToken } from "@/src/platform/storage";
 import { FontAwesome } from "@expo/vector-icons";
 import DateTimePicker, {
     DateTimePickerAndroid,
     DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
 import { useRouter } from "expo-router";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import {
     KeyboardAvoidingView,
     Modal,
@@ -47,6 +48,21 @@ export default function RegisterScreen() {
 
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<FieldErrors>({});
+
+  useEffect(() => {
+    async function checkAuth() {
+      try {
+        const token = await getToken();
+        if (token) {
+          router.replace("/(tabs)");
+        }
+      } catch (e) {
+        console.error("Auth check failed:", e);
+      }
+    }
+
+    checkAuth();
+  }, [router]);
 
   const canSubmit = useMemo(() => {
     return (

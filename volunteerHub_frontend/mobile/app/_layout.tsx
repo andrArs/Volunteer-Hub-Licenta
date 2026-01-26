@@ -12,6 +12,7 @@ import "react-native-reanimated";
 
 import { useColorScheme } from "@/components/useColorScheme";
 import { getToken } from "@/src/platform/storage";
+import { useCallback } from "react";
 
 export {
   ErrorBoundary
@@ -31,6 +32,22 @@ export default function RootLayout() {
   useEffect(() => {
     if (error) throw error;
   }, [error]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const handlePopState = (e: PopStateEvent) => {
+        e.preventDefault();
+        window.history.pushState(null, "", window.location.href);
+      };
+
+      window.history.pushState(null, "", window.location.href);
+      window.addEventListener("popstate", handlePopState);
+
+      return () => {
+        window.removeEventListener("popstate", handlePopState);
+      };
+    }
+  }, []);
 
   useEffect(() => {
     async function initAuth() {
@@ -75,11 +92,27 @@ function RootLayoutNav({ isLoggedIn }: { isLoggedIn: boolean }) {
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <Stack>
+      <Stack
+        screenOptions={{
+          gestureEnabled: false,
+        }}
+      >
         {!isLoggedIn ? (
-          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+          <Stack.Screen
+            name="(auth)"
+            options={{
+              headerShown: false,
+              gestureEnabled: false,
+            }}
+          />
         ) : (
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen
+            name="(tabs)"
+            options={{
+              headerShown: false,
+              gestureEnabled: false,
+            }}
+          />
         )}
       </Stack>
     </ThemeProvider>
