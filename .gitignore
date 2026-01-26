@@ -13,3 +13,11 @@ node_modules/
 Thumbs.db
 
 .env
+
+# Visual Studio
+.vs/
+**/.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
