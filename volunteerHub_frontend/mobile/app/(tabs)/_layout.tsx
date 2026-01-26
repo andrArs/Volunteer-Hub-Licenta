@@ -22,10 +22,8 @@ export default function TabLayout() {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Call this hook unconditionally at the top level
   const headerShown = useClientOnlyValue(true, true);
 
-  // Check if user has a valid token
   useEffect(() => {
     async function checkAuth() {
       try {
@@ -33,7 +31,6 @@ export default function TabLayout() {
         if (token) {
           setIsAuthorized(true);
         } else {
-          // No token, redirect to login
           router.replace("/(auth)/login");
         }
       } catch (e) {
@@ -47,12 +44,10 @@ export default function TabLayout() {
     checkAuth();
   }, [router]);
 
-  // Show loading while checking auth
   if (loading) {
     return null;
   }
 
-  // If not authorized, don't render tabs
   if (!isAuthorized) {
     return null;
   }

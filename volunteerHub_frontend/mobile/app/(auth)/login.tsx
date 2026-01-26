@@ -15,6 +15,8 @@ import { login } from "@/src/api/auth.api";
 import { toAppError } from "@/src/api/errors";
 import { setAuth } from "@/src/store/auth.store";
 
+import { styles } from "../../src/styles/auth.styles";
+
 export default function LoginScreen() {
   const router = useRouter();
 
@@ -130,96 +132,3 @@ export default function LoginScreen() {
     </KeyboardAvoidingView>
   );
 }
-
-const styles = StyleSheet.create({
-  page: {
-    flex: 1,
-    backgroundColor: "#FFFFFF",
-  },
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    paddingHorizontal: 28,
-  },
-  title: {
-    textAlign: "center",
-    fontSize: 28,
-    fontWeight: "700",
-    color: "#3F5E95",
-    marginBottom: 22,
-  },
-  card: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 14,
-    padding: 14,
-    shadowColor: "#000",
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 3,
-  },
-  inputWrap: {
-    position: "relative",
-    borderWidth: 1,
-    borderColor: "#C9D1E2",
-    borderRadius: 10,
-    height: 46,
-    justifyContent: "center",
-  },
-  leftIcon: {
-    position: "absolute",
-    left: 12,
-    color: "#6F7A93",
-  },
-  input: {
-    height: 46,
-    paddingLeft: 38,
-    paddingRight: 12,
-    fontSize: 15,
-    color: "#1E2A3B",
-  },
-  eyeBtn: {
-    position: "absolute",
-    right: 12,
-    height: 46,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  primaryBtn: {
-    marginTop: 18,
-    height: 48,
-    borderRadius: 12,
-    backgroundColor: "#3F5E95",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  primaryBtnDisabled: {
-    opacity: 0.6,
-  },
-  primaryBtnText: {
-    color: "#FFFFFF",
-    fontSize: 16,
-    fontWeight: "700",
-  },
-  footerRow: {
-    marginTop: 12,
-    flexDirection: "row",
-    justifyContent: "center",
-  },
-  footerText: {
-    color: "#7E879C",
-    fontSize: 13,
-  },
-  footerLink: {
-    color: "#3F5E95",
-    fontSize: 13,
-    fontWeight: "700",
-  },
-  errorText: {
-    marginTop: 10,
-    textAlign: "center",
-    color: "#C1121F",
-    fontSize: 13,
-    fontWeight: "600",
-  },
-});
