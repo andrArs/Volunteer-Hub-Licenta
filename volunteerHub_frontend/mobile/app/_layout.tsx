@@ -1,58 +1,86 @@
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
-import 'react-native-reanimated';
+import FontAwesome from "@expo/vector-icons/FontAwesome";
+import {
+  DarkTheme,
+  DefaultTheme,
+  ThemeProvider,
+} from "@react-navigation/native";
+import { useFonts } from "expo-font";
+import { Stack } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
+import { useEffect, useState } from "react";
+import "react-native-reanimated";
 
-import { useColorScheme } from '@/components/useColorScheme';
+import { useColorScheme } from "@/components/useColorScheme";
+import { getToken } from "@/src/platform/storage";
 
 export {
-  // Catch any errors thrown by the Layout component.
-  ErrorBoundary,
-} from 'expo-router';
+  ErrorBoundary
+} from "expo-router";
 
-export const unstable_settings = {
-  // Ensure that reloading on `/modal` keeps a back button present.
-  initialRouteName: '(tabs)',
-};
-
-// Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+    SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
     ...FontAwesome.font,
   });
 
-  // Expo Router uses Error Boundaries to catch errors in the navigation tree.
+  const [authReady, setAuthReady] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
   useEffect(() => {
     if (error) throw error;
   }, [error]);
 
   useEffect(() => {
+    async function initAuth() {
+      try {
+        const token = await getToken();
+        setIsLoggedIn(!!token);
+      } catch (e) {
+        console.error("Failed to restore auth state:", e);
+        setIsLoggedIn(false);
+      } finally {
+        setAuthReady(true);
+      }
+    }
+
     if (loaded) {
-      SplashScreen.hideAsync();
+      initAuth();
+
+      const interval = setInterval(async () => {
+        const token = await getToken();
+        setIsLoggedIn(!!token);
+      }, 500);
+
+      return () => clearInterval(interval);
     }
   }, [loaded]);
 
-  if (!loaded) {
+  useEffect(() => {
+    if (authReady && loaded) {
+      SplashScreen.hideAsync();
+    }
+  }, [loaded, authReady]);
+
+  if (!loaded || !authReady) {
     return null;
   }
 
-  return <RootLayoutNav />;
+  return <RootLayoutNav isLoggedIn={isLoggedIn} />;
 }
 
-function RootLayoutNav() {
+function RootLayoutNav({ isLoggedIn }: { isLoggedIn: boolean }) {
   const colorScheme = useColorScheme();
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+        {!isLoggedIn ? (
+          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+        ) : (
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        )}
       </Stack>
     </ThemeProvider>
   );
