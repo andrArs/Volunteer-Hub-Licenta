@@ -3,20 +3,28 @@
   "WorkspaceRootPath": "C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\VolunteerHub.Api.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:VolunteerHub.Api.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}"
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\src\\Controllers\\AuthController.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\Controllers\\AuthController.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\src\\DTO\\RegisterRequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\DTO\\RegisterRequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\src\\DTO\\AuthResponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\DTO\\AuthResponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\src\\DTO\\LoginRequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\DTO\\LoginRequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\src\\Entities\\User.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\Entities\\User.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\VolunteerHub.Api.http||{5703B403-55E7-4C63-8C88-A8F52C7A45C5}",
       "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:VolunteerHub.Api.http||{5703B403-55E7-4C63-8C88-A8F52C7A45C5}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\Program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\appsettings.Development.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:appsettings.Development.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     }
   ],
   "DocumentGroupContainers": [
@@ -26,59 +34,80 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": 0,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "VolunteerHub.Api.http",
-              "DocumentMoniker": "C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\VolunteerHub.Api.http",
-              "RelativeDocumentMoniker": "VolunteerHub.Api.http",
-              "ToolTip": "C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\VolunteerHub.Api.http",
-              "RelativeToolTip": "VolunteerHub.Api.http",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAADAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003502|",
-              "WhenOpened": "2026-01-23T18:30:44.511Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "VolunteerHub.Api.csproj",
-              "DocumentMoniker": "C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\VolunteerHub.Api.csproj",
-              "RelativeDocumentMoniker": "VolunteerHub.Api.csproj",
-              "ToolTip": "C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\VolunteerHub.Api.csproj",
-              "RelativeToolTip": "VolunteerHub.Api.csproj",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2026-01-23T18:30:40.941Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "Program.cs",
-              "DocumentMoniker": "C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\Program.cs",
-              "RelativeDocumentMoniker": "Program.cs",
-              "ToolTip": "C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\Program.cs",
-              "RelativeToolTip": "Program.cs",
-              "ViewState": "AgIAADUAAAAAAAAAAAArwEIAAAAIAAAAAAAAAA==",
+              "Title": "AuthController.cs",
+              "DocumentMoniker": "C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\src\\Controllers\\AuthController.cs",
+              "RelativeDocumentMoniker": "src\\Controllers\\AuthController.cs",
+              "ToolTip": "C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\src\\Controllers\\AuthController.cs",
+              "RelativeToolTip": "src\\Controllers\\AuthController.cs",
+              "ViewState": "AgIAAEMAAAAAAAAAAAAkwFMAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-23T18:30:34.982Z",
+              "WhenOpened": "2026-01-25T21:31:18.132Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 3,
-              "Title": "appsettings.Development.json",
-              "DocumentMoniker": "C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\appsettings.Development.json",
-              "RelativeDocumentMoniker": "appsettings.Development.json",
-              "ToolTip": "C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\appsettings.Development.json",
-              "RelativeToolTip": "appsettings.Development.json",
+              "Title": "LoginRequest.cs",
+              "DocumentMoniker": "C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\src\\DTO\\LoginRequest.cs",
+              "RelativeDocumentMoniker": "src\\DTO\\LoginRequest.cs",
+              "ToolTip": "C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\src\\DTO\\LoginRequest.cs",
+              "RelativeToolTip": "src\\DTO\\LoginRequest.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2026-01-23T18:30:31.122Z",
-              "EditorCaption": ""
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-25T21:31:03.467Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "RegisterRequest.cs",
+              "DocumentMoniker": "C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\src\\DTO\\RegisterRequest.cs",
+              "RelativeDocumentMoniker": "src\\DTO\\RegisterRequest.cs",
+              "ToolTip": "C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\src\\DTO\\RegisterRequest.cs",
+              "RelativeToolTip": "src\\DTO\\RegisterRequest.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-25T21:28:30.175Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "AuthResponse.cs",
+              "DocumentMoniker": "C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\src\\DTO\\AuthResponse.cs",
+              "RelativeDocumentMoniker": "src\\DTO\\AuthResponse.cs",
+              "ToolTip": "C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\src\\DTO\\AuthResponse.cs",
+              "RelativeToolTip": "src\\DTO\\AuthResponse.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-25T21:28:27.546Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "User.cs",
+              "DocumentMoniker": "C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\src\\Entities\\User.cs",
+              "RelativeDocumentMoniker": "src\\Entities\\User.cs",
+              "ToolTip": "C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\src\\Entities\\User.cs",
+              "RelativeToolTip": "src\\Entities\\User.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-25T21:22:18.373Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "VolunteerHub.Api.http",
+              "DocumentMoniker": "C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\VolunteerHub.Api.http",
+              "RelativeDocumentMoniker": "VolunteerHub.Api.http",
+              "ToolTip": "C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\VolunteerHub.Api.http",
+              "RelativeToolTip": "VolunteerHub.Api.http",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003502|",
+              "WhenOpened": "2026-01-25T21:10:19.884Z"
             }
           ]
         }

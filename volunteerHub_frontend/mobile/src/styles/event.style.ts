@@ -147,4 +147,11 @@ export const styles = StyleSheet.create({
     color: "#1E2A3B",
     fontWeight: "700",
   },
+  label: {
+  marginBottom: 6,
+  marginLeft: 6,
+  fontSize: 12,
+  fontWeight: "700",
+  color: "#3F5E95",
+},
 });

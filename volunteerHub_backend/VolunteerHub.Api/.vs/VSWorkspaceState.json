@@ -1,7 +1,13 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\src",
+    "\\src\\Controllers",
+    "\\src\\DTO",
+    "\\src\\Entities",
+    "\\src\\Exceptions",
+    "\\src\\Services"
   ],
-  "SelectedNode": "\\VolunteerHub.Api.csproj",
+  "SelectedNode": "\\src\\Controllers\\AuthController.cs",
   "PreviewInSolutionExplorer": false
 }

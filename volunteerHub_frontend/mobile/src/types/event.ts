@@ -35,31 +35,31 @@ export const EVENT_CATEGORIES :{label: string, value: EventCategory}[] = [
 ];
 
 export type EventRequest ={
-    Title: string;
-    Description: string;
-    Category: EventCategory;
-    StartDateTime: string;
-    EndDateTime: string;
-    LocationName: string;
-    Address: string;
-    Latitude: number;
-    Longitude: number;
-    MaxVolunteers?: number | null;
+    title: string;
+    description: string;
+    category: EventCategory;
+    startDateTime: string;
+    endDateTime: string;
+    locationName: string;
+    address: string;
+    latitude: number;
+    longitude: number;
+    maxVolunteers?: number | null;
 }
 
 export type EventResponse = {
     id: string;
-    Title: string;
-    Description: string;
-    Category: EventCategory;
-    StartDateTime: string;
-    EndDateTime: string;
-    LocationName: string;
-    Address: string;
-    Latitude: number;
-    Longitude: number;
-    MaxVolunteers?: number | null;
-    Status: string;
-    CreatedAt: Date;
-    CreatedById: string;
+    title: string;
+    description: string;
+    category: EventCategory;
+    startDateTime: string;
+    endDateTime: string;
+    locationName: string;
+    address: string;
+    latitude: number;
+    longitude: number;
+    maxVolunteers?: number | null;
+    status: string;
+    createdAt: Date;
+    createdById: string;
 }

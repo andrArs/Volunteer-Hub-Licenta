@@ -1,10 +1,10 @@
 import { FontAwesome } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { useMemo, useState } from "react";
 import { styles } from "@/src/styles/event.style";
 import { toAppError } from "@/src/api/errors";
-import { createEvent } from "@/src/api/event.api";
+import { getEventById, updateEvent } from "@/src/api/event.api";
 import { EVENT_CATEGORIES, EventCategory } from "@/src/types/event";
 import DateTimePicker, {
   DateTimePickerAndroid,
@@ -29,6 +29,8 @@ type FieldErrors = Partial<{
 }>;
 
 function formatForWebInput(d: Date) {
+  if (!d || isNaN(d.getTime())) return "";
+
   const pad = (n: number) => String(n).padStart(2, "0");
   const yyyy = d.getFullYear();
   const mm = pad(d.getMonth() + 1);
@@ -43,8 +45,9 @@ function parseWebInputToDate(v: string) {
   return isNaN(d.getTime()) ? null : d;
 }
 
-export default function CreateEventScreen() {
+export default function UpdateEventScreen() {
     const router= useRouter();
+    const { id } = useLocalSearchParams<{ id: string }>();
 
     const [Title, setTitle] = useState("");
     const [Description, setDescription] = useState("");
@@ -82,7 +85,48 @@ export default function CreateEventScreen() {
         const found = EVENT_CATEGORIES.find((c) => c.value === Category);
         return found?.label ?? "";
     }, [Category]);
-        
+      
+
+    useFocusEffect(
+    useCallback(() => {
+        if (!id) return;
+
+        let mounted = true;
+
+        (async () => {
+        try {
+            const ev = await getEventById(String(id));
+            if (!mounted) return;
+            setTitle(ev.title ?? ""); 
+            setDescription(ev.description ?? "");
+            setCategory(ev.category);
+
+            const sd = new Date(ev.startDateTime);
+            const ed = new Date(ev.endDateTime);
+
+            setStartDateTime(isNaN(sd.getTime()) ? new Date() : sd);
+            setEndDateTime(isNaN(ed.getTime()) ? new Date(Date.now() + 60 * 60 * 1000) : ed);
+            setLocation(ev.locationName ?? "");
+            setAddress(ev.address ?? "");
+
+            setLatitude(String(ev.latitude));
+            setLongitude(String(ev.longitude));
+            setMaxVolunteers(
+                ev.maxVolunteers && ev.maxVolunteers > 0
+                    ? String(ev.maxVolunteers)
+                    : ""
+                );
+        } catch (e) {
+            setErrorMsg("Failed to load event.");
+        }
+        })();
+
+        return () => {
+        mounted = false;
+        };
+    }, [id])
+    );
+
     function validate(): FieldErrors {
         const e: FieldErrors = {};
 
@@ -185,31 +229,7 @@ export default function CreateEventScreen() {
         if (Platform.OS === "ios") setShowEndPickerIOS(true);
 }
 
-    const resetForm = useCallback(() => {
-        setTitle("");
-        setDescription("");
-        setCategory(EVENT_CATEGORIES[0].value);
-
-        const now = new Date();
-        setStartDateTime(now);
-        setEndDateTime(new Date(now.getTime() + 60 * 60 * 1000)); 
-
-        setLocation("");
-        setAddress("");
-        setLatitude("");
-        setLongitude("");
-        setMaxVolunteers("");
-
-        setErrors({});
-        setErrorMsg(null);
-        setShowCategoryModal(false);
-        setShowStartPickerIOS(false);
-        setShowEndPickerIOS(false);
-        }, []);
-
-
-
-    async function onCreateEvent() {
+    async function onUpdateEvent() {
         if (submitting) return;
         setErrorMsg(null);
 
@@ -222,22 +242,25 @@ export default function CreateEventScreen() {
         }
 
         setSubmitting(true);
-    
+        
+        const mvRaw = MaxVolunteers.trim();
+        const mv = mvRaw === "" ? null : parseInt(mvRaw, 10);
+
         try {
-            const createEventResponse = await createEvent({
+            if (!id) return;
+            const updateEventResponse = await updateEvent(String(id), {
                 title: Title.trim(),
                 description: Description,
-                category: Category as EventCategory,
+                category: Category,
                 startDateTime: StartDateTime.toISOString(),
                 endDateTime: EndDateTime.toISOString(),
                 locationName: Location,
-                address: "Timisoara",
-                latitude: HARDCODED_LAT,
-                longitude: HARDCODED_LNG,
-                maxVolunteers: parseInt(MaxVolunteers),
-                });
+                address: Address,
+                latitude: parseFloat(Latitude),
+                longitude: parseFloat(Longitude),
+                maxVolunteers: mv && mv > 0 ? mv : null,
+            });
 
-            resetForm();
             router.replace("/");
         } catch (e) {
             const err = toAppError(e);
@@ -246,6 +269,7 @@ export default function CreateEventScreen() {
             setSubmitting(false);
         }
     }
+    
     return(
         <View style={styles.page}>
            <View style={styles.header}>
@@ -257,7 +281,7 @@ export default function CreateEventScreen() {
                     <FontAwesome name="arrow-left" size={18} color="#fff" />
                 </Pressable>
 
-                <Text style={styles.headerTitle}>Create Event</Text>
+                <Text style={styles.headerTitle}>Update Event</Text>
 
                 <View style={styles.rightSpacer} />
             </View>
@@ -346,7 +370,7 @@ export default function CreateEventScreen() {
                     {Platform.OS === "web" ? (
                         <input
                         type="datetime-local"
-                        value={formatForWebInput(StartDateTime)}
+                        value={formatForWebInput(StartDateTime || "")}
                         onChange={(e: any) => {
                             const d = parseWebInputToDate(e.target.value);
                             if (d) setStartDateTime(d);
@@ -381,7 +405,7 @@ export default function CreateEventScreen() {
                     {Platform.OS === "web" ? (
                         <input
                         type="datetime-local"
-                        value={formatForWebInput(EndDateTime)}
+                        value={formatForWebInput(EndDateTime || "")}
                         onChange={(e: any) => {
                             const d = parseWebInputToDate(e.target.value);
                             if (d) setEndDateTime(d);
@@ -428,7 +452,7 @@ export default function CreateEventScreen() {
                         />
                     </View>
 
-                    <Text style={[styles.label, { marginTop: 12 }]}>Max Volunteers (Optional)</Text>
+                    <Text style={[styles.label, { marginTop: 12 }]}>Max Volunteers</Text>
                     <View style={styles.inputWrap}>
                         <TextInput 
                         value={MaxVolunteers}
@@ -469,10 +493,10 @@ export default function CreateEventScreen() {
                 <Pressable
                     disabled={submitting} 
                     style={[styles.primaryBtn, submitting && styles.primaryBtnDisabled, { marginTop: 20 }]}
-                    onPress={onCreateEvent}
+                    onPress={onUpdateEvent}
                 >
                     <Text style={styles.primaryBtnText}>
-                        {submitting ? "Creating Event..." : "Create Event"}
+                        {submitting ? "Updating Event..." : "Update Event"}
                     </Text>
                 </Pressable>
 
