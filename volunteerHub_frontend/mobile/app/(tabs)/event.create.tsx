@@ -1,0 +1,523 @@
+import { FontAwesome } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { useMemo, useState } from "react";
+import { styles } from "@/src/styles/event.style";
+import { toAppError } from "@/src/api/errors";
+import { createEvent } from "@/src/api/event.api";
+import { EVENT_CATEGORIES, EventCategory } from "@/src/types/event";
+import DateTimePicker, {
+  DateTimePickerAndroid,
+  DateTimePickerEvent,
+} from "@react-native-community/datetimepicker";
+import { useFocusEffect } from "expo-router";
+import { useCallback } from "react";
+
+
+type FieldErrors = Partial<{
+  Title: string;
+  Description: string;
+  Category: string;
+  StartDateTime: string;
+  EndDateTime: string;
+  LocationName: string;
+  Address: string;
+  Latitude: string;
+  Longitude: string;
+  MaxVolunteers: string;
+  general: string;
+}>;
+
+function formatForWebInput(d: Date) {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const yyyy = d.getFullYear();
+  const mm = pad(d.getMonth() + 1);
+  const dd = pad(d.getDate());
+  const hh = pad(d.getHours());
+  const mi = pad(d.getMinutes());
+  return `${yyyy}-${mm}-${dd}T${hh}:${mi}`;
+}
+
+function parseWebInputToDate(v: string) {
+  const d = new Date(v);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+export default function CreateEventScreen() {
+    const router= useRouter();
+
+    const [Title, setTitle] = useState("");
+    const [Description, setDescription] = useState("");
+    const [Category, setCategory] = useState<EventCategory>(EVENT_CATEGORIES[0].value);
+    
+    const [StartDateTime, setStartDateTime] = useState<Date>(new Date());
+    const [EndDateTime, setEndDateTime] = useState<Date>(new Date(60 * 60 * 1000 + Date.now()));
+
+    const [MaxVolunteers, setMaxVolunteers] = useState("");
+    const [status, setStatus] = useState(""); 
+    const [Location, setLocation] = useState("");
+    const [Address, setAddress] = useState("");
+    const [Longitude, setLongitude] = useState("");
+    const [Latitude, setLatitude] = useState("");
+
+    // iOS modal pickers
+    const [showStartPickerIOS, setShowStartPickerIOS] = useState(false);
+    const [showEndPickerIOS, setShowEndPickerIOS] = useState(false);
+
+    const [CreatedAt, setCreatedAt] = useState("");
+    const [CreatedById, setCreatedBy] = useState("");
+    const [showCategoryModal, setShowCategoryModal] = useState(false);
+
+    const [submitting, setSubmitting] = useState(false);
+    const [errorMsg, setErrorMsg] = useState<string | null>(null);
+    const [errors, setErrors] = useState<FieldErrors>({});
+    const HARDCODED_LAT = 45.7489;
+    const HARDCODED_LNG = 21.2087;
+
+    function clearError(k: keyof FieldErrors) {
+     setErrors((p) => ({ ...p, [k]: undefined, general: undefined }));
+    }
+
+    const categoryLabel = useMemo(() => {
+        const found = EVENT_CATEGORIES.find((c) => c.value === Category);
+        return found?.label ?? "";
+    }, [Category]);
+        
+    function validate(): FieldErrors {
+        const e: FieldErrors = {};
+
+        const t = Title.trim();
+        const d = Description.trim();
+        const ln = Location.trim();
+        const a = Address.trim();
+
+        if (!t) e.Title = "Title is required.";
+        else if (t.length > 200) e.Title = "Title must be max 200 characters.";
+
+        if (!d) e.Description = "Description is required.";
+        else if (d.length > 2000) e.Description = "Description must be max 2000 characters.";
+
+        if (Category === undefined || Category === null) e.Category = "Category is required.";
+
+        if (!StartDateTime || isNaN(StartDateTime.getTime())) e.StartDateTime = "Start date/time is required.";
+        if (!EndDateTime || isNaN(EndDateTime.getTime())) e.EndDateTime = "End date/time is required.";
+        if (StartDateTime && EndDateTime && EndDateTime.getTime() < StartDateTime.getTime()) {
+        e.EndDateTime = "End date/time must be after start date/time.";
+        }
+
+        if (!ln) e.LocationName = "Location is required.";
+        else if (ln.length > 300) e.LocationName = "Location must be max 300 characters.";
+
+        if (MaxVolunteers.trim()) {
+        const mv = Number(MaxVolunteers);
+        if (Number.isNaN(mv) || !Number.isInteger(mv)) e.MaxVolunteers = "Max volunteers must be an integer.";
+        else if (mv <= 0) e.MaxVolunteers = "Max volunteers must be > 0.";
+        }
+
+        return e;
+  }
+
+    function mergeDateAndTime(base: Date, time: Date) {
+        const d = new Date(base);
+        d.setHours(time.getHours(), time.getMinutes(), 0, 0);
+        return d;
+    }
+
+    function openStartPicker() {
+        if (submitting) return;
+
+        if (Platform.OS === "android") {
+            DateTimePickerAndroid.open({
+            value: StartDateTime,
+            mode: "date",
+            is24Hour: true,
+            onChange: (_e, selectedDate) => {
+                if (!selectedDate) return;
+
+                DateTimePickerAndroid.open({
+                value: selectedDate,
+                mode: "time",
+                is24Hour: true,
+                onChange: (_e2, selectedTime) => {
+                    if (!selectedTime) return;
+
+                    const combined = mergeDateAndTime(selectedDate, selectedTime);
+                    setStartDateTime(combined);
+                    clearError("StartDateTime");
+                },
+                });
+            },
+            });
+        return;
+    }
+
+        if (Platform.OS === "ios") setShowStartPickerIOS(true);
+    }
+
+    function openEndPicker() {
+        if (submitting) return;
+
+        if (Platform.OS === "android") {
+            DateTimePickerAndroid.open({
+            value: EndDateTime,
+            mode: "date",
+            is24Hour: true,
+            onChange: (_e, selectedDate) => {
+                if (!selectedDate) return;
+
+                DateTimePickerAndroid.open({
+                value: selectedDate,
+                mode: "time",
+                is24Hour: true,
+                onChange: (_e2, selectedTime) => {
+                    if (!selectedTime) return;
+
+                    const combined = mergeDateAndTime(selectedDate, selectedTime);
+                    setEndDateTime(combined);
+                    clearError("EndDateTime");
+                },
+                });
+            },
+            });
+        return;
+    }
+
+        if (Platform.OS === "ios") setShowEndPickerIOS(true);
+}
+
+    const resetForm = useCallback(() => {
+        setTitle("");
+        setDescription("");
+        setCategory(EVENT_CATEGORIES[0].value);
+
+        const now = new Date();
+        setStartDateTime(now);
+        setEndDateTime(new Date(now.getTime() + 60 * 60 * 1000)); 
+
+        setLocation("");
+        setAddress("");
+        setLatitude("");
+        setLongitude("");
+        setMaxVolunteers("");
+
+        setErrors({});
+        setErrorMsg(null);
+        setShowCategoryModal(false);
+        setShowStartPickerIOS(false);
+        setShowEndPickerIOS(false);
+        }, []);
+
+
+
+    async function onCreateEvent() {
+        if (submitting) return;
+        setErrorMsg(null);
+
+        const v = validate();
+        setErrors(v);
+
+        const hasErrors = Object.values(v).some(Boolean);
+        if (hasErrors) {
+            return;
+        }
+
+        setSubmitting(true);
+    
+        try {
+            const createEventResponse = await createEvent({
+                Title: Title.trim(),
+                Description,
+                Category: Category as EventCategory,
+                StartDateTime: StartDateTime.toISOString(),
+                EndDateTime: EndDateTime.toISOString(),
+                LocationName: Location,
+                Address: "Timisoara",
+                Latitude: HARDCODED_LAT,
+                Longitude: HARDCODED_LNG,
+                MaxVolunteers: parseInt(MaxVolunteers),
+                });
+
+            resetForm();
+            router.replace("/");
+        } catch (e) {
+            const err = toAppError(e);
+            setErrorMsg(err.message);
+        } finally {
+            setSubmitting(false);
+        }
+    }
+    
+    return(
+        <View style={styles.page}>
+           <View style={styles.header}>
+                <Pressable
+                    onPress={() => router.replace("/")}
+                    hitSlop={10}
+                    style={styles.backBtn}
+                >
+                    <FontAwesome name="arrow-left" size={18} color="#fff" />
+                </Pressable>
+
+                <Text style={styles.headerTitle}>Create Event</Text>
+
+                <View style={styles.rightSpacer} />
+            </View>
+
+            <ScrollView>
+                <View style={styles.card}>
+                    <View style={styles.inputWrap}>
+                        <TextInput 
+                        value={Title}
+                        onChangeText={(t) =>{
+                            setTitle(t);
+                            if(errorMsg) setErrorMsg(null);
+                        }}
+                        placeholder="Title"
+                        autoCapitalize="none"
+                        keyboardType="default"
+                        placeholderTextColor="#8B93A7"
+                        style={styles.input}
+                        editable={!submitting}
+                        />
+                    </View>
+
+                    <View style={[styles.inputWrap, {marginTop: 12}]}>
+                        <TextInput 
+                        value={Description}
+                        onChangeText={(t) =>{
+                            setDescription(t);
+                            if(errorMsg) setErrorMsg(null);
+                        }}
+                        placeholder="Description"
+                        autoCapitalize="none"
+                        keyboardType="default"
+                        placeholderTextColor="#8B93A7"
+                        style={styles.input}
+                        editable={!submitting}
+                        />
+                    </View>
+
+                    <View style={[styles.inputWrap, { marginTop: 12 }]}>
+                    <Pressable
+                        style={styles.pressableInput}
+                        onPress={() => setShowCategoryModal(true)}
+                        disabled={submitting}
+                    >
+                        <Text style={categoryLabel ? styles.valueText : styles.placeholderText}>
+                        {categoryLabel || "Category"}
+                        </Text>
+                    </Pressable>
+                    </View>
+
+                    {showCategoryModal ? (
+                    <Modal transparent animationType="fade" visible={showCategoryModal}>
+                        <Pressable style={styles.modalOverlay} onPress={() => setShowCategoryModal(false)}>
+                        <Pressable style={styles.modalSheet} onPress={() => {}}>
+                            <View style={styles.modalHeader}>
+                            <Pressable onPress={() => setShowCategoryModal(false)}>
+                                <Text style={styles.modalBtn}>Close</Text>
+                            </Pressable>
+                            <Text style={{ fontWeight: "900", color: "#1E2A3B" }}>Category</Text>
+                            <View style={{ width: 46 }} />
+                            </View>
+
+                            {EVENT_CATEGORIES.map((c) => (
+                            <Pressable
+                                key={c.value}
+                                style={styles.optionRow}
+                                onPress={() => {
+                                setCategory(c.value); 
+                                setShowCategoryModal(false);
+                                if (errorMsg) setErrorMsg(null);
+                                }}
+                            >
+                                <Text style={styles.optionText}>{c.label}</Text>
+                            </Pressable>
+                            ))}
+                        </Pressable>
+                        </Pressable>
+                    </Modal>
+                    ) : null}
+
+
+                    <View style={[styles.inputWrap, { marginTop: 12 }]}>
+                    {Platform.OS === "web" ? (
+                        <input
+                        type="datetime-local"
+                        value={formatForWebInput(StartDateTime)}
+                        onChange={(e: any) => {
+                            const d = parseWebInputToDate(e.target.value);
+                            if (d) setStartDateTime(d);
+                            if (errorMsg) setErrorMsg(null);
+                        }}
+                        disabled={submitting}
+                        style={
+                            {
+                            height: 54,
+                            paddingLeft: 16,
+                            paddingRight: 16,
+                            fontSize: 15,
+                            border: "none",
+                            width: "100%",
+                            boxSizing: "border-box",
+                            background: "transparent",
+                            color: "#1E2A3B",
+                            } as any
+                        }
+                        />
+                    ) : (
+                        <Pressable style={styles.pressableInput} onPress={openStartPicker} disabled={submitting}>
+                        <Text style={StartDateTime ? styles.valueText : styles.placeholderText}>
+                            {StartDateTime ? StartDateTime.toLocaleString() : "Start Date and Time"}
+                        </Text>
+                        </Pressable>
+                    )}
+                    </View>
+
+
+                    <View style={[styles.inputWrap, { marginTop: 12 }]}>
+                    {Platform.OS === "web" ? (
+                        <input
+                        type="datetime-local"
+                        value={formatForWebInput(EndDateTime)}
+                        onChange={(e: any) => {
+                            const d = parseWebInputToDate(e.target.value);
+                            if (d) setEndDateTime(d);
+                            if (errorMsg) setErrorMsg(null);
+                        }}
+                        disabled={submitting}
+                        style={
+                            {
+                            height: 54,
+                            paddingLeft: 16,
+                            paddingRight: 16,
+                            fontSize: 15,
+                            border: "none",
+                            width: "100%",
+                            boxSizing: "border-box",
+                            background: "transparent",
+                            color: "#1E2A3B",
+                            } as any
+                        }
+                        />
+                    ) : (
+                        <Pressable style={styles.pressableInput} onPress={openEndPicker} disabled={submitting}>
+                        <Text style={EndDateTime ? styles.valueText : styles.placeholderText}>
+                            {EndDateTime ? EndDateTime.toLocaleString() : "End Date and Time"}
+                        </Text>
+                        </Pressable>
+                    )}
+                    </View>
+
+
+                     <View style={[styles.inputWrap, {marginTop: 12}]}>
+                        <TextInput 
+                        value={Location}
+                        onChangeText={(t) =>{
+                            setLocation(t);
+                            if(errorMsg) setErrorMsg(null);
+                        }}
+                        placeholder="Location"
+                        autoCapitalize="none"
+                        keyboardType="default"
+                        placeholderTextColor="#8B93A7"
+                        style={styles.input}
+                        editable={!submitting}
+                        />
+                    </View>
+
+                    <View style={[styles.inputWrap, {marginTop: 12}]}>
+                        <TextInput 
+                        value={MaxVolunteers}
+                        onChangeText={(t) =>{
+                            setMaxVolunteers(t);
+                            if(errorMsg) setErrorMsg(null);
+                        }}
+                        placeholder="Max Volunteers (Optional)"
+                        autoCapitalize="none"
+                        keyboardType="default"
+                        placeholderTextColor="#8B93A7"
+                        style={styles.input}
+                        editable={!submitting}
+                        />  
+                    </View>
+
+                </View>
+
+                {(errorMsg || Object.values(errors).some(Boolean)) ? (
+                <View style={{ alignItems:"center" ,marginTop: 16, paddingHorizontal: 4 }}>
+                    {errorMsg ? (
+                    <Text style={{ color: "#D92D20", fontWeight: "700", marginBottom: 6 }}>
+                        {errorMsg}
+                    </Text>
+                    ) : null}
+
+                    {Object.entries(errors)
+                    .filter(([, msg]) => !!msg)
+                    .map(([key, msg]) => (
+                        <Text key={key} style={{ color: "#D92D20", marginBottom: 4 }}>
+                        • {msg}
+                        </Text>
+                    ))}
+                </View>
+                ) : null}
+
+
+                <Pressable
+                    disabled={submitting} 
+                    style={[styles.primaryBtn, submitting && styles.primaryBtnDisabled, { marginTop: 20 }]}
+                    onPress={onCreateEvent}
+                >
+                    <Text style={styles.primaryBtnText}>
+                        {submitting ? "Creating Event..." : "Create Event"}
+                    </Text>
+                </Pressable>
+
+
+            </ScrollView>
+
+            {Platform.OS === "ios" && showStartPickerIOS ? (
+            <Modal visible transparent animationType="fade">
+                <Pressable style={styles.modalOverlay} onPress={() => setShowStartPickerIOS(false)}>
+                <Pressable style={styles.modalSheet} onPress={() => {}}>
+                    <View style={styles.modalHeader}>
+                    <Pressable onPress={() => setShowStartPickerIOS(false)}>
+                        <Text style={styles.modalBtn}>Done</Text>
+                    </Pressable>
+                    </View>
+
+                    <DateTimePicker
+                    value={StartDateTime}
+                    mode="datetime"
+                    display="spinner"
+                    onChange={(_e, d) => d && setStartDateTime(d)}
+                    />
+                </Pressable>
+                </Pressable>
+            </Modal>
+            ) : null}
+
+            {Platform.OS === "ios" && showEndPickerIOS ? (
+            <Modal visible transparent animationType="fade">
+                <Pressable style={styles.modalOverlay} onPress={() => setShowEndPickerIOS(false)}>
+                <Pressable style={styles.modalSheet} onPress={() => {}}>
+                    <View style={styles.modalHeader}>
+                    <Pressable onPress={() => setShowEndPickerIOS(false)}>
+                        <Text style={styles.modalBtn}>Done</Text>
+                    </Pressable>
+                    </View>
+
+                    <DateTimePicker
+                    value={EndDateTime}
+                    mode="datetime"
+                    display="spinner"
+                    onChange={(_e, d) => d && setEndDateTime(d)}
+                    />
+                </Pressable>
+                </Pressable>
+            </Modal>
+            ) : null}
+
+        </View>
+    );
+}

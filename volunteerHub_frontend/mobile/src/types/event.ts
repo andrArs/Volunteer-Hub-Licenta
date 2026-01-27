@@ -1,0 +1,65 @@
+export enum EventCategory {
+    Environment = 0,
+    Education = 1,
+    Health = 2,
+    Community = 3,
+    AnimalCare = 4,
+    Social = 5,
+    ElderlyCare = 6,
+    Children = 7,
+    DisabilitySupport = 8,
+    FoodDistribution = 9,
+    HomelessSupport = 10,
+    DisasterRelief = 11,
+    Cultural = 12,
+    Sports = 13,
+    Fundraising = 14
+    }  
+    
+export const EVENT_CATEGORIES :{label: string, value: EventCategory}[] = [
+    {label: "Environment", value: EventCategory.Environment},
+    {label: "Education", value: EventCategory.Education},
+    {label: "Health", value: EventCategory.Health},
+    {label: "Community", value: EventCategory.Community},
+    {label: "Animal Care", value: EventCategory.AnimalCare},
+    {label: "Social", value: EventCategory.Social},
+    {label: "Elderly Care", value: EventCategory.ElderlyCare},
+    {label: "Children", value: EventCategory.Children},
+    {label: "Disability Support", value: EventCategory.DisabilitySupport},
+    {label: "Food Distribution", value: EventCategory.FoodDistribution},
+    {label: "Homeless Support", value: EventCategory.HomelessSupport},
+    {label: "Disaster Relief", value: EventCategory.DisasterRelief},
+    {label: "Cultural", value: EventCategory.Cultural},
+    {label: "Sports", value: EventCategory.Sports},
+    {label: "Fundraising", value: EventCategory.Fundraising},
+];
+
+export type EventRequest ={
+    Title: string;
+    Description: string;
+    Category: EventCategory;
+    StartDateTime: string;
+    EndDateTime: string;
+    LocationName: string;
+    Address: string;
+    Latitude: number;
+    Longitude: number;
+    MaxVolunteers?: number | null;
+}
+
+export type EventResponse = {
+    id: string;
+    Title: string;
+    Description: string;
+    Category: EventCategory;
+    StartDateTime: string;
+    EndDateTime: string;
+    LocationName: string;
+    Address: string;
+    Latitude: number;
+    Longitude: number;
+    MaxVolunteers?: number | null;
+    Status: string;
+    CreatedAt: Date;
+    CreatedById: string;
+}

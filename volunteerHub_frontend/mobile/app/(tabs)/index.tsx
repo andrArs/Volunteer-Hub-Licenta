@@ -37,7 +37,7 @@ export default function HomeScreen() {
           <HomeCard
             title="Create Event"
             icon="plus-circle"
-            onPress={() => router.replace("/(tabs)/two")}
+            onPress={() => router.replace("/(tabs)/event.create")}
           />
           <HomeCard
             title="My Profile"
