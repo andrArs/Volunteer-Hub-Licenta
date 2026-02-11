@@ -31,7 +31,7 @@ export default function HomeScreen() {
           <HomeCard
             title="View Events"
             icon="search"
-            onPress={() => router.replace("/(tabs)/two")}
+            onPress={() => router.replace("/events.view")}
           />
 
           <HomeCard
