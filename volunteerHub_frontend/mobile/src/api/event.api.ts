@@ -37,3 +37,8 @@ export async function updateEvent(eventId: string, req: EventRequest): Promise<E
     });
     return res.data;
 }
+
+export async function getAllEvents(): Promise<EventResponse[]> {
+    const res = await api.get<EventResponse[]>("/api/events");
+    return res.data;
+}
