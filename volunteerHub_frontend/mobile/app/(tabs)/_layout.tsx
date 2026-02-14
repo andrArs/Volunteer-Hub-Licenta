@@ -7,6 +7,7 @@ import { useClientOnlyValue } from "@/components/useClientOnlyValue";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
 import { getToken } from "@/src/platform/storage";
+import { initAuth } from "@/src/store/auth.store";
 
 function TabBarIcon(props: {
   name: React.ComponentProps<typeof FontAwesome>["name"];
@@ -26,6 +27,7 @@ export default function TabLayout() {
   useEffect(() => {
     async function checkAuth() {
       try {
+        await initAuth();
         const token = await getToken();
         if (token) {
           setIsAuthorized(true);

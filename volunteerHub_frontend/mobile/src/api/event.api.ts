@@ -42,3 +42,7 @@ export async function getAllEvents(): Promise<EventResponse[]> {
     const res = await api.get<EventResponse[]>("/api/events");
     return res.data;
 }
+
+export async function deleteEvent(eventId: string): Promise<void> {
+    await api.delete(`/api/events/${eventId}`);
+}

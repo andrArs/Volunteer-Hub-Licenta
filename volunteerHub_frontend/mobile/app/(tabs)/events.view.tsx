@@ -102,13 +102,21 @@ export default function AllEventsScreen() {
   const distanceChipText = `Distance: ${selectedDistance.label}`;
 
   function openEvent(ev: EventResponse) {
-    router.push(`/event.update?id=${ev.id}`)
+    router.push(`/event.view?id=${ev.id}`)
   }
 
   return (
     <View style={styles.page}>
       <View style={styles.header}>
+        <Pressable
+                onPress={() => router.replace("/")}
+                hitSlop={10}
+                style={styles.backBtn}>
+            <FontAwesome name="arrow-left" size={18} color="#fff" />
+            </Pressable>
         <Text style={styles.headerTitle}>All Events</Text>
+        <View style={styles.rightSpacer} />
+    
       </View>
 
       <View style={styles.filtersRow}>
