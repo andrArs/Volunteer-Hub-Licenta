@@ -100,6 +100,7 @@ export default function CreateEventScreen() {
         if (Category === undefined || Category === null) e.Category = "Category is required.";
 
         if (!StartDateTime || isNaN(StartDateTime.getTime())) e.StartDateTime = "Start date/time is required.";
+        if(StartDateTime && StartDateTime.getTime() < Date.now()) e.StartDateTime = "Start date/time cannot be in the past.";
         if (!EndDateTime || isNaN(EndDateTime.getTime())) e.EndDateTime = "End date/time is required.";
         if (StartDateTime && EndDateTime && EndDateTime.getTime() < StartDateTime.getTime()) {
         e.EndDateTime = "End date/time must be after start date/time.";
