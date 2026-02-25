@@ -1,7 +1,7 @@
 import { FontAwesome } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Alert, Pressable, ScrollView, Text, View } from "react-native";
+import { ActivityIndicator, Alert, Modal, Platform, Pressable, ScrollView, Text, View } from "react-native";
 
 import { getEventById, deleteEvent } from "@/src/api/event.api";
 import { getAuth } from "@/src/store/auth.store"; 
@@ -40,6 +40,7 @@ export default function EventDetailsScreen() {
   const [status, setStatus] = useState<AttendanceStatus>("none");
 
   const [busyDelete, setBusyDelete] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const load = useCallback(async () => {
     if (!id) return;
@@ -104,25 +105,24 @@ export default function EventDetailsScreen() {
     router.push({ pathname: "/event.update", params: { id: event.id } });
   }
 
-  function onDelete() {
+  function onDeleteClick() {
     if (!event) return;
+    setShowDeleteModal(true);
+  }
 
-    Alert.alert("Delete event", "Are you sure you want to delete this event?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: busyDelete ? "Deleting..." : "Delete",
-        style: "destructive",
-        onPress: async () => {
-          try {
-            setBusyDelete(true);
-            await deleteEvent(event.id);
-            router.back();
-          } finally {
-            setBusyDelete(false);
-          }
-        },
-      },
-    ]);
+  async function executeDelete() {
+    if (!event) return;
+    try {
+      setBusyDelete(true);
+      await deleteEvent(event.id);
+      
+      setShowDeleteModal(false);
+      router.replace("/events.view");
+    } catch (error) {
+      alert("You don't have permission to delete this event or an error occurred.");
+    } finally {
+      setBusyDelete(false);
+    }
   }
 
   if (loading) {
@@ -148,7 +148,7 @@ export default function EventDetailsScreen() {
   <View style={styles.page}>
     <View style={styles.header}>
       <Pressable
-        onPress={() => router.back()}
+        onPress={() => router.replace("/events.view")}
         hitSlop={10}
         style={styles.backBtn}
       >
@@ -221,9 +221,9 @@ export default function EventDetailsScreen() {
             </Pressable>
 
             <Pressable
-              style={[styles.dangerBtn, busyDelete && styles.btnDisabled]}
-              onPress={onDelete}
-              disabled={busyDelete}
+              style={[styles.dangerBtn]}
+              onPress={onDeleteClick}
+            
             >
               <FontAwesome name="trash" size={14} color="#8E1B1B" />
               <Text style={styles.dangerBtnText}>
@@ -273,5 +273,42 @@ export default function EventDetailsScreen() {
         </View>
       )}
     </ScrollView>
+
+      <Modal
+        visible={showDeleteModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowDeleteModal(false)} 
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Delete Event</Text>
+            <Text style={styles.modalText}>
+              Are you sure you want to delete this event? This action cannot be undone.
+            </Text>
+
+            <View style={styles.modalActions}>
+              <Pressable
+                style={styles.secondaryBtn}
+                onPress={() => setShowDeleteModal(false)}
+                disabled={busyDelete}
+              >
+                <Text style={styles.secondaryBtnText}>Cancel</Text>
+              </Pressable>
+
+              <Pressable
+                style={[styles.dangerBtn, busyDelete && styles.btnDisabled]}
+                onPress={executeDelete}
+                disabled={busyDelete}
+              >
+              <FontAwesome name="trash" size={14} color="#8E1B1B" />
+              <Text style={styles.dangerBtnText}>
+                {busyDelete ? "Deleting..." : "Delete"}
+              </Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
   </View>
 );}
