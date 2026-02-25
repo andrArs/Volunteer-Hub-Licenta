@@ -208,6 +208,12 @@ export default function CreateEventScreen() {
         setShowEndPickerIOS(false);
         }, []);
 
+       useFocusEffect(
+        useCallback(() => {
+        setErrors({});
+        setErrorMsg(null);
+        }, [])
+        );
 
 
     async function onCreateEvent() {

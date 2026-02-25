@@ -86,6 +86,12 @@ export default function UpdateEventScreen() {
         return found?.label ?? "";
     }, [Category]);
       
+    useFocusEffect(
+        useCallback(() => {
+        setErrors({});
+        setErrorMsg(null);
+        }, [])
+        );
 
     useFocusEffect(
     useCallback(() => {
@@ -275,7 +281,7 @@ export default function UpdateEventScreen() {
         <View style={styles.page}>
            <View style={styles.header}>
                 <Pressable
-                    onPress={() => router.replace("/")}
+                    onPress={() =>router.push({ pathname: "/event.view", params: { id: id } })}
                     hitSlop={10}
                     style={styles.backBtn}
                 >
