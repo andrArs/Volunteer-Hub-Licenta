@@ -3,23 +3,41 @@ import { Platform, StyleSheet } from "react-native";
 export const styles = StyleSheet.create({
   page: { flex: 1, backgroundColor: "#FFFFFF" },
 
-  header: {
-    paddingTop: Platform.OS === "ios" ? 60 : 44,
-    paddingBottom: 14,
-    paddingHorizontal: 16,
-    backgroundColor: "#FFFFFF",
-  },
+   header: {
+  paddingTop: Platform.OS === "ios" ? 60 : 44,
+  paddingBottom: 38,
+  paddingHorizontal: 16,
+  backgroundColor: "#3F5E95",
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "space-between",
+},
+
+
   headerTitle: {
-    fontSize: 24,
+    color: "#FFFFFF",
+    fontSize: 22,
     fontWeight: "800",
-    color: "#1E2A3B",
+    textAlign: "center",
   },
+  rightSpacer: {
+        width: 44,
+        height: 44,
+    },
+
+  backBtn: {
+    width: 44,
+    height: 44,
+    alignItems: "flex-start",
+    justifyContent: "center",
+    },
 
   filtersRow: {
     flexDirection: "row",
     gap: 10,
     paddingHorizontal: 16,
     paddingBottom: 10,
+    paddingTop: 10,
   },
   dropdown: {
     flex: 1,

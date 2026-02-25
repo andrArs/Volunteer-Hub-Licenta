@@ -3,7 +3,6 @@
     "",
     "\\src",
     "\\src\\Controllers",
-    "\\src\\DTO",
     "\\src\\DTO\\Events",
     "\\src\\Entities",
     "\\src\\Entities\\Enum",

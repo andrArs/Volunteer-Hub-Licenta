@@ -238,7 +238,7 @@ export default function CreateEventScreen() {
                 });
 
             resetForm();
-            router.replace("/");
+            router.replace(`/event.view?id=${createEventResponse.id}`);
         } catch (e) {
             const err = toAppError(e);
             setErrorMsg(err.message);
