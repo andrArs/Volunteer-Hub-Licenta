@@ -196,7 +196,7 @@ export default function EventDetailsScreen() {
           </View>
         </View>
 
-        {participantText ? (
+        {capacity ? (
           <View style={styles.infoRow}>
             <FontAwesome name="user" size={16} color="#3F5E95" />
             <View style={styles.infoTextWrap}>
