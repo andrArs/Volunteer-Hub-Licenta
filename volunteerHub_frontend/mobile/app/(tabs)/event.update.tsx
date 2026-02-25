@@ -86,6 +86,12 @@ export default function UpdateEventScreen() {
         return found?.label ?? "";
     }, [Category]);
       
+    useFocusEffect(
+        useCallback(() => {
+        setErrors({});
+        setErrorMsg(null);
+        }, [])
+        );
 
     useFocusEffect(
     useCallback(() => {
@@ -144,6 +150,7 @@ export default function UpdateEventScreen() {
         if (Category === undefined || Category === null) e.Category = "Category is required.";
 
         if (!StartDateTime || isNaN(StartDateTime.getTime())) e.StartDateTime = "Start date/time is required.";
+        if(StartDateTime && StartDateTime.getTime() < Date.now()) e.StartDateTime = "Start date/time cannot be in the past.";
         if (!EndDateTime || isNaN(EndDateTime.getTime())) e.EndDateTime = "End date/time is required.";
         if (StartDateTime && EndDateTime && EndDateTime.getTime() < StartDateTime.getTime()) {
         e.EndDateTime = "End date/time must be after start date/time.";
@@ -274,7 +281,7 @@ export default function UpdateEventScreen() {
         <View style={styles.page}>
            <View style={styles.header}>
                 <Pressable
-                    onPress={() => router.replace("/")}
+                    onPress={() =>router.push({ pathname: "/event.view", params: { id: id } })}
                     hitSlop={10}
                     style={styles.backBtn}
                 >
