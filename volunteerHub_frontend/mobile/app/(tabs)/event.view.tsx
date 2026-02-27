@@ -3,12 +3,13 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Alert, Modal, Platform, Pressable, ScrollView, Text, View } from "react-native";
 
-import { getEventById, deleteEvent } from "@/src/api/event.api";
+import { getEventById, deleteEvent, updateEventAttendance } from "@/src/api/event.api";
 import { getAuth } from "@/src/store/auth.store"; 
 import { EVENT_CATEGORIES, type EventResponse } from "@/src/types/event";
 import { styles } from "@/src/styles/event.view.styles";
+import * as Haptics from 'expo-haptics';
 
-type AttendanceStatus = "none" | "interested" | "going";
+type AttendanceStatus = "none" | "interested" | "going" | "cancelled";
 
 function categoryLabel(cat: number) {
   return EVENT_CATEGORIES.find((c) => c.value === cat)?.label ?? "Unknown";
@@ -85,19 +86,41 @@ export default function EventDetailsScreen() {
     return null;
   }, [participantsCount, capacity]);
 
-  function onInterested() {
+  async function onInterested() {
     if (!event) return;
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }
+    const previousStatus = status;
     const next: AttendanceStatus = status === "interested" ? "none" : "interested";
     setStatus(next);
-    console.log("attendance status:", { eventId: event.id, status: next });
+
+    try {
+      await updateEventAttendance(event.id, next);
+    } catch (error) {
+      console.error("Error updating attendance status:", error);
+      setStatus(previousStatus);
+      Alert.alert("Error", "Could not save preference.");
+    }
   }
 
-  function onGoing() {
+  async function onGoing() {
     if (!event) return;
-    if (isFull) return;
+    if (isFull && status !== "going") return;
+
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }
+    const previousStatus = status;
     const next: AttendanceStatus = status === "going" ? "none" : "going";
     setStatus(next);
-    console.log("attendance status:", { eventId: event.id, status: next });
+    try {
+      await updateEventAttendance(event.id, next);
+    } catch (error) {
+      console.error("Error updating attendance status:", error);
+      setStatus(previousStatus);
+      Alert.alert("Error", "Could not save preference.");
+    }
   }
 
   function onEdit() {
