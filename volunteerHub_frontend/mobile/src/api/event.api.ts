@@ -57,3 +57,8 @@ export async function getEventParticipantsCount(eventId: string): Promise<number
     const res = await api.get<{ count: number }>(`/api/events/${eventId}/participants/count`);
     return res.data.count;
 }
+
+export async function getUserEventStatus(eventId: string): Promise<string> {
+    const res = await api.get(`/api/events/${eventId}/status`);
+    return res.data.status || res.data || "none";
+}

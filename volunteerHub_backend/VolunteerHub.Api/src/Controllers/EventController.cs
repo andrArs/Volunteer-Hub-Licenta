@@ -125,6 +125,6 @@ public class EventsController : ControllerBase
         if (string.IsNullOrWhiteSpace(userId)) return Unauthorized();
 
         var status = await _events.GetUserEventStatusAsync(id, userId);
-        return Ok(status);
+        return Ok(new { status = status });
     }
 }

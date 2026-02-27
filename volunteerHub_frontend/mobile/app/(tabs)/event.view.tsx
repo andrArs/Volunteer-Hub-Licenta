@@ -3,7 +3,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Alert, Modal, Platform, Pressable, ScrollView, Text, View } from "react-native";
 
-import { getEventById, deleteEvent, updateEventAttendance, getEventParticipantsCount } from "@/src/api/event.api";
+import { getEventById, deleteEvent, updateEventAttendance, getEventParticipantsCount, getUserEventStatus } from "@/src/api/event.api";
 import { getAuth } from "@/src/store/auth.store"; 
 import { EVENT_CATEGORIES, type EventResponse } from "@/src/types/event";
 import { styles } from "@/src/styles/event.view.styles";
@@ -49,11 +49,14 @@ export default function EventDetailsScreen() {
     if (!id) return;
     try {
       setLoading(true);
-      const [data, count] = await Promise.all([
+      const [data, count, status] = await Promise.all([
         getEventById(String(id)), 
-        getEventParticipantsCount(String(id))]);
+        getEventParticipantsCount(String(id)),
+        getUserEventStatus(String(id))
+        ]);
       setEvent(data);
       setParticipantsCount(count);
+      setStatus(status as AttendanceStatus);
     } finally {
       setLoading(false);
     }
@@ -63,10 +66,6 @@ export default function EventDetailsScreen() {
   useEffect(() => {
     load();
   }, [load]);
-
-  useEffect(() => {
-    setStatus("none");
-  }, [id]);
 
   const isMine = useMemo(() => {
     if (!event) return false;
@@ -97,8 +96,8 @@ export default function EventDetailsScreen() {
     const previousStatus = status;
     const next: AttendanceStatus = status === "interested" ? "none" : "interested";
     
-    if (previousStatus === "going" && participantsCount !== null) {
-      setParticipantsCount(prev => (prev && prev > 0 ? prev - 1 : 0));
+    if (previousStatus === "going") {
+      setParticipantsCount(prev => Math.max(0, (prev ?? 0) - 1));
     }
 
     setStatus(next);
@@ -109,8 +108,8 @@ export default function EventDetailsScreen() {
       console.error("Error updating attendance status:", error);
       setStatus(previousStatus);
 
-      if (previousStatus === "going" && participantsCount !== null) {
-        setParticipantsCount(prev => (prev !== null ? prev + 1 : 1));
+      if (previousStatus === "going") {
+        setParticipantsCount(prev =>(prev ?? 0) + 1);
       }
 
       Alert.alert("Error", "Could not save preference.");
@@ -127,10 +126,11 @@ export default function EventDetailsScreen() {
     const previousStatus = status;
     const next: AttendanceStatus = status === "going" ? "none" : "going";
     
-    if (previousStatus === "none" && next === "going" && participantsCount !== null) {
-      setParticipantsCount(prev => (prev !== null ? prev + 1 : 1));
-    } else if (previousStatus === "going" && next === "none" && participantsCount !== null) {
-      setParticipantsCount(prev => (prev && prev > 0 ? prev - 1 : 0));
+    if (next === "going" && previousStatus !== "going") {
+      setParticipantsCount(prev => (prev ?? 0) + 1);
+    } 
+    else if (previousStatus === "going" && next === "none") {
+      setParticipantsCount(prev => Math.max(0, (prev ?? 0) - 1));
     }
 
     setStatus(next);
@@ -140,10 +140,10 @@ export default function EventDetailsScreen() {
       console.error("Error updating attendance status:", error);
       setStatus(previousStatus);
 
-      if (previousStatus === "none" && next === "going" && participantsCount !== null) {
-        setParticipantsCount(prev => (prev !== null ? prev - 1 : 0));
-      } else if (previousStatus === "going" && next === "none" && participantsCount !== null) {
-        setParticipantsCount(prev => (prev !== null ? prev + 1 : 1));
+      if (next === "going" && previousStatus !== "going") {
+        setParticipantsCount(prev => Math.max(0, (prev ?? 0) - 1));
+      } else if (previousStatus === "going" && next === "none") {
+        setParticipantsCount(prev => (prev ?? 0) + 1);
       }
 
       Alert.alert("Error", "Could not save preference.");
@@ -317,7 +317,7 @@ export default function EventDetailsScreen() {
           >
             <FontAwesome name="plus" size={14} color="#FFFFFF" />
             <Text style={styles.primaryBtnText}>
-              {isFull ? "Full" : status === "going" ? "Going" : "I'm Going"}
+              {isFull ? "Full" : status === "going" ? "Going" : "Attend"}
             </Text>
           </Pressable>
         </View>
