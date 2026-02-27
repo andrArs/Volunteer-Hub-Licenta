@@ -3,13 +3,13 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Alert, Modal, Platform, Pressable, ScrollView, Text, View } from "react-native";
 
-import { getEventById, deleteEvent, updateEventAttendance } from "@/src/api/event.api";
+import { getEventById, deleteEvent, updateEventAttendance, getEventParticipantsCount } from "@/src/api/event.api";
 import { getAuth } from "@/src/store/auth.store"; 
 import { EVENT_CATEGORIES, type EventResponse } from "@/src/types/event";
 import { styles } from "@/src/styles/event.view.styles";
 import * as Haptics from 'expo-haptics';
 
-type AttendanceStatus = "none" | "interested" | "going" | "cancelled";
+type AttendanceStatus = "none" | "interested" | "going";
 
 function categoryLabel(cat: number) {
   return EVENT_CATEGORIES.find((c) => c.value === cat)?.label ?? "Unknown";
@@ -43,12 +43,17 @@ export default function EventDetailsScreen() {
   const [busyDelete, setBusyDelete] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
+  const [participantsCount, setParticipantsCount] = useState<number | null>(null);
+
   const load = useCallback(async () => {
     if (!id) return;
     try {
       setLoading(true);
-      const data = await getEventById(String(id));
+      const [data, count] = await Promise.all([
+        getEventById(String(id)), 
+        getEventParticipantsCount(String(id))]);
       setEvent(data);
+      setParticipantsCount(count);
     } finally {
       setLoading(false);
     }
@@ -68,10 +73,8 @@ export default function EventDetailsScreen() {
     if (!myUserId) return false;
     return String(event.createdById) === String(myUserId);
   }, [event, myUserId]);
-//----
-  const participantsCount = (event as any)?.participantsCount ?? (event as any)?.volunteersCount ?? null;
-  const capacity = event?.maxVolunteers ?? null;
 
+  const capacity = event?.maxVolunteers ?? null;
   const isFull = useMemo(() => {
     if (participantsCount == null) return false;
     if (capacity == null) return false;
@@ -93,6 +96,11 @@ export default function EventDetailsScreen() {
     }
     const previousStatus = status;
     const next: AttendanceStatus = status === "interested" ? "none" : "interested";
+    
+    if (previousStatus === "going" && participantsCount !== null) {
+      setParticipantsCount(prev => (prev && prev > 0 ? prev - 1 : 0));
+    }
+
     setStatus(next);
 
     try {
@@ -100,6 +108,11 @@ export default function EventDetailsScreen() {
     } catch (error) {
       console.error("Error updating attendance status:", error);
       setStatus(previousStatus);
+
+      if (previousStatus === "going" && participantsCount !== null) {
+        setParticipantsCount(prev => (prev !== null ? prev + 1 : 1));
+      }
+
       Alert.alert("Error", "Could not save preference.");
     }
   }
@@ -113,12 +126,26 @@ export default function EventDetailsScreen() {
     }
     const previousStatus = status;
     const next: AttendanceStatus = status === "going" ? "none" : "going";
+    
+    if (previousStatus === "none" && next === "going" && participantsCount !== null) {
+      setParticipantsCount(prev => (prev !== null ? prev + 1 : 1));
+    } else if (previousStatus === "going" && next === "none" && participantsCount !== null) {
+      setParticipantsCount(prev => (prev && prev > 0 ? prev - 1 : 0));
+    }
+
     setStatus(next);
     try {
       await updateEventAttendance(event.id, next);
     } catch (error) {
       console.error("Error updating attendance status:", error);
       setStatus(previousStatus);
+
+      if (previousStatus === "none" && next === "going" && participantsCount !== null) {
+        setParticipantsCount(prev => (prev !== null ? prev - 1 : 0));
+      } else if (previousStatus === "going" && next === "none" && participantsCount !== null) {
+        setParticipantsCount(prev => (prev !== null ? prev + 1 : 1));
+      }
+
       Alert.alert("Error", "Could not save preference.");
     }
   }
