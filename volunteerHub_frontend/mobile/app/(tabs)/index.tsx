@@ -42,7 +42,7 @@ export default function HomeScreen() {
           <HomeCard
             title="My Profile"
             icon="user"
-            onPress={() => router.replace("/(tabs)/two")}
+            onPress={() => router.replace("/profile")}
           />
         </View>
 
