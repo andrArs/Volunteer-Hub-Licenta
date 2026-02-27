@@ -76,7 +76,7 @@ export default function EventDetailsScreen() {
   const capacity = event?.maxVolunteers ?? null;
   const isFull = useMemo(() => {
     if (participantsCount == null) return false;
-    if (capacity == null) return false;
+    if (capacity == null || capacity <= 0) return false;
     return Number(participantsCount) >= Number(capacity);
   }, [participantsCount, capacity]);
 
