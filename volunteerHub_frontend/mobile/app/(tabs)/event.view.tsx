@@ -3,10 +3,11 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Alert, Modal, Platform, Pressable, ScrollView, Text, View } from "react-native";
 
-import { getEventById, deleteEvent } from "@/src/api/event.api";
+import { getEventById, deleteEvent, updateEventAttendance, getEventParticipantsCount, getUserEventStatus } from "@/src/api/event.api";
 import { getAuth } from "@/src/store/auth.store"; 
 import { EVENT_CATEGORIES, type EventResponse } from "@/src/types/event";
 import { styles } from "@/src/styles/event.view.styles";
+import * as Haptics from 'expo-haptics';
 
 type AttendanceStatus = "none" | "interested" | "going";
 
@@ -42,12 +43,20 @@ export default function EventDetailsScreen() {
   const [busyDelete, setBusyDelete] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
+  const [participantsCount, setParticipantsCount] = useState<number | null>(null);
+
   const load = useCallback(async () => {
     if (!id) return;
     try {
       setLoading(true);
-      const data = await getEventById(String(id));
+      const [data, count, status] = await Promise.all([
+        getEventById(String(id)), 
+        getEventParticipantsCount(String(id)),
+        getUserEventStatus(String(id))
+        ]);
       setEvent(data);
+      setParticipantsCount(count);
+      setStatus(status as AttendanceStatus);
     } finally {
       setLoading(false);
     }
@@ -58,19 +67,13 @@ export default function EventDetailsScreen() {
     load();
   }, [load]);
 
-  useEffect(() => {
-    setStatus("none");
-  }, [id]);
-
   const isMine = useMemo(() => {
     if (!event) return false;
     if (!myUserId) return false;
     return String(event.createdById) === String(myUserId);
   }, [event, myUserId]);
-//----
-  const participantsCount = (event as any)?.participantsCount ?? (event as any)?.volunteersCount ?? null;
-  const capacity = event?.maxVolunteers ?? null;
 
+  const capacity = event?.maxVolunteers ?? null;
   const isFull = useMemo(() => {
     if (participantsCount == null) return false;
     if (capacity == null) return false;
@@ -85,19 +88,66 @@ export default function EventDetailsScreen() {
     return null;
   }, [participantsCount, capacity]);
 
-  function onInterested() {
+  async function onInterested() {
     if (!event) return;
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }
+    const previousStatus = status;
     const next: AttendanceStatus = status === "interested" ? "none" : "interested";
+    
+    if (previousStatus === "going") {
+      setParticipantsCount(prev => Math.max(0, (prev ?? 0) - 1));
+    }
+
     setStatus(next);
-    console.log("attendance status:", { eventId: event.id, status: next });
+
+    try {
+      await updateEventAttendance(event.id, next);
+    } catch (error) {
+      console.error("Error updating attendance status:", error);
+      setStatus(previousStatus);
+
+      if (previousStatus === "going") {
+        setParticipantsCount(prev =>(prev ?? 0) + 1);
+      }
+
+      Alert.alert("Error", "Could not save preference.");
+    }
   }
 
-  function onGoing() {
+  async function onGoing() {
     if (!event) return;
-    if (isFull) return;
+    if (isFull && status !== "going") return;
+
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }
+    const previousStatus = status;
     const next: AttendanceStatus = status === "going" ? "none" : "going";
+    
+    if (next === "going" && previousStatus !== "going") {
+      setParticipantsCount(prev => (prev ?? 0) + 1);
+    } 
+    else if (previousStatus === "going" && next === "none") {
+      setParticipantsCount(prev => Math.max(0, (prev ?? 0) - 1));
+    }
+
     setStatus(next);
-    console.log("attendance status:", { eventId: event.id, status: next });
+    try {
+      await updateEventAttendance(event.id, next);
+    } catch (error) {
+      console.error("Error updating attendance status:", error);
+      setStatus(previousStatus);
+
+      if (next === "going" && previousStatus !== "going") {
+        setParticipantsCount(prev => Math.max(0, (prev ?? 0) - 1));
+      } else if (previousStatus === "going" && next === "none") {
+        setParticipantsCount(prev => (prev ?? 0) + 1);
+      }
+
+      Alert.alert("Error", "Could not save preference.");
+    }
   }
 
   function onEdit() {
@@ -265,9 +315,9 @@ export default function EventDetailsScreen() {
             onPress={onGoing}
             disabled={isFull}
           >
-            <FontAwesome name="plus" size={14} color="#FFFFFF" />
+            <FontAwesome name={status === "going" ? "check" : "plus"} size={14} color="#FFFFFF" />
             <Text style={styles.primaryBtnText}>
-              {isFull ? "Full" : status === "going" ? "Going" : "I'm Going"}
+              {isFull ? "Full" : status === "going" ? "Going" : "Attend"}
             </Text>
           </Pressable>
         </View>

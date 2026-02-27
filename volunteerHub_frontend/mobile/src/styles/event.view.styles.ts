@@ -133,8 +133,8 @@ backBtn: {
   secondaryBtnText: { fontSize: 12, fontWeight: "900", color: "#3F5E95" },
 
   secondaryBtnActive: {
-    backgroundColor: "#4A5568",
-    borderColor: "#4A5568",
+    backgroundColor: "#3F5E95",
+    borderColor: "#3F5E95",
   },
   secondaryBtnTextActive: { color: "#FFFFFF" },
 
@@ -150,7 +150,7 @@ backBtn: {
   },
   primaryBtnText: { fontSize: 12, fontWeight: "900", color: "#FFFFFF" },
 
-  primaryBtnActive: { backgroundColor: "#2F3A4A" },
+  primaryBtnActive: { backgroundColor: "#3F5E95" },
 
   primaryBtnDisabled: { backgroundColor: "#A1A8B5" },
 

@@ -91,4 +91,40 @@ public class EventsController : ControllerBase
         if (!ok) return Forbid();
         return NoContent();
     }
+
+    [Authorize]
+    [HttpPost("{id:guid}/attendance")]
+    public async Task<IActionResult> UpdateAttendance(Guid id, [FromBody] AttendanceEventRequest req)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(userId)) return Unauthorized();
+
+        var validStatuses = new[] { "interested", "going", "attended", "cancelled", "none" };
+        if (!validStatuses.Contains(req.Status.ToLower()))
+            return BadRequest(new { code = "invalid_status", message = $"Status must be one of: {string.Join(", ", validStatuses)}" });
+
+        var ok = await _events.UpdateEventAttendanceAsync(id, userId, req.Status.ToLower());
+
+        if (!ok) return NotFound(new { code = "event_not_found_or_full", message = "Event not found or has reached maximum volunteers." });
+        return NoContent();
+    }
+
+    
+    [HttpGet("{id:guid}/participants/count")]
+    public async Task<ActionResult<int>> GetParticipantsCount(Guid id)
+    {
+        var count = await _events.GetEventParticipantsCountAsync(id);
+        return Ok(new { count });
+    }
+
+    [Authorize]
+    [HttpGet("{id:guid}/status")]
+    public async Task<ActionResult<string>> GetUserEventStatus(Guid id)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(userId)) return Unauthorized();
+
+        var status = await _events.GetUserEventStatusAsync(id, userId);
+        return Ok(new { status = status });
+    }
 }

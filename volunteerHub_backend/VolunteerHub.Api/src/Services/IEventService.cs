@@ -9,4 +9,7 @@ public interface IEventService
     Task<List<EventResponse>> GetApprovedEventsAsync(); // public list
     Task<EventResponse?> UpdateEventAsync(Guid id, string requesterUserId, EventRequest req, bool isAdmin);
     Task<bool> DeleteEventAsync(Guid id, string requesterUserId, bool isAdmin);
+    Task<bool> UpdateEventAttendanceAsync(Guid eventId, string userId, string status);
+    Task <int> GetEventParticipantsCountAsync(Guid eventId);
+    Task <string> GetUserEventStatusAsync(Guid eventId, string userId);
 }

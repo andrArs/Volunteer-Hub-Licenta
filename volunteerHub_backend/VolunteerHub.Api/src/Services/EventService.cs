@@ -187,4 +187,71 @@ public class EventService : IEventService
         return true;
     }
 
+    public async Task<bool> UpdateEventAttendanceAsync(Guid eventId, string userId, string status)
+    {
+        var ev = await _db.Events.Include(e => e.UserEvents).FirstOrDefaultAsync(e => e.Id == eventId);
+        if (ev is null)
+            throw new ApiException(404, "event_not_found", "Event not found.");
+    
+        var existingRecord = await _db.UserEvents.FirstOrDefaultAsync(a => a.EventId == eventId && a.UserId == userId);
+
+        if(status == "none")
+        {
+            if(existingRecord != null)
+            {
+                _db.UserEvents.Remove(existingRecord);
+                await _db.SaveChangesAsync();
+            }
+            return true;
+        }
+        
+        UserEventStatus newStatus = status.ToLower()== "going" 
+        ? UserEventStatus.Going 
+        : UserEventStatus.Interested;
+
+        if (newStatus == UserEventStatus.Going && (existingRecord == null || existingRecord.Status != UserEventStatus.Going))
+    {
+        if (ev.MaxVolunteers > 0)
+        {
+            var currentGoingCount = ev.UserEvents.Count(ue => ue.Status == UserEventStatus.Going);
+            
+            if (currentGoingCount >= ev.MaxVolunteers)
+            {
+                throw new ApiException(400, "max_volunteers_reached", "Sorry, this event has reached its maximum capacity.");
+            }
+        }
+    }
+
+        if(existingRecord != null)
+        {
+            existingRecord.Status = newStatus;
+        }
+        else
+        {
+            var newRecord = new UserEvent
+            {
+                Id = Guid.NewGuid(),
+                UserId = userId,
+                EventId = eventId,
+                Status = newStatus,
+                RegisteredAt = DateTime.UtcNow
+            };
+            _db.UserEvents.Add(newRecord);
+        }
+        await _db.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<int> GetEventParticipantsCountAsync(Guid eventId)
+    {
+        var count = await _db.UserEvents.CountAsync(ue => ue.EventId == eventId && ue.Status == UserEventStatus.Going);
+        return count;
+    }
+
+    public async Task<string> GetUserEventStatusAsync(Guid eventId, string userId)
+    {
+        var record = await _db.UserEvents.FirstOrDefaultAsync(ue => ue.EventId == eventId && ue.UserId == userId);
+        return record?.Status.ToString().ToLower() ?? "none";
+    }
+
 }
