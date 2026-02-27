@@ -166,4 +166,29 @@ export const styles = StyleSheet.create({
     borderRadius: 12,
   },
   optionText: { fontSize: 14, fontWeight: "500", color: "#1E2A3B" },
+  tabsContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E6E9F2",
+    backgroundColor: "#FFFFFF",
+  },
+  tabBtn: {
+    paddingVertical: 14,
+    borderBottomWidth: 2,
+    borderBottomColor: "transparent",
+  },
+  tabBtnActive: {
+    borderBottomColor: "#3F5E95",
+  },
+  tabText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#8B93A7",
+  },
+  tabTextActive: {
+    color: "#3F5E95",
+    fontWeight: "800",
+  },
 });

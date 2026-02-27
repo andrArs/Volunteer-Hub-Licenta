@@ -254,4 +254,63 @@ public class EventService : IEventService
         return record?.Status.ToString().ToLower() ?? "none";
     }
 
+    public async Task<List<EventResponse>> GetMyCreatedEventsAsync(string userId)
+    {
+        var list = await _db.Events.AsNoTracking()
+            .Where(e => e.CreatedById == userId)
+            .OrderByDescending(e => e.CreatedAt)
+            .Select(e => new EventResponse(
+                e.Id,
+                e.Title,
+                e.Description,
+                e.Category,
+                e.StartDateTime,
+                e.EndDateTime,
+                e.LocationName,
+                e.Address,
+                e.Latitude,
+                e.Longitude,
+                e.MaxVolunteers,
+                e.Status,
+                e.CreatedAt,
+                e.CreatedById
+            ))
+            .ToListAsync();
+
+        return list;
+    }
+
+    public async Task<List<EventResponse>> GetMyAttendanceEventsAsync(string userId, string status)
+    {
+        var now = DateTime.UtcNow;
+        var query = _db.UserEvents.Where(ue => ue.UserId == userId);
+
+        if (status == "going")
+        {
+            query = query.Where(ue => ue.Status == UserEventStatus.Going && ue.Event.EndDateTime >= now);
+        }
+        else if (status == "interested")
+        {
+            query = query.Where(ue => ue.Status == UserEventStatus.Interested && ue.Event.EndDateTime >= now);
+        }
+        else if (status == "history")
+        {
+            query = query.Where(ue => ue.Status == UserEventStatus.Going && ue.Event.EndDateTime < now);
+        }
+        else 
+        {
+            return new List<EventResponse>();
+        }
+
+        return await query
+            .Include(ue => ue.Event)
+            .OrderBy(ue => ue.Event.StartDateTime)
+            .Select(ue => ue.Event)
+            .Select(e => new EventResponse(
+                e.Id, e.Title, e.Description, e.Category, e.StartDateTime,
+                e.EndDateTime, e.LocationName, e.Address, e.Latitude,
+                e.Longitude, e.MaxVolunteers, e.Status, e.CreatedAt, e.CreatedById
+            ))
+            .ToListAsync();
+    }
 }
