@@ -248,4 +248,10 @@ public class EventService : IEventService
         return count;
     }
 
+    public async Task<string> GetUserEventStatusAsync(Guid eventId, string userId)
+    {
+        var record = await _db.UserEvents.FirstOrDefaultAsync(ue => ue.EventId == eventId && ue.UserId == userId);
+        return record?.Status.ToString().ToLower() ?? "none";
+    }
+
 }

@@ -116,4 +116,15 @@ public class EventsController : ControllerBase
         var count = await _events.GetEventParticipantsCountAsync(id);
         return Ok(new { count });
     }
+
+    [Authorize]
+    [HttpGet("{id:guid}/status")]
+    public async Task<ActionResult<string>> GetUserEventStatus(Guid id)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(userId)) return Unauthorized();
+
+        var status = await _events.GetUserEventStatusAsync(id, userId);
+        return Ok(status);
+    }
 }
