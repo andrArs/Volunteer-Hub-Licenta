@@ -127,4 +127,31 @@ public class EventsController : ControllerBase
         var status = await _events.GetUserEventStatusAsync(id, userId);
         return Ok(new { status = status });
     }
+
+    [Authorize]
+    [HttpGet("my/created")]
+    public async Task<ActionResult<List<EventResponse>>> GetMyCreatedEvents()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(userId)) return Unauthorized();
+
+        var events = await _events.GetMyCreatedEventsAsync(userId);
+        return Ok(events);
+    }
+
+    [Authorize]
+    [HttpGet("my/attendance")]
+    public async Task<ActionResult<List<EventResponse>>> GetMyAttendanceEvents([FromQuery] string status)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(userId)) return Unauthorized();
+
+        var validStatuses = new[] { "interested", "going", "history" };
+        if (string.IsNullOrWhiteSpace(status) || !validStatuses.Contains(status.ToLower()))
+            return BadRequest(new { code = "invalid_status", message = "Status must be interested, going, or history." });
+
+        var events = await _events.GetMyAttendanceEventsAsync(userId, status.ToLower());
+        return Ok(events);
+    }
+
 }

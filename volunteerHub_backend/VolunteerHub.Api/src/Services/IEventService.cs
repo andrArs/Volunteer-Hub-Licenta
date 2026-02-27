@@ -12,4 +12,6 @@ public interface IEventService
     Task<bool> UpdateEventAttendanceAsync(Guid eventId, string userId, string status);
     Task <int> GetEventParticipantsCountAsync(Guid eventId);
     Task <string> GetUserEventStatusAsync(Guid eventId, string userId);
+    Task<List<EventResponse>> GetMyCreatedEventsAsync(string userId);
+    Task<List<EventResponse>> GetMyAttendanceEventsAsync(string userId, string status);
 }

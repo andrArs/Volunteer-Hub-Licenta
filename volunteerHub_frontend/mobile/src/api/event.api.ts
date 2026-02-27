@@ -62,3 +62,13 @@ export async function getUserEventStatus(eventId: string): Promise<string> {
     const res = await api.get(`/api/events/${eventId}/status`);
     return res.data.status || res.data || "none";
 }
+
+export async function getMyCreatedEvents(): Promise<EventResponse[]> {
+  const res = await api.get<EventResponse[]>("/api/events/my/created");
+  return res.data;
+}
+
+export async function getMyAttendanceEvents(status: "interested" | "going" | "history"): Promise<EventResponse[]> {
+  const res = await api.get<EventResponse[]>(`/api/events/my/attendance?status=${status}`);
+  return res.data;
+}
