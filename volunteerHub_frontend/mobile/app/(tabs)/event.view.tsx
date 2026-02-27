@@ -315,7 +315,7 @@ export default function EventDetailsScreen() {
             onPress={onGoing}
             disabled={isFull}
           >
-            <FontAwesome name="plus" size={14} color="#FFFFFF" />
+            <FontAwesome name={status === "going" ? "check" : "plus"} size={14} color="#FFFFFF" />
             <Text style={styles.primaryBtnText}>
               {isFull ? "Full" : status === "going" ? "Going" : "Attend"}
             </Text>
