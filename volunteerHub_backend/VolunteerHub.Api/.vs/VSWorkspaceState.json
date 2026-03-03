@@ -8,6 +8,6 @@
     "\\src\\Exceptions",
     "\\src\\Services"
   ],
-  "SelectedNode": "\\src\\Entities\\EventUser.cs",
+  "SelectedNode": "\\src\\Controllers\\EventController.cs",
   "PreviewInSolutionExplorer": false
 }

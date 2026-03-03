@@ -7,6 +7,8 @@ import { getMyCreatedEvents, getMyAttendanceEvents } from "@/src/api/event.api";
 import { getAuth, logout } from "@/src/store/auth.store"; 
 import { type EventResponse } from "@/src/types/event";
 import { styles } from "@/src/styles/profile.styles";
+import { getMyProfile } from "@/src/api/user.api";
+import { UserProfile } from "@/src/types/user";
 
 function formatDateTime(dt: string) {
   const d = new Date(dt);
@@ -17,6 +19,15 @@ function formatDateTime(dt: string) {
   const hh = String(d.getHours()).padStart(2, "0");
   const mi = String(d.getMinutes()).padStart(2, "0");
   return `${dd}-${mm}-${yyyy} at ${hh}:${mi}`;
+}
+
+function formatDateOnly(dt: string) {
+  const d = new Date(dt);
+  if (Number.isNaN(d.getTime())) return dt;
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const yyyy = d.getFullYear();
+  return `${dd}.${mm}.${yyyy}`; 
 }
 
 function getReminderPill(dateString: string) {
@@ -34,30 +45,48 @@ function getReminderPill(dateString: string) {
   return { label: `${diffDays} days`, bg: "#3F5E95" }; 
 }
 
+function calculateAge(dob?: string | null): number | string {
+  if (!dob) return "N/A";
+  
+  const birthDate = new Date(dob);
+  const today = new Date();
+  
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+  
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  
+  return age;
+}
+
 export default function MyProfileScreen() {
   const router = useRouter();
   const auth = getAuth(); 
   
-  const userName = auth?.username || "Test User";
   const userEmail = auth?.email || "test@yahoo.com";
 
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({ attended: 0, organized: 0 });
   const [upcomingEvents, setUpcomingEvents] = useState<EventResponse[]>([]);
+  const [profileInfo, setProfileInfo] = useState<UserProfile | null>(null);
 
   const loadProfileData = useCallback(async () => {
     try {
       setLoading(true);
-      const [created, history, going] = await Promise.all([
+      const [created, history, going, myProfile] = await Promise.all([
         getMyCreatedEvents(),
         getMyAttendanceEvents("history"),
-        getMyAttendanceEvents("going")
+        getMyAttendanceEvents("going"),
+        getMyProfile()
       ]);
 
       setStats({
         attended: history.length, 
         organized: created.length 
       });
+      setProfileInfo(myProfile);
 
       const sortedUpcoming = going
         .sort((a, b) => new Date(a.startDateTime).getTime() - new Date(b.startDateTime).getTime())
@@ -88,7 +117,7 @@ export default function MyProfileScreen() {
   return (
     <View style={styles.page}>
       <View style={styles.header}>
-        <Pressable onPress={() => router.back()} hitSlop={10} style={styles.backBtn}>
+        <Pressable onPress={() => router.replace("/")} hitSlop={10} style={styles.backBtn}>
           <FontAwesome name="arrow-left" size={18} color="#fff" />
         </Pressable>
         <Text style={styles.headerTitle}>My Profile</Text>
@@ -104,25 +133,40 @@ export default function MyProfileScreen() {
             <View style={styles.card}>
               <View style={styles.infoRow}>
                 <FontAwesome name="user" size={18} color="#3F5E95" style={styles.infoIcon} />
-                <Text style={styles.infoTextBold}>{userName}</Text>
+                <Text style={styles.infoTextBold}>
+                  {profileInfo?.firstName} {profileInfo?.lastName} 
+                  </Text>
               </View>
               <View style={styles.divider} />
               <View style={styles.infoRow}>
                 <FontAwesome name="envelope" size={16} color="#3F5E95" style={styles.infoIcon} />
                 <Text style={styles.infoText}>{userEmail}</Text>
               </View>
+              {profileInfo?.dateOfBirth && (
+                <>
+                  <View style={styles.divider} />
+                  <View style={styles.infoRow}>
+                    <FontAwesome name="birthday-cake" size={16} color="#3F5E95" style={styles.infoIcon} />
+                    <Text style={styles.infoText}>
+                      {calculateAge(profileInfo.dateOfBirth)} years old ({formatDateOnly(profileInfo.dateOfBirth)})
+                    </Text>
+                  </View>
+                </>
+              )}
             </View>
 
             <View style={[styles.card, styles.statsCard]}>
-              <View style={styles.statBox}>
+              <Pressable style={styles.statBox} 
+                onPress={() => router.push("/my.events")}>
                 <Text style={styles.statNumber}>{stats.attended}</Text>
                 <Text style={styles.statLabel}>Events{"\n"}Attended</Text>
-              </View>
+              </Pressable>
               <View style={styles.statDivider} />
-              <View style={styles.statBox}>
+              <Pressable style={styles.statBox} 
+                onPress={() => router.push("/my.events")}>
                 <Text style={styles.statNumber}>{stats.organized}</Text>
                 <Text style={styles.statLabel}>Events{"\n"}Organized</Text>
-              </View>
+              </Pressable>
             </View>
 
             <View style={styles.card}>
