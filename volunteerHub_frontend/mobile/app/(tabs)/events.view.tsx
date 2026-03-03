@@ -109,7 +109,7 @@ export default function AllEventsScreen() {
     <View style={styles.page}>
       <View style={styles.header}>
         <Pressable
-                onPress={() => router.replace("/")}
+                onPress={() => router.back()}
                 hitSlop={10}
                 style={styles.backBtn}>
             <FontAwesome name="arrow-left" size={18} color="#fff" />

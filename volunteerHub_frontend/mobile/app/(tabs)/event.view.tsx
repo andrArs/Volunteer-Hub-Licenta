@@ -198,7 +198,7 @@ export default function EventDetailsScreen() {
   <View style={styles.page}>
     <View style={styles.header}>
       <Pressable
-        onPress={() => router.replace("/events.view")}
+        onPress={() => router.back()}
         hitSlop={10}
         style={styles.backBtn}
       >

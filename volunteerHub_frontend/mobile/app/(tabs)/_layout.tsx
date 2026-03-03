@@ -1,5 +1,5 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { Link, Tabs, useRouter } from "expo-router";
+import { Link, Stack, Tabs, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { Pressable } from "react-native";
 
@@ -54,13 +54,21 @@ export default function TabLayout() {
   }
 
   return (
-    <Tabs
+    <Stack
       screenOptions={{
-        tabBarStyle: { display: "none" },
-        headerShown: false,
+        headerShown: false, 
+        animation: 'slide_from_right', 
       }}
     >
-      
-    </Tabs>
+      <Stack.Screen name="index" /> 
+      <Stack.Screen name="events.view" />
+      <Stack.Screen name="my.events" />
+      <Stack.Screen name="event.view" />
+      <Stack.Screen name="event.create" />
+      <Stack.Screen name="event.update" />
+      <Stack.Screen name="profile" />
+      <Stack.Screen name="two" />
+
+    </Stack>
   );
 }

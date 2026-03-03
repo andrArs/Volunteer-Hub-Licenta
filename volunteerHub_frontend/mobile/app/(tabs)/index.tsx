@@ -26,23 +26,23 @@ export default function HomeScreen() {
           <HomeCard
             title="My Events"
             icon="calendar"
-            onPress={() => router.replace("/my.events")}
+            onPress={() => router.push("/my.events")}
           />
           <HomeCard
             title="View Events"
             icon="search"
-            onPress={() => router.replace("/events.view")}
+            onPress={() => router.push("/events.view")}
           />
 
           <HomeCard
             title="Create Event"
             icon="plus-circle"
-            onPress={() => router.replace("/(tabs)/event.create")}
+            onPress={() => router.push("/event.create")}
           />
           <HomeCard
             title="My Profile"
             icon="user"
-            onPress={() => router.replace("/profile")}
+            onPress={() => router.push("/profile")}
           />
         </View>
 
