@@ -3,6 +3,22 @@
   "WorkspaceRootPath": "C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\src\\Controllers\\EventController.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\Controllers\\EventController.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\src\\Services\\EventService.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\Services\\EventService.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\src\\Services\\IEventService.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\Services\\IEventService.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\src\\Services\\JwtTokenServices.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\Services\\JwtTokenServices.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\src\\Entities\\EventUser.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\Entities\\EventUser.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -11,20 +27,8 @@
       "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\Entities\\Enum\\UserEventStatus.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\src\\Services\\IEventService.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\Services\\IEventService.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\src\\Entities\\Enum\\EventStatus.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\Entities\\Enum\\EventStatus.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\src\\Controllers\\EventController.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\Controllers\\EventController.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\src\\Services\\EventService.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\Services\\EventService.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\src\\DTO\\Events\\EventResponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -70,24 +74,23 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 2,
+          "SelectedChildIndex": 6,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "UserEventStatus.cs",
-              "DocumentMoniker": "C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\src\\Entities\\Enum\\UserEventStatus.cs",
-              "RelativeDocumentMoniker": "src\\Entities\\Enum\\UserEventStatus.cs",
-              "ToolTip": "C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\src\\Entities\\Enum\\UserEventStatus.cs",
-              "RelativeToolTip": "src\\Entities\\Enum\\UserEventStatus.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAABAAAAAAAAAA==",
+              "DocumentIndex": 3,
+              "Title": "JwtTokenServices.cs",
+              "DocumentMoniker": "C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\src\\Services\\JwtTokenServices.cs",
+              "RelativeDocumentMoniker": "src\\Services\\JwtTokenServices.cs",
+              "ToolTip": "C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\src\\Services\\JwtTokenServices.cs",
+              "RelativeToolTip": "src\\Services\\JwtTokenServices.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-27T17:50:59.574Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-02-27T20:11:45.227Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 6,
               "Title": "EventStatus.cs",
               "DocumentMoniker": "C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\src\\Entities\\Enum\\EventStatus.cs",
               "RelativeDocumentMoniker": "src\\Entities\\Enum\\EventStatus.cs",
@@ -95,12 +98,11 @@
               "RelativeToolTip": "src\\Entities\\Enum\\EventStatus.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-27T17:50:57.573Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-02-27T17:50:57.573Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 4,
               "Title": "EventUser.cs",
               "DocumentMoniker": "C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\src\\Entities\\EventUser.cs",
               "RelativeDocumentMoniker": "src\\Entities\\EventUser.cs",
@@ -108,8 +110,7 @@
               "RelativeToolTip": "src\\Entities\\EventUser.cs",
               "ViewState": "AgIAAAIAAAAAAAAAAAAswAoAAAAOAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-11T20:01:17.719Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-02-11T20:01:17.719Z"
             },
             {
               "$type": "Document",
@@ -119,14 +120,13 @@
               "RelativeDocumentMoniker": "src\\Services\\IEventService.cs",
               "ToolTip": "C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\src\\Services\\IEventService.cs",
               "RelativeToolTip": "src\\Services\\IEventService.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAABPAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-27T19:48:13.387Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-01-27T19:48:13.387Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 8,
               "Title": "EventCategory.cs",
               "DocumentMoniker": "C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\src\\Entities\\Enum\\EventCategory.cs",
               "RelativeDocumentMoniker": "src\\Entities\\Enum\\EventCategory.cs",
@@ -138,32 +138,44 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 1,
               "Title": "EventService.cs",
               "DocumentMoniker": "C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\src\\Services\\EventService.cs",
               "RelativeDocumentMoniker": "src\\Services\\EventService.cs",
               "ToolTip": "C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\src\\Services\\EventService.cs",
               "RelativeToolTip": "src\\Services\\EventService.cs",
-              "ViewState": "AgIAAKkAAAAAAAAAAAAswLsAAAAFAAAAAAAAAA==",
+              "ViewState": "AgIAAOwAAAAAAAAAAAAswDsBAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-01-27T19:48:17.668Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 0,
               "Title": "EventController.cs",
               "DocumentMoniker": "C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\src\\Controllers\\EventController.cs",
               "RelativeDocumentMoniker": "src\\Controllers\\EventController.cs",
               "ToolTip": "C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\src\\Controllers\\EventController.cs",
               "RelativeToolTip": "src\\Controllers\\EventController.cs",
-              "ViewState": "AgIAAE4AAAAAAAAAAADwv3cAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAJ0AAAAAAAAAAAAAAJwAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-01-27T19:11:03.529Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 5,
+              "Title": "UserEventStatus.cs",
+              "DocumentMoniker": "C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\src\\Entities\\Enum\\UserEventStatus.cs",
+              "RelativeDocumentMoniker": "src\\Entities\\Enum\\UserEventStatus.cs",
+              "ToolTip": "C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\src\\Entities\\Enum\\UserEventStatus.cs",
+              "RelativeToolTip": "src\\Entities\\Enum\\UserEventStatus.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-27T17:50:59.574Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
               "Title": "EventResponse.cs",
               "DocumentMoniker": "C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\src\\DTO\\Events\\EventResponse.cs",
               "RelativeDocumentMoniker": "src\\DTO\\Events\\EventResponse.cs",
@@ -175,7 +187,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 9,
               "Title": "EventRequest.cs",
               "DocumentMoniker": "C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\src\\DTO\\Events\\EventRequest.cs",
               "RelativeDocumentMoniker": "src\\DTO\\Events\\EventRequest.cs",
@@ -187,7 +199,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
+              "DocumentIndex": 10,
               "Title": "AuthController.cs",
               "DocumentMoniker": "C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\src\\Controllers\\AuthController.cs",
               "RelativeDocumentMoniker": "src\\Controllers\\AuthController.cs",
@@ -199,7 +211,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 12,
+              "DocumentIndex": 13,
               "Title": "LoginRequest.cs",
               "DocumentMoniker": "C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\src\\DTO\\LoginRequest.cs",
               "RelativeDocumentMoniker": "src\\DTO\\LoginRequest.cs",
@@ -211,7 +223,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 10,
+              "DocumentIndex": 11,
               "Title": "RegisterRequest.cs",
               "DocumentMoniker": "C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\src\\DTO\\RegisterRequest.cs",
               "RelativeDocumentMoniker": "src\\DTO\\RegisterRequest.cs",
@@ -223,7 +235,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 11,
+              "DocumentIndex": 12,
               "Title": "AuthResponse.cs",
               "DocumentMoniker": "C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\src\\DTO\\AuthResponse.cs",
               "RelativeDocumentMoniker": "src\\DTO\\AuthResponse.cs",
@@ -235,7 +247,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 13,
+              "DocumentIndex": 14,
               "Title": "User.cs",
               "DocumentMoniker": "C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\src\\Entities\\User.cs",
               "RelativeDocumentMoniker": "src\\Entities\\User.cs",
@@ -247,7 +259,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 14,
+              "DocumentIndex": 15,
               "Title": "VolunteerHub.Api.http",
               "DocumentMoniker": "C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\VolunteerHub.Api.http",
               "RelativeDocumentMoniker": "VolunteerHub.Api.http",
