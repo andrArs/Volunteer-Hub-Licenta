@@ -154,4 +154,54 @@ export const styles = StyleSheet.create({
   fontWeight: "700",
   color: "#3F5E95",
 },
+autocompleteWrapper: {
+    position: 'relative',
+    zIndex: 999,
+  },
+  autocompleteList: {
+    position: 'absolute',
+    bottom: '100%', 
+    left: 0,
+    right: 0,
+    marginBottom: 4,
+    backgroundColor: '#fff', 
+    borderWidth: 1, 
+    borderColor: '#C9D1E2', 
+    borderRadius: 12, 
+    maxHeight: 200, 
+    overflow: 'hidden',
+    zIndex: 1000,
+    elevation: 10, 
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  suggestionItem: {
+    padding: 12, 
+    borderBottomWidth: 1, 
+    borderBottomColor: '#F4F6F9'
+  },
+  suggestionItemLast: {
+    borderBottomWidth: 0,
+  },
+  suggestionTitle: {
+    fontWeight: '700', 
+    color: '#1E2A3B', 
+    fontSize: 14 
+  },
+  suggestionDesc: {
+    color: '#8B93A7', 
+    fontSize: 12, 
+    marginTop: 2 
+  },
+  locationInputWrap: {
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    paddingRight: 12 
+  },
+  locationInput: {
+    flex: 1, 
+    borderBottomWidth: 0 
+  }
 });

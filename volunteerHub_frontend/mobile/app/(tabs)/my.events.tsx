@@ -214,7 +214,7 @@ export default function MyEventsScreen() {
                     <View style={styles.metaItem}>
                       <FontAwesome name="map-marker" size={14} color="#3F5E95" />
                       <Text style={styles.metaText} numberOfLines={1}>
-                        {item.address}
+                        {item.locationName}
                       </Text>
                     </View>
                   </View>
