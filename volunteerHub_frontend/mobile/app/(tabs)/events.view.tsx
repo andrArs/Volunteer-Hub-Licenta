@@ -1,6 +1,6 @@
 import { FontAwesome } from "@expo/vector-icons";
 import { useFocusEffect, useRouter } from "expo-router";
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -11,11 +11,11 @@ import {
   TextInput,
   View,
 } from "react-native";
-
 import { getAllEvents } from "@/src/api/event.api";
 import { EVENT_CATEGORIES, EventCategory, type EventResponse } from "@/src/types/event";
 import { styles } from "@/src/styles/events.list.styles";
-
+import * as Location from 'expo-location';
+import { calculateDistance, formatDistance } from "@/src/utils/location.utils";
 
 type DistanceOption = { label: string; valueKm: number | null };
 const DISTANCE_OPTIONS: DistanceOption[] = [
@@ -58,6 +58,25 @@ export default function AllEventsScreen() {
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [showDistanceModal, setShowDistanceModal] = useState(false);
 
+  const [userLocation, setUserLocation] = useState<Location.LocationObjectCoords | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+          console.log('Permission to access location was denied');
+          return;
+        }
+
+        let location = await Location.getCurrentPositionAsync({});
+        setUserLocation(location.coords);
+      } catch (error) {
+        console.error("Error fetching location:", error);
+      }
+    })();
+  }, []);
+  
   const load = useCallback(async () => {
     try {
       setErr(null);
@@ -80,8 +99,15 @@ export default function AllEventsScreen() {
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
 
-    return events.filter((ev) => {
-      const matchesQuery =
+    return events.map((ev) => {
+        let dist: number | null = null;
+        if (userLocation && ev.latitude && ev.longitude) {
+            dist = calculateDistance(userLocation.latitude, userLocation.longitude, ev.latitude, ev.longitude);
+        }
+        return { ...ev, distance: dist };
+      })
+      .filter((ev) => {
+        const matchesQuery =
         !q ||
         ev.title.toLowerCase().includes(q) ||
         ev.locationName.toLowerCase().includes(q) ||
@@ -90,12 +116,25 @@ export default function AllEventsScreen() {
       const matchesCategory =
         selectedCategory === "All" ? true : ev.category === selectedCategory;
 
-    //to be implemeted
-      const matchesDistance = true;
+    let matchesDistance = true;
+        if (selectedDistance.valueKm !== null) {
+            if (ev.distance === null) {
+                matchesDistance = false;
+            } else if (selectedDistance.valueKm === 999999) {
+                matchesDistance = ev.distance >= 20; 
+            } else {
+                matchesDistance = ev.distance <= selectedDistance.valueKm;
+            }
+        }
 
       return matchesQuery && matchesCategory && matchesDistance;
-    });
-  }, [events, query, selectedCategory, selectedDistance]);
+    }).sort((a, b) => {
+         if (a.distance !== null && b.distance !== null) return a.distance - b.distance;
+         if (a.distance !== null) return -1;
+         if (b.distance !== null) return 1;
+         return 0;
+      });
+  }, [events, query, selectedCategory, selectedDistance, userLocation]);
 
   const categoryChipText =
     selectedCategory === "All" ? "Category: All" : categoryLabel(selectedCategory);
@@ -198,10 +237,11 @@ export default function AllEventsScreen() {
                       <Text style={styles.metaText} numberOfLines={1}>
                         {item.locationName || item.address || "No location"}
                       </Text>
-                      <Text style={styles.metaText} numberOfLines={1}>
-                        {/* to be implemented */}
-                        ... km away
-                      </Text>
+                      {item.distance !== null && item.distance !== undefined && (
+                        <Text style={[styles.metaText, { color: '#3F5E95', fontWeight: '600' }]} numberOfLines={1}>
+                          • {formatDistance(item.distance)}
+                        </Text>
+                      )}
                     </View>
                   </View>
                 </Pressable>

@@ -8,6 +8,8 @@ import { getAuth } from "@/src/store/auth.store";
 import { EVENT_CATEGORIES, type EventResponse } from "@/src/types/event";
 import { styles } from "@/src/styles/event.view.styles";
 import * as Haptics from 'expo-haptics';
+import * as Location from 'expo-location';
+import { calculateDistance, formatDistance } from "@/src/utils/location.utils";
 
 type AttendanceStatus = "none" | "interested" | "going";
 
@@ -45,6 +47,8 @@ export default function EventDetailsScreen() {
 
   const [participantsCount, setParticipantsCount] = useState<number | null>(null);
 
+  const [userLocation, setUserLocation] = useState<Location.LocationObjectCoords | null>(null);
+
   const load = useCallback(async () => {
     if (!id) return;
     try {
@@ -68,6 +72,19 @@ export default function EventDetailsScreen() {
       load();
     }, [load])
   );
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') return;
+        const loc = await Location.getCurrentPositionAsync({});
+        setUserLocation(loc.coords);
+      } catch (e) {
+        console.error("Error getting location:", e);
+      }
+    })();
+  }, []);
 
   const isMine = useMemo(() => {
     if (!event) return false;
@@ -97,6 +114,17 @@ export default function EventDetailsScreen() {
     }
     return event.locationName;
   }, [event?.locationName]);
+
+  const distanceText = useMemo(() => {
+    if (!userLocation || !event?.latitude || !event?.longitude) return null;
+    const dist = calculateDistance(
+      userLocation.latitude, 
+      userLocation.longitude, 
+      event.latitude, 
+      event.longitude
+    );
+    return formatDistance(dist);
+  }, [userLocation, event]);
 
   async function onInterested() {
     if (!event) return;
@@ -252,7 +280,9 @@ export default function EventDetailsScreen() {
             {!!event.address && (
               <Text style={styles.infoSubValue}>{event.address}</Text>
             )}
-            <Text style={styles.infoSubValue}>.. km away</Text>
+            {distanceText && (
+              <Text style={styles.infoSubValue}>{distanceText}</Text>
+            )}
           </View>
         </View>
 
