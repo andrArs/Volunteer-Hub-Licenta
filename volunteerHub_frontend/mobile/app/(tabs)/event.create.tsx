@@ -1,6 +1,6 @@
 import { FontAwesome } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { useMemo, useState } from "react";
 import { styles } from "@/src/styles/event.style";
 import { toAppError } from "@/src/api/errors";
@@ -12,7 +12,7 @@ import DateTimePicker, {
 } from "@react-native-community/datetimepicker";
 import { useFocusEffect } from "expo-router";
 import { useCallback } from "react";
-
+import { getPlacesSuggestions, getLatLongFromPlaceId } from "@/src/utils/location.utils";
 
 type FieldErrors = Partial<{
   Title: string;
@@ -60,6 +60,10 @@ export default function CreateEventScreen() {
     const [Longitude, setLongitude] = useState("");
     const [Latitude, setLatitude] = useState("");
 
+    const [locationSuggestions, setLocationSuggestions] = useState<any[]>([]);
+    const [showLocationMenu, setShowLocationMenu] = useState(false);
+    const [isGeocoding, setIsGeocoding] = useState(false);
+
     // iOS modal pickers
     const [showStartPickerIOS, setShowStartPickerIOS] = useState(false);
     const [showEndPickerIOS, setShowEndPickerIOS] = useState(false);
@@ -71,8 +75,6 @@ export default function CreateEventScreen() {
     const [submitting, setSubmitting] = useState(false);
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
     const [errors, setErrors] = useState<FieldErrors>({});
-    const HARDCODED_LAT = 45.7489;
-    const HARDCODED_LNG = 21.2087;
 
     function clearError(k: keyof FieldErrors) {
      setErrors((p) => ({ ...p, [k]: undefined, general: undefined }));
@@ -109,6 +111,10 @@ export default function CreateEventScreen() {
         if (!ln) e.LocationName = "Location is required.";
         else if (ln.length > 300) e.LocationName = "Location must be max 300 characters.";
 
+        if (!Latitude || !Longitude) {
+            e.LocationName = "Please search and select a valid location from the list.";
+        }
+        
         if (MaxVolunteers.trim()) {
         const mv = Number(MaxVolunteers);
         if (Number.isNaN(mv) || !Number.isInteger(mv)) e.MaxVolunteers = "Max volunteers must be an integer.";
@@ -117,6 +123,42 @@ export default function CreateEventScreen() {
 
         return e;
   }
+
+
+  const handleLocationChange = async (text: string) => {
+        setLocation(text);
+        if (errorMsg) setErrorMsg(null);
+        clearError("LocationName");
+        
+        setLatitude("");
+        setLongitude("");
+
+        if (text.length > 2) {
+            setIsGeocoding(true);
+            const suggestions = await getPlacesSuggestions(text);
+            setLocationSuggestions(suggestions);
+            setShowLocationMenu(suggestions.length > 0);
+            setIsGeocoding(false);
+        } else {
+            setShowLocationMenu(false);
+            setLocationSuggestions([]);
+        }
+    };
+
+    const handleSelectLocation = async (suggestion: any) => {
+        const displayName = `${suggestion.title} (${suggestion.description})`;
+        setLocation(displayName);
+        setShowLocationMenu(false);
+        setIsGeocoding(true);
+
+        const details = await getLatLongFromPlaceId(suggestion.placeId);
+        if (details) {
+            setLatitude(String(details.latitude));
+            setLongitude(String(details.longitude));
+            setAddress(details.address);
+        }
+        setIsGeocoding(false);
+    };
 
     function mergeDateAndTime(base: Date, time: Date) {
         const d = new Date(base);
@@ -238,9 +280,9 @@ export default function CreateEventScreen() {
                 startDateTime: StartDateTime.toISOString(),
                 endDateTime: EndDateTime.toISOString(),
                 locationName: Location,
-                address: "Timisoara",
-                latitude: HARDCODED_LAT,
-                longitude: HARDCODED_LNG,
+                address: Address,
+                latitude: parseFloat(Latitude),
+                longitude: parseFloat(Longitude),
                 maxVolunteers: parseInt(MaxVolunteers),
                 });
 
@@ -269,7 +311,12 @@ export default function CreateEventScreen() {
                 <View style={styles.rightSpacer} />
             </View>
 
-            <ScrollView>
+            <KeyboardAvoidingView 
+                style={{ flex: 1 }} 
+                behavior={Platform.OS === "ios" ? "padding" : undefined}
+            >
+
+            <ScrollView keyboardShouldPersistTaps="handled">
                 <View style={styles.card}>
                     <Text style={styles.label}>Title</Text>
                     <View style={styles.inputWrap}>
@@ -419,20 +466,47 @@ export default function CreateEventScreen() {
                     </View>
 
                     <Text style={[styles.label, { marginTop: 12 }]}>Location</Text>
-                     <View style={styles.inputWrap}>
-                        <TextInput 
-                        value={Location}
-                        onChangeText={(t) =>{
-                            setLocation(t);
-                            if(errorMsg) setErrorMsg(null);
-                        }}
-                        placeholder="Location"
-                        autoCapitalize="none"
-                        keyboardType="default"
-                        placeholderTextColor="#8B93A7"
-                        style={styles.input}
-                        editable={!submitting}
-                        />
+                     <View style={styles.autocompleteWrapper}>
+                        
+                        {showLocationMenu && locationSuggestions.length > 0 && (
+                            <View style={styles.autocompleteList}>
+                                <ScrollView keyboardShouldPersistTaps="handled" nestedScrollEnabled={true}>
+                                    {locationSuggestions.map((item, index) => (
+                                        <Pressable 
+                                            key={item.placeId} 
+                                            style={[
+                                                styles.suggestionItem,
+                                                index === locationSuggestions.length - 1 && styles.suggestionItemLast
+                                            ]}
+                                            onPress={() => handleSelectLocation(item)}
+                                        >
+                                            <Text style={styles.suggestionTitle} numberOfLines={1}>
+                                                {item.title}
+                                            </Text>
+                                            <Text style={styles.suggestionDesc} numberOfLines={1}>
+                                                {item.description}
+                                            </Text>
+                                        </Pressable>
+                                    ))}
+                                </ScrollView>
+                            </View>
+                        )}
+
+                        <View style={[styles.inputWrap, styles.locationInputWrap]}>
+                            <TextInput 
+                                value={Location}
+                                onChangeText={handleLocationChange}
+                                placeholder="Search for a place..."
+                                autoCapitalize="none"
+                                style={[styles.input, styles.locationInput]}
+                                editable={!submitting}
+                            />
+                            {isGeocoding ? (
+                                <ActivityIndicator size="small" color="#3F5E95" />
+                            ) : (Latitude && Longitude) ? (
+                                <FontAwesome name="check-circle" size={18} color="#4CAF50" />
+                            ) : null}
+                        </View>
                     </View>
 
                     <Text style={[styles.label, { marginTop: 12 }]}>Max Volunteers (Optional)</Text>
@@ -443,9 +517,9 @@ export default function CreateEventScreen() {
                             setMaxVolunteers(t);
                             if(errorMsg) setErrorMsg(null);
                         }}
-                        placeholder="Max Volunteers (Optional)"
+                        placeholder="Unlimited if empty"
                         autoCapitalize="none"
-                        keyboardType="default"
+                        keyboardType="numeric"
                         placeholderTextColor="#8B93A7"
                         style={styles.input}
                         editable={!submitting}
@@ -485,6 +559,7 @@ export default function CreateEventScreen() {
 
 
             </ScrollView>
+            </KeyboardAvoidingView>
 
             {Platform.OS === "ios" && showStartPickerIOS ? (
             <Modal visible transparent animationType="fade">

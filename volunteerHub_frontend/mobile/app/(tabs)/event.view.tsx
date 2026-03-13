@@ -1,5 +1,5 @@
 import { FontAwesome } from "@expo/vector-icons";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Alert, Modal, Platform, Pressable, ScrollView, Text, View } from "react-native";
 
@@ -63,9 +63,11 @@ export default function EventDetailsScreen() {
   }, [id]);
   
 
-  useEffect(() => {
-    load();
-  }, [load]);
+  useFocusEffect(
+    useCallback(() => {
+      load();
+    }, [load])
+  );
 
   const isMine = useMemo(() => {
     if (!event) return false;
@@ -87,6 +89,14 @@ export default function EventDetailsScreen() {
     if (capacity != null) return `0/${capacity} people going`;
     return null;
   }, [participantsCount, capacity]);
+
+  const displayLocationName = useMemo(() => {
+    if (!event?.locationName) return "..";
+    if (event.locationName.includes(" (")) {
+      return event.locationName.split(" (")[0]; 
+    }
+    return event.locationName;
+  }, [event?.locationName]);
 
   async function onInterested() {
     if (!event) return;
@@ -238,7 +248,7 @@ export default function EventDetailsScreen() {
           <FontAwesome name="map-marker" size={16} color="#3F5E95" />
           <View style={styles.infoTextWrap}>
             <Text style={styles.infoLabel}>Location</Text>
-            <Text style={styles.infoValue}>{event.locationName || ".."}</Text>
+            <Text style={styles.infoValue}>{displayLocationName}</Text>
             {!!event.address && (
               <Text style={styles.infoSubValue}>{event.address}</Text>
             )}
