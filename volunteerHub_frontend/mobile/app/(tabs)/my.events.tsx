@@ -261,13 +261,20 @@ export default function MyEventsScreen() {
                       <Text style={styles.metaText} numberOfLines={1}>
                         {item.locationName}
                       </Text>
-                      {item.distance !== null && item.distance !== undefined && (
-                        <Text style={[styles.metaText, { color: '#3F5E95', fontWeight: '600' }]} numberOfLines={1}>
-                         {formatDistance(item.distance)}
-                        </Text>
-                      )}
                     </View>
                   </View>
+
+                   {item.distance !== null && item.distance !== undefined && (
+                  <View style={styles.metaRow}>
+                    <View style={styles.metaItem}>
+                      <FontAwesome name="location-arrow" size={13} color="#3F5E95" />
+                      <Text style={[styles.metaText, { color: '#3F5E95', fontWeight: '700' }]}>
+                       {formatDistance(item.distance)}
+                    </Text>
+                    </View>
+                    </View>
+                    )}
+                  
                 </Pressable>
               )}
               ListEmptyComponent={
