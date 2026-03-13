@@ -281,7 +281,7 @@ export default function UpdateEventScreen() {
         <View style={styles.page}>
            <View style={styles.header}>
                 <Pressable
-                    onPress={() =>router.push({ pathname: "/event.view", params: { id: id } })}
+                    onPress={() =>router.back()}
                     hitSlop={10}
                     style={styles.backBtn}
                 >

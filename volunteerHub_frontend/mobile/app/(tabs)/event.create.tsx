@@ -257,7 +257,7 @@ export default function CreateEventScreen() {
         <View style={styles.page}>
            <View style={styles.header}>
                 <Pressable
-                    onPress={() => router.replace("/")}
+                    onPress={() => router.back()}
                     hitSlop={10}
                     style={styles.backBtn}
                 >
