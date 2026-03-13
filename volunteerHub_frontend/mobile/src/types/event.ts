@@ -62,4 +62,5 @@ export type EventResponse = {
     status: string;
     createdAt: Date;
     createdById: string;
+    distance?: number | null;
 }
