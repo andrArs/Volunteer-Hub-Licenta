@@ -191,4 +191,21 @@ export const styles = StyleSheet.create({
     color: "#3F5E95",
     fontWeight: "800",
   },
+  mapButton: {
+    position: 'absolute',
+    bottom: 30, 
+    alignSelf: 'center',
+    backgroundColor: '#ff7700', 
+    paddingVertical: 14,
+    paddingHorizontal: 28,
+    borderRadius: 30, 
+    flexDirection: 'row',
+    alignItems: 'center',
+    elevation: 6, 
+    shadowColor: '#000', 
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    zIndex: 10, 
+  }
 });

@@ -258,6 +258,16 @@ export default function AllEventsScreen() {
         )}
       </View>
 
+      <Pressable
+        style={styles.mapButton}
+        onPress={() => router.push("/events.map")}
+      >
+        <FontAwesome name="map" size={16} color="#fff" />
+        <Text style={{ color: '#fff', fontWeight: '800', marginLeft: 10, fontSize: 16 }}>
+          Map View
+        </Text>
+      </Pressable>
+
       <Modal
         transparent
         animationType="fade"
