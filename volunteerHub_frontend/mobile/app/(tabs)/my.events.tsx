@@ -75,11 +75,26 @@ export default function MyEventsScreen() {
       if (activeTab === "Created") {
         data = await getMyCreatedEvents();
       } else if (activeTab === "History") {
-        data = await getMyAttendanceEvents("history");
+        const rawData = await getMyAttendanceEvents("history");
+        const now = new Date();
+        data = (rawData || []).filter(ev => {
+          const eventDate = new Date(ev.startDateTime);
+          return eventDate < now;
+        });
       } else if (activeTab === "Going") {
-        data = await getMyAttendanceEvents("going");
+        const rawData = await getMyAttendanceEvents("going");
+        const now = new Date();
+        data = (rawData || []).filter(ev => {
+          const eventDate = new Date(ev.startDateTime);
+          return eventDate >= now;
+        });
       } else if (activeTab === "Interested") {
-        data = await getMyAttendanceEvents("interested");
+        const rawData = await getMyAttendanceEvents("interested");
+        const now = new Date();
+        data = (rawData || []).filter(ev => {
+          const eventDate = new Date(ev.startDateTime);
+          return eventDate >= now;
+        });
       }
 
       setEvents(data ?? []);
