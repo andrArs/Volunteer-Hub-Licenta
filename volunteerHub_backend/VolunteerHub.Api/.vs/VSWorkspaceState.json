@@ -3,11 +3,9 @@
     "",
     "\\src",
     "\\src\\Controllers",
-    "\\src\\Entities",
-    "\\src\\Entities\\Enum",
-    "\\src\\Exceptions",
+    "\\src\\DTO",
+    "\\src\\DTO\\Users",
     "\\src\\Services"
   ],
-  "SelectedNode": "\\src\\Controllers\\EventController.cs",
   "PreviewInSolutionExplorer": false
 }

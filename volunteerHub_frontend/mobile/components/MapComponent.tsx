@@ -37,7 +37,13 @@ export default function MapComponent() {
         }
 
         const data = await getAllEvents();
-        setEvents(data || []);
+        const now = new Date();
+        const futureEvents = (data || []).filter(ev => {
+          const eventDate = new Date(ev.startDateTime);
+          return eventDate >= now;
+        });
+
+        setEvents(futureEvents);
       } catch (error) {
         console.error("Error initializing map:", error);
       } finally {
