@@ -5,7 +5,7 @@ import { ActivityIndicator, Alert, Modal, Platform, Pressable, ScrollView, Text,
 
 import { getEventById, deleteEvent, updateEventAttendance, getEventParticipantsCount, getUserEventStatus } from "@/src/api/event.api";
 import { getAuth } from "@/src/store/auth.store"; 
-import { EVENT_CATEGORIES, type EventResponse } from "@/src/types/event";
+import { EVENT_CATEGORIES, EventStatus, type EventResponse } from "@/src/types/event";
 import { styles } from "@/src/styles/event.view.styles";
 import * as Haptics from 'expo-haptics';
 import * as Location from 'expo-location';
@@ -28,6 +28,43 @@ function formatStart(dt: string) {
   const mi = String(d.getMinutes()).padStart(2, "0");
 
   return `${dd}-${mm}-${yyyy} at ${hh}:${mi}`;
+}
+
+function renderStatusBadge(rawStatus: EventStatus | string | number | undefined) {
+  if (rawStatus === undefined || rawStatus === null) return null;
+  const status = Number(rawStatus);
+
+  let bgColor = "#E5E7EB"; 
+  let textColor = "#374151";
+  let label = "UNKNOWN";
+
+  if (status === EventStatus.Pending) {
+    bgColor = "#FEF3C7"; 
+    textColor = "#D97706"; 
+    label = "PENDING";
+  } else if (status === EventStatus.Approved) {
+    bgColor = "#D1FAE5"; 
+    textColor = "#059669"; 
+    label = "APPROVED";
+  } else if (status === EventStatus.Rejected) {
+    bgColor = "#FEE2E2"; 
+    textColor = "#DC2626"; 
+    label = "REJECTED";
+  }
+
+  return (
+    <View style={{
+      backgroundColor: bgColor,
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+      borderRadius: 12,
+      alignSelf: 'flex-start',
+    }}>
+      <Text style={{ color: textColor, fontSize: 11, fontWeight: '800' }}>
+        {label}
+      </Text>
+    </View>
+  );
 }
 
 export default function EventDetailsScreen() {
@@ -252,8 +289,12 @@ export default function EventDetailsScreen() {
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
-      <Text style={styles.title}>{event.title}</Text>
-
+      {isMine && (
+        <View style={{ marginBottom: -4, marginTop: 12 }}>
+          {renderStatusBadge(event.status)}
+        </View>
+      )}
+      <Text style={[styles.title, { paddingTop: isMine ? 8 : 12 }]}>{event.title}</Text>
       <View style={styles.categoryPill}>
         <Text style={styles.categoryText}>{categoryLabel(event.category)}</Text>
       </View>

@@ -207,5 +207,28 @@ export const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 5,
     zIndex: 10, 
+  },
+  badge:{
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+      borderRadius: 12,
+      marginLeft: 8, 
+      alignSelf: 'flex-start'
+  },
+
+  badgeMyEvent:{
+     backgroundColor: '#E0E7FF',
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+      borderRadius: 12,
+      marginLeft: 8, 
+      alignSelf: 'flex-start'
+  },
+  
+  textBadgeMyEvent:{
+    color: '#4338CA',
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 0.5
   }
 });

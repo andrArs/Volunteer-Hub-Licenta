@@ -12,7 +12,7 @@ import {
   View,
 } from "react-native";
 import { getMyCreatedEvents, getMyAttendanceEvents } from "@/src/api/event.api";
-import { EVENT_CATEGORIES, EventCategory, type EventResponse } from "@/src/types/event";
+import { EVENT_CATEGORIES, EventCategory, EventStatus, type EventResponse } from "@/src/types/event";
 import { styles } from "@/src/styles/events.list.styles";
 import * as Location from 'expo-location';
 import { calculateDistance, formatDistance } from "@/src/utils/location.utils";
@@ -45,6 +45,39 @@ function formatStart(dt: string) {
   const hh = String(d.getHours()).padStart(2, "0");
   const mi = String(d.getMinutes()).padStart(2, "0");
   return `${dd}-${mm}-${yyyy} • ${hh}:${mi}`;
+}
+
+function renderStatusBadge(rawStatus: EventStatus | string | number) {
+  const status = Number(rawStatus);
+
+  let bgColor = "#E5E7EB"; 
+  let textColor = "#374151";
+  let label = "UNKNOWN";
+
+  if (status === EventStatus.Pending) {
+    bgColor = "#FEF3C7"; 
+    textColor = "#D97706"; 
+    label = "PENDING";
+  } else if (status === EventStatus.Approved) {
+    bgColor = "#D1FAE5"; 
+    textColor = "#059669"; 
+    label = "APPROVED";
+  } else if (status === EventStatus.Rejected) {
+    bgColor = "#FEE2E2"; 
+    textColor = "#DC2626"; 
+    label = "REJECTED";
+  }
+
+  return (
+    <View style={{
+      backgroundColor: bgColor,
+      ...styles.badge
+    }}>
+      <Text style={{ color: textColor, fontSize: 11, fontWeight: '800' }}>
+        {label}
+      </Text>
+    </View>
+  );
 }
 
 export default function MyEventsScreen() {
@@ -252,9 +285,12 @@ export default function MyEventsScreen() {
               showsVerticalScrollIndicator={false}
               renderItem={({ item }) => (
                 <Pressable style={styles.card} onPress={() => openEvent(item)}>
-                  <Text style={styles.cardTitle} numberOfLines={1}>
-                    {item.title}
-                  </Text>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                    <Text style={[styles.cardTitle, { flex: 1, marginBottom: 0 }]} numberOfLines={1}>
+                      {item.title}
+                    </Text>
+                    {activeTab === "Created" && item.status !== undefined && renderStatusBadge(item.status)}
+                  </View>
 
                   <View style={styles.metaRow}>
                     <View style={styles.metaItem}>

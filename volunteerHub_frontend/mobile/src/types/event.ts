@@ -59,8 +59,14 @@ export type EventResponse = {
     latitude: number;
     longitude: number;
     maxVolunteers?: number | null;
-    status: string;
+    status: EventStatus;
     createdAt: Date;
     createdById: string;
     distance?: number | null;
+}
+
+export enum EventStatus {
+  Pending = 0,
+  Approved = 1,
+  Rejected = 2
 }
