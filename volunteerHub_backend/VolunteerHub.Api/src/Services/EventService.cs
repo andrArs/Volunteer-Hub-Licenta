@@ -71,7 +71,8 @@ public class EventService : IEventService
             ev.MaxVolunteers,
             ev.Status,
             ev.CreatedAt,
-            ev.CreatedById
+            ev.CreatedById,
+            ev.AdminNotes
         );
     }
 
@@ -92,7 +93,8 @@ public class EventService : IEventService
             ev.MaxVolunteers,
             ev.Status,
             ev.CreatedAt,
-            ev.CreatedById
+            ev.CreatedById,
+            ev.AdminNotes
         );
     }
 
@@ -115,7 +117,8 @@ public class EventService : IEventService
                 e.MaxVolunteers,
                 e.Status,
                 e.CreatedAt,
-                e.CreatedById
+                e.CreatedById,
+                e.AdminNotes
             ))
             .ToListAsync();
 
@@ -169,7 +172,8 @@ public class EventService : IEventService
             ev.MaxVolunteers,
             ev.Status,
             ev.CreatedAt,
-            ev.CreatedById
+            ev.CreatedById,
+            ev.AdminNotes
         );
     }
 
@@ -273,7 +277,8 @@ public class EventService : IEventService
                 e.MaxVolunteers,
                 e.Status,
                 e.CreatedAt,
-                e.CreatedById
+                e.CreatedById,
+                e.AdminNotes
             ))
             .ToListAsync();
 
@@ -309,8 +314,83 @@ public class EventService : IEventService
             .Select(e => new EventResponse(
                 e.Id, e.Title, e.Description, e.Category, e.StartDateTime,
                 e.EndDateTime, e.LocationName, e.Address, e.Latitude,
-                e.Longitude, e.MaxVolunteers, e.Status, e.CreatedAt, e.CreatedById
+                e.Longitude, e.MaxVolunteers, e.Status, e.CreatedAt, e.CreatedById, e.AdminNotes
             ))
             .ToListAsync();
+    }
+
+    public async Task <List<EventResponse>> GetPendingEventsAsync()
+    {
+        var list = await _db.Events.AsNoTracking()
+            .Where(e => e.Status == EventStatus.Pending)
+            .OrderBy(e => e.CreatedAt)
+            .Select(e => new EventResponse(
+                e.Id,
+                e.Title,    
+                e.Description,
+                e.Category,
+                e.StartDateTime,
+                e.EndDateTime,
+                e.LocationName,
+                e.Address,
+                e.Latitude,
+                e.Longitude,
+                e.MaxVolunteers,
+                e.Status,
+                e.CreatedAt,
+                e.CreatedById,
+                e.AdminNotes
+            ))
+            .ToListAsync();
+
+            return list;
+    }
+
+    public async Task<bool> SetStatusAsync(Guid eventId, bool isAdmin, EventStatus status, string message)
+    {
+        var ev = await _db.Events.FirstOrDefaultAsync(e => e.Id == eventId);
+        
+        if (ev is null)
+            throw new ApiException(404, "event_not_found", "Event not found.");
+            
+        if (!isAdmin)
+        {
+            throw new ApiException(403, "forbidden", "You cannot change the status of this event.");
+        }
+
+        ev.Status = status;
+
+        ev.AdminNotes = message; 
+
+        string notificationMessage = "";
+
+        if (status == EventStatus.Rejected)
+        {
+            notificationMessage = string.IsNullOrWhiteSpace(message) 
+                ? "Your event has been rejected. Please check the event details for more information." 
+                : $"Your event '{ev.Title}' was rejected. Reason: {message}";
+        }
+        else if (status == EventStatus.Approved)
+        {
+            notificationMessage = $"Great news! Your event '{ev.Title}' has been approved and is now public.";
+        }
+
+        if (!string.IsNullOrEmpty(notificationMessage))
+        {
+            var notification = new Notification
+            {
+                Id = Guid.NewGuid(),
+                UserId = ev.CreatedById, 
+                EventId = ev.Id,
+                Message = notificationMessage,
+                CreatedAt = DateTime.UtcNow,
+                IsRead = false
+            };
+
+            _db.Notifications.Add(notification);
+        }
+
+        await _db.SaveChangesAsync();
+        return true;
     }
 }

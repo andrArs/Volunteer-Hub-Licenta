@@ -154,4 +154,33 @@ public class EventsController : ControllerBase
         return Ok(events);
     }
 
+    [Authorize(Roles = "Admin")]
+    [HttpGet("pending")]
+    public async Task<ActionResult<List<EventResponse>>> GetPendingEvents()
+    {
+        var events = await _events.GetPendingEventsAsync();
+        return Ok(events);
+    }
+
+    public record ChangeStatusDto(string Status, string Message);
+
+    [Authorize(Roles = "Admin")]
+    [HttpPost("{eventId:guid}/status")] 
+    public async Task<IActionResult> SetEventStatus(Guid eventId, [FromBody] ChangeStatusDto dto)
+    {
+    
+        var isAdmin = true; 
+
+        if (!Enum.TryParse<Entities.Enum.EventStatus>(dto.Status, true, out var parsedStatus))
+        {
+            return BadRequest(new { message = "Invalid status value." });
+        }
+
+        var ok = await _events.SetStatusAsync(eventId, isAdmin, parsedStatus, dto.Message);
+
+        if (!ok) return NotFound(new { code = "event_not_found", message = "Event not found." });
+        
+        return NoContent();
+    }
+
 }
