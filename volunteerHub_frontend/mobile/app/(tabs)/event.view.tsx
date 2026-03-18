@@ -1,7 +1,7 @@
 import { FontAwesome } from "@expo/vector-icons";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Alert, Modal, Platform, Pressable, ScrollView, Text, View } from "react-native";
+import { ActivityIndicator, Alert, Modal, Platform, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 
 import { getEventById, deleteEvent, updateEventAttendance, getEventParticipantsCount, getUserEventStatus } from "@/src/api/event.api";
 import { getAuth } from "@/src/store/auth.store"; 
@@ -10,6 +10,7 @@ import { styles } from "@/src/styles/event.view.styles";
 import * as Haptics from 'expo-haptics';
 import * as Location from 'expo-location';
 import { calculateDistance, formatDistance } from "@/src/utils/location.utils";
+import { setEventStatus } from "@/src/api/admin.api";
 
 type AttendanceStatus = "none" | "interested" | "going";
 
@@ -73,6 +74,7 @@ export default function EventDetailsScreen() {
 
   const auth = getAuth();
   const myUserId = auth?.userId ?? null;
+  const isAdmin = auth?.roles?.includes("Admin") ?? auth?.roles?.includes("Admin") ?? false;
 
   const [loading, setLoading] = useState(true);
   const [event, setEvent] = useState<EventResponse | null>(null);
@@ -81,6 +83,10 @@ export default function EventDetailsScreen() {
 
   const [busyDelete, setBusyDelete] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [rejectReason, setRejectReason] = useState("");
+  const [busyStatusUpdate, setBusyStatusUpdate] = useState(false);
 
   const [participantsCount, setParticipantsCount] = useState<number | null>(null);
 
@@ -162,6 +168,39 @@ export default function EventDetailsScreen() {
     );
     return formatDistance(dist);
   }, [userLocation, event]);
+
+  async function handleApprove() {
+    if (!event) return;
+    try {
+      setBusyStatusUpdate(true);
+      await setEventStatus(event.id, EventStatus.Approved, "");
+      Alert.alert("Success", "Event approved successfully!");
+      router.back(); 
+    } catch (error) {
+      Alert.alert("Error", "Could not approve event.");
+    } finally {
+      setBusyStatusUpdate(false);
+    }
+  }
+
+  async function handleReject() {
+    if (!event || !rejectReason.trim()) {
+      Alert.alert("Required", "Please provide a reason for rejection.");
+      return;
+    }
+    try {
+      setBusyStatusUpdate(true);
+      await setEventStatus(event.id, EventStatus.Rejected, rejectReason.trim());
+      setShowRejectModal(false);
+      Alert.alert("Success", "Event has been rejected.");
+      router.back();
+    } catch (error) {
+      Alert.alert("Error", "Could not reject event.");
+    } finally {
+      setBusyStatusUpdate(false);
+    }
+  }
+
 
   async function onInterested() {
     if (!event) return;
@@ -289,7 +328,7 @@ export default function EventDetailsScreen() {
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
-      {isMine && (
+      {(isMine|| isAdmin) && (
         <View style={{ marginBottom: -4, marginTop: 12 }}>
           {renderStatusBadge(event.status)}
         </View>
@@ -299,9 +338,32 @@ export default function EventDetailsScreen() {
         <Text style={styles.categoryText}>{categoryLabel(event.category)}</Text>
       </View>
 
+      {isMine && event.status === EventStatus.Rejected && event.adminNotes && (
+        <View style={{
+          backgroundColor: '#FEF2F2',
+          borderWidth: 1,
+          borderColor: '#FCA5A5',
+          borderRadius: 8,
+          padding: 12,
+          marginBottom: 16,
+          flexDirection: 'row',
+          gap: 10
+        }}>
+          <FontAwesome name="exclamation-circle" size={18} color="#DC2626" style={{ marginTop: 2 }} />
+          <View style={{ flex: 1 }}>
+            <Text style={{ color: '#991B1B', fontWeight: '800', fontSize: 13, marginBottom: 4 }}>
+              Admin Note (Action Required)
+            </Text>
+            <Text style={{ color: '#B91C1C', fontSize: 13, lineHeight: 18 }}>
+              {event.adminNotes}
+            </Text>
+          </View>
+        </View>
+      )}
+
       <Text style={styles.sectionTitle}>Description</Text>
       <Text style={styles.description}>
-        {event.description?.trim() ? event.description : "—"}
+        {event.description?.trim() ? event.description : "-"}
       </Text>
 
       <View style={styles.infoBlock}>
@@ -341,7 +403,33 @@ export default function EventDetailsScreen() {
         ) : null}
       </View>
 
-      {isMine ? (
+       {isAdmin && event.status === EventStatus.Pending && (
+         <>
+         <Text style={styles.sectionTitle}>Moderation Controls</Text>
+         <View style={styles.actionsRow}>
+           <Pressable 
+             style={[styles.primaryBtn, { backgroundColor: '#059669' }]} 
+             onPress={handleApprove}
+             disabled={busyStatusUpdate}
+           >
+             <FontAwesome name="check" size={14} color="#FFFFFF" />
+             <Text style={styles.primaryBtnText}>{busyStatusUpdate ? "Working..." : "Approve"}</Text>
+           </Pressable>
+
+           <Pressable
+             style={styles.dangerBtn} 
+             onPress={() => setShowRejectModal(true)}
+             disabled={busyStatusUpdate}
+           >
+             <FontAwesome name="times" size={14} color="#8E1B1B" />
+             <Text style={styles.dangerBtnText}>Reject</Text>
+           </Pressable>
+         </View>
+       </>
+      )}
+
+      {(!isAdmin || event.status !== EventStatus.Pending) && (
+        isMine ? (
         <>
           <Text style={styles.sectionTitle}>Admin Controls</Text>
 
@@ -402,7 +490,7 @@ export default function EventDetailsScreen() {
             </Text>
           </Pressable>
         </View>
-      )}
+      ))}
     </ScrollView>
 
       <Modal
@@ -441,5 +529,59 @@ export default function EventDetailsScreen() {
           </View>
         </View>
       </Modal>
+
+      <Modal
+        visible={showRejectModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowRejectModal(false)} 
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Reject Event</Text>
+            <Text style={styles.modalText}>
+              Please provide a reason. The creator will see this note.
+            </Text>
+
+            <TextInput
+              style={{
+                borderWidth: 1,
+                borderColor: '#E5E7EB',
+                borderRadius: 8,
+                padding: 12,
+                minHeight: 80,
+                textAlignVertical: 'top',
+                marginBottom: 20,
+              }}
+              placeholder="e.g. Please provide a more detailed address."
+              multiline
+              value={rejectReason}
+              onChangeText={setRejectReason}
+            />
+
+            <View style={styles.modalActions}>
+              <Pressable
+                style={styles.secondaryBtn}
+                onPress={() => setShowRejectModal(false)}
+                disabled={busyStatusUpdate}
+              >
+                <Text style={styles.secondaryBtnText}>Cancel</Text>
+              </Pressable>
+
+              <Pressable
+                style={[styles.dangerBtn, busyStatusUpdate && styles.btnDisabled]}
+                onPress={handleReject}
+                disabled={busyStatusUpdate}
+              >
+              <FontAwesome name="times" size={14} color="#8E1B1B" />
+              <Text style={styles.dangerBtnText}>
+                {busyStatusUpdate ? "Rejecting..." : "Confirm Reject"}
+              </Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
   </View>
 );}

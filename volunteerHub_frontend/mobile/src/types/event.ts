@@ -63,6 +63,7 @@ export type EventResponse = {
     createdAt: Date;
     createdById: string;
     distance?: number | null;
+    adminNotes?: string;
 }
 
 export enum EventStatus {
