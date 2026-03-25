@@ -134,8 +134,7 @@
               "RelativeToolTip": "src\\Services\\EventService.cs",
               "ViewState": "AgIAACsBAAAAAAAAAAAQwIsBAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-27T19:48:17.668Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-01-27T19:48:17.668Z"
             },
             {
               "$type": "Document",
@@ -191,8 +190,8 @@
               "Title": "IEventService.cs",
               "DocumentMoniker": "C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\src\\Services\\IEventService.cs",
               "RelativeDocumentMoniker": "src\\Services\\IEventService.cs",
-              "ToolTip": "C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\src\\Services\\IEventService.cs*",
-              "RelativeToolTip": "src\\Services\\IEventService.cs*",
+              "ToolTip": "C:\\Users\\Andreea\\Desktop\\licenta\\volunteerHub_backend\\VolunteerHub.Api\\src\\Services\\IEventService.cs",
+              "RelativeToolTip": "src\\Services\\IEventService.cs",
               "ViewState": "AgIAAAQAAAAAAAAAAAAAwBEAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-01-27T19:48:13.387Z",

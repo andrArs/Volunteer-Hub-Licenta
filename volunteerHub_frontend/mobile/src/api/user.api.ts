@@ -6,3 +6,22 @@ export async function getMyProfile(): Promise<UserProfile> {
   const res = await api.get<UserProfile>("/api/users/me");
   return res.data;
 }
+
+export async function getAllUsers(): Promise<UserProfile[]> {
+  const res = await api.get<UserProfile[]>("/api/users");
+  return res.data;
+}
+
+export async function getUserById(id: string): Promise<UserProfile> {
+  const res = await api.get<UserProfile>(`/api/users/${id}`);
+  return res.data;
+}
+
+export async function deleteUser(id: string): Promise<void> {
+  await api.delete(`/api/users/${id}`); 
+}
+
+export async function updateUser(id: string, data: Partial<UserProfile>): Promise<UserProfile> {
+  const res = await api.put<UserProfile>(`/api/users/${id}`, data);
+  return res.data;
+}
