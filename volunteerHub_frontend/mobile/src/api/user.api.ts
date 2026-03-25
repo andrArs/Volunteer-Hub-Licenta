@@ -25,3 +25,11 @@ export async function updateUser(id: string, data: Partial<UserProfile>): Promis
   const res = await api.put<UserProfile>(`/api/users/${id}`, data);
   return res.data;
 }
+
+export async function assignRole(id: string, roleName: string): Promise<void> {
+  await api.post(`/api/users/${id}/roles`, { roleName });
+}
+
+export async function removeRole(id: string, roleName: string): Promise<void> {
+  await api.delete(`/api/users/${id}/roles/${roleName}`);
+}

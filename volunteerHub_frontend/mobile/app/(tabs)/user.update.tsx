@@ -30,9 +30,7 @@ function formatForWebInput(d: Date) {
   if (!d || isNaN(d.getTime())) return "";
 
   const pad = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(
-    d.getDate()
-  )}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
 function parseWebInputToDate(value: string): Date | null {
@@ -122,36 +120,18 @@ export default function UpdateUserScreen() {
     return u;
   }
 
-  function mergeDateAndTime(base: Date, time: Date) {
-    const d = new Date(base);
-    d.setHours(time.getHours(), time.getMinutes(), 0, 0);
-    return d;
-  }
-
   function openPicker() {
     if (submitting) return;
 
     if (Platform.OS === "android") {
       DateTimePickerAndroid.open({
         value: DateOfBirth,
-        mode: "date",
+        mode: "date", 
         onChange: (_e, selectedDate) => {
-          if (!selectedDate) return;
-
-          DateTimePickerAndroid.open({
-            value: selectedDate,
-            mode: "time",
-            onChange: (_e2, selectedTime) => {
-              if (!selectedTime) return;
-
-              const combined = mergeDateAndTime(
-                selectedDate,
-                selectedTime
-              );
-              setDateOfBirth(combined);
-              clearError("DateOfBirth");
-            },
-          });
+          if (selectedDate) {
+            setDateOfBirth(selectedDate);
+            clearError("DateOfBirth");
+          }
         },
       });
     } else {
@@ -177,7 +157,7 @@ export default function UpdateUserScreen() {
         firstName: FirstName.trim(),
         lastName: LastName.trim(),
         email: Email.trim(),
-        dateOfBirth: DateOfBirth.toISOString(),
+        dateOfBirth: formatForWebInput(DateOfBirth),
       });
 
       router.back();
@@ -264,7 +244,7 @@ export default function UpdateUserScreen() {
             <View style={styles.inputWrap}>
               {Platform.OS === "web" ? (
                 <input
-                  type="datetime-local"
+                  type="date"
                   value={formatForWebInput(DateOfBirth)}
                   onChange={(e: any) => {
                     const d = parseWebInputToDate(e.target.value);
@@ -282,7 +262,7 @@ export default function UpdateUserScreen() {
                   onPress={openPicker}
                 >
                   <Text style={styles.valueText}>
-                    {DateOfBirth.toLocaleString()}
+                    {DateOfBirth.toLocaleDateString()}
                   </Text>
                 </Pressable>
               )}
@@ -342,7 +322,7 @@ export default function UpdateUserScreen() {
 
               <DateTimePicker
                 value={DateOfBirth}
-                mode="datetime"
+                mode="date"
                 display="spinner"
                 onChange={(_, d) => d && setDateOfBirth(d)}
               />

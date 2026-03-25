@@ -1,20 +1,11 @@
 import { FontAwesome } from "@expo/vector-icons";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Alert, Modal, Platform, Pressable, ScrollView, Text, TextInput, View } from "react-native";
-
-import { getEventById, deleteEvent, updateEventAttendance, getEventParticipantsCount, getUserEventStatus } from "@/src/api/event.api";
+import React, { useCallback, useState } from "react";
+import { ActivityIndicator, Alert, Modal, Pressable, ScrollView, Switch, Text, View } from "react-native";
 import { getAuth } from "@/src/store/auth.store"; 
-import { EVENT_CATEGORIES, EventStatus, type EventResponse } from "@/src/types/event";
-import { styles } from "@/src/styles/event.view.styles";
-import * as Haptics from 'expo-haptics';
-import * as Location from 'expo-location';
-import { calculateDistance, formatDistance } from "@/src/utils/location.utils";
-import { setEventStatus } from "@/src/api/admin.api";
+import { styles } from "@/src/styles/user.styles";
 import { UserProfile } from "@/src/types/user";
-import { deleteUser, getUserById } from "@/src/api/user.api";
-
-
+import { assignRole, deleteUser, getUserById, removeRole } from "@/src/api/user.api";
 
 export default function UserDetailsScreen() {
   const router = useRouter();
@@ -80,6 +71,22 @@ export default function UserDetailsScreen() {
     }
   }
 
+  async function handleToggleRole(role: string, hasRole: boolean) {
+    if (!user) return;
+    try {
+      if (hasRole) {
+        await removeRole(user.id, role);
+        setUser({ ...user, roles: user.roles.filter((r) => r !== role) });
+      } else {
+        await assignRole(user.id, role);
+        setUser({ ...user, roles: [...(user.roles || []), role] });
+      }
+    } catch (e) {
+      console.error(e);
+      Alert.alert("Error", "Could not update role.");
+    }
+  }
+
   if (loading) {
     return (
       <View style={styles.center}>
@@ -119,51 +126,72 @@ export default function UserDetailsScreen() {
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
-
-      <Text style={styles.sectionTitle}>First Name</Text>
-      <Text style={styles.description}>
-        {user.firstName ? user.firstName : "No first name provided."}
-      </Text>
-
-      <View style={styles.infoBlock}>
-        <View style={styles.infoRow}>
-          <View style={styles.infoTextWrap}>
-            <Text style={styles.infoLabel}>Last Name</Text>
-            <Text style={styles.infoValue}>{user.lastName ? user.lastName : "No last name provided."}</Text>
+      <View style={styles.userCard}>
+        <View style={styles.avatarContainer}>
+          <View style={styles.avatarCircle}>
+            <FontAwesome name="user" size={32} color="#3F5E95" />
           </View>
-        </View>
-         <View style={styles.infoRow}>
-          <View style={styles.infoTextWrap}>
-            <Text style={styles.infoLabel}>Email</Text>
-            <Text style={styles.infoValue}>{user.email ? user.email : "No email provided."}</Text>
-          </View>
-        </View>
+          <Text style={styles.avatarName}>
+            {user.firstName} {user.lastName}
+          </Text>
+          <Text style={styles.avatarEmail}>
+            {user.email}
+          </Text>
         </View>
 
-
-
-      (!isAdmin) ? null : (
-        <>
-          <Text style={styles.sectionTitle}>Admin Controls</Text>
-          <View style={styles.actionsRow}>
-            <Pressable style={styles.secondaryBtn} onPress={onEdit}>
-              <FontAwesome name="pencil" size={14} color="#3F5E95" />
-              <Text style={styles.secondaryBtnText}>Edit User</Text>
-            </Pressable>
-
-            <Pressable
-              style={[styles.dangerBtn]}
-              onPress={onDeleteClick}
-            
-            >
-              <FontAwesome name="trash" size={14} color="#8E1B1B" />
-              <Text style={styles.dangerBtnText}>
-                {busyDelete ? "Deleting..." : "Delete"}
-              </Text>
-            </Pressable>
+        <View style={styles.userDetailsBox}>
+          <View style={styles.userDetailRow}>
+            <Text style={styles.userDetailLabel}>First Name</Text>
+            <Text style={styles.userDetailValue}>{user.firstName || "."}</Text>
           </View>
-        </>
-      )
+          <View style={styles.userDetailRow}>
+            <Text style={styles.userDetailLabel}>Last Name</Text>
+            <Text style={styles.userDetailValue}>{user.lastName || "."}</Text>
+          </View>
+          <View style={styles.userDetailRowLast}>
+            <Text style={styles.userDetailLabel}>Email</Text>
+            <Text style={styles.userDetailValue}>{user.email || "."}</Text>
+          </View>
+        </View>
+      </View>
+
+      <Text style={styles.sectionTitle}>Manage Roles</Text>
+      <View style={styles.rolesCard}>
+        <View style={styles.roleRow}>
+          <Text style={styles.roleLabel}>Admin Access</Text>
+          <Switch
+            value={user.roles?.includes('Admin')}
+            onValueChange={() => handleToggleRole('Admin', user.roles?.includes('Admin') ?? false)}
+            trackColor={{ false: "#E5E7EB", true: "#E5E7EB" }} 
+          />
+        </View>
+
+        <View style={styles.roleRowBordered}>
+          <Text style={styles.roleLabel}>Creator Access</Text>
+          <Switch
+            value={user.roles?.includes('Creator')}
+            onValueChange={() => handleToggleRole('Creator', user.roles?.includes('Creator') ?? false)}
+            trackColor={{ false: "#E5E7EB", true: "#E5E7EB" }} 
+          />
+        </View>
+      </View>
+
+      <View style={styles.actionsRow}>
+        <Pressable style={styles.secondaryBtn} onPress={onEdit}>
+          <FontAwesome name="pencil" size={14} color="#3F5E95" />
+          <Text style={styles.secondaryBtnText}>Edit User</Text>
+        </Pressable>
+
+        <Pressable
+          style={[styles.dangerBtn]}
+          onPress={onDeleteClick}
+        >
+          <FontAwesome name="trash" size={14} color="#8E1B1B" />
+          <Text style={styles.dangerBtnText}>
+            {busyDelete ? "Deleting..." : "Delete"}
+          </Text>
+        </Pressable>
+      </View>
     </ScrollView>
 
       <Modal

@@ -33,46 +33,19 @@ headerTitle: {
   fontSize: 22,
   fontWeight: "800",
   textAlign: "center",
+
 },
 
 rightSpacer: {
   width: 44,
   height: 44,
 },
-
 backBtn: {
   width: 44,
   height: 44,
   alignItems: "flex-start",
   justifyContent: "center",
 },
-
-
-  screenTitle: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: "#1E2A3B",
-    marginBottom: 12,
-  },
-
-  title: {
-    fontSize: 22,
-    paddingTop:10,
-    fontWeight: "800",
-    color: "#1E2A3B",
-    marginBottom: 10,
-  },
-
-  categoryPill: {
-    alignSelf: "flex-start",
-    backgroundColor: "#E9EEF9",
-    borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    marginBottom: 16,
-  },
-  categoryText: { fontSize: 12, fontWeight: "800", color: "#3F5E95" },
-
   sectionTitle: {
     fontSize: 14,
     fontWeight: "900",
@@ -80,37 +53,6 @@ backBtn: {
     marginBottom: 8,
     marginTop: 10,
   },
-
-  description: {
-    fontSize: 13,
-    fontWeight: "600",
-    color: "#1E2A3B",
-    lineHeight: 18,
-    marginBottom: 14,
-  },
-
-  infoBlock: {
-    borderWidth: 1,
-    borderColor: "#E6E9F2",
-    borderRadius: 14,
-    padding: 12,
-    backgroundColor: "#FFFFFF",
-    marginBottom: 16,
-  },
-
-  infoRow: {
-    flexDirection: "row",
-    gap: 10,
-    paddingVertical: 10,
-    alignItems: "flex-start",
-  },
-
-  infoTextWrap: { flex: 1 },
-  infoLabel: { fontSize: 12, fontWeight: "800", color: "#8B93A7", marginBottom: 4 },
-  infoValue: { fontSize: 13, fontWeight: "800", color: "#1E2A3B" },
-  infoSubValue: { fontSize: 12, fontWeight: "700", color: "#1E2A3B", marginTop: 2 },
-
-  fullText: { marginTop: 4, fontSize: 12, fontWeight: "800", color: "#8E1B1B" },
 
   actionsRow: {
     flexDirection: "row",
@@ -137,22 +79,6 @@ backBtn: {
     borderColor: "#3F5E95",
   },
   secondaryBtnTextActive: { color: "#FFFFFF" },
-
-  primaryBtn: {
-    flex: 1,
-    height: 40,
-    borderRadius: 999,
-    alignItems: "center",
-    justifyContent: "center",
-    flexDirection: "row",
-    gap: 8,
-    backgroundColor: "#4A5568",
-  },
-  primaryBtnText: { fontSize: 12, fontWeight: "900", color: "#FFFFFF" },
-
-  primaryBtnActive: { backgroundColor: "#3F5E95" },
-
-  primaryBtnDisabled: { backgroundColor: "#A1A8B5" },
 
   dangerBtn: {
     flex: 1,

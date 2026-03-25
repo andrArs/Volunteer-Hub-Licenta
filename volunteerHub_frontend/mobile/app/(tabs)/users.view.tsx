@@ -11,10 +11,7 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { type EventResponse } from "@/src/types/event";
 import { styles } from "@/src/styles/events.list.styles";
-import * as Location from 'expo-location';
-import { calculateDistance, formatDistance } from "@/src/utils/location.utils";
 import { getAuth } from "@/src/store/auth.store";
 import { getAllUsers } from "@/src/api/user.api";
 import { UserProfile } from "@/src/types/user";
@@ -23,7 +20,6 @@ import { UserProfile } from "@/src/types/user";
 export default function AllUsersScreen() {
   const router = useRouter();
   const auth = getAuth();
-  const myUserId = auth?.userId ?? null;
 
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
@@ -101,23 +97,46 @@ export default function AllUsersScreen() {
                 <Pressable style={styles.card} onPress={() => openUserProfile(item)}>
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                     <Text style={[styles.cardTitle, { flex: 1, marginBottom: 0 }]} numberOfLines={1}>
-                      {item.firstName}
+                      {item.firstName} {item.lastName}
                     </Text>
                   </View>
 
-                  <View style={styles.metaRow}>
-                    <View style={styles.metaItem}>
-                      <Text style={styles.metaText}>{item.lastName}</Text>
-                    </View>
-                  </View>
-
-                  <View style={styles.metaRow}>
+                <View style={styles.metaRow}>
                     <View style={styles.metaItem}>
                       <Text style={styles.metaText} >
                         {item.email}
                       </Text>
                     </View>
+                </View>
+
+                {item.roles && item.roles.length > 0 && (
+                  <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
+                    
+                    <Text style={{ fontSize: 12, fontWeight: '600', color: '#8B93A7' }}>
+                      Roles:
+                    </Text>
+
+                    {item.roles.map(role => (
+                      <View 
+                        key={role} 
+                        style={{
+                          backgroundColor: role === 'Admin' ? '#FEE2E2' : '#E9EEF9',
+                          paddingHorizontal: 8,
+                          paddingVertical: 4,
+                          borderRadius: 8
+                        }}
+                      >
+                        <Text style={{
+                          color: role === 'Admin' ? '#DC2626' : '#3F5E95',
+                          fontSize: 11,
+                          fontWeight: '800'
+                        }}>
+                          {role}
+                        </Text>
+                      </View>
+                    ))}
                   </View>
+                )}
                 </Pressable>
               )}
             />
