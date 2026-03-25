@@ -156,7 +156,7 @@ export default function UserDetailsScreen() {
           <Switch
             value={user.roles?.includes('Admin')}
             onValueChange={() => handleToggleRole('Admin', user.roles?.includes('Admin') ?? false)}
-            trackColor={{ false: "#E5E7EB", true: "#E5E7EB" }} 
+            trackColor={{ false: "#E5E7EB", true: "#3F5E95" }} 
           />
         </View>
 
@@ -165,7 +165,7 @@ export default function UserDetailsScreen() {
           <Switch
             value={user.roles?.includes('Creator')}
             onValueChange={() => handleToggleRole('Creator', user.roles?.includes('Creator') ?? false)}
-            trackColor={{ false: "#E5E7EB", true: "#E5E7EB" }} 
+            trackColor={{ false: "#E5E7EB", true: "#3F5E95" }} 
           />
         </View>
       </View>
