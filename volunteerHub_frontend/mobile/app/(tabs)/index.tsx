@@ -29,9 +29,17 @@ export default function HomeScreen() {
 
           {isAdmin && (
             <HomeCard
-              title="Admin Panel"
+              title="Manage Events"
               icon="shield" 
               onPress={() => router.push("/admin.pending.events")}
+            />
+          )}
+
+          {isAdmin && (
+            <HomeCard
+              title="Manage Users"
+              icon="users" 
+              onPress={() => router.push("/users.view")}
             />
           )}
 

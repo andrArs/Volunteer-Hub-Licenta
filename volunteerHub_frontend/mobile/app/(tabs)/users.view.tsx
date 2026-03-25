@@ -25,6 +25,8 @@ export default function AllUsersScreen() {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
   
+  const [query, setQuery] = useState("");
+
   const load = useCallback(async () => {
     try {
       setErr(null);
@@ -45,6 +47,16 @@ export default function AllUsersScreen() {
     }, [load])
   );
 
+  const filteredUsers = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return users;
+
+    return users.filter((u) => 
+      (u.firstName?.toLowerCase().includes(q)) ||
+      (u.lastName?.toLowerCase().includes(q)) ||
+      (u.email?.toLowerCase().includes(q))
+    );
+  }, [users, query]);
 
   function openUserProfile(user: UserProfile) {
      router.push(`/user.view?id=${user.id}`)
@@ -64,7 +76,7 @@ export default function AllUsersScreen() {
     
       </View>
          
-      {/* <View style={styles.searchWrap}>
+      <View style={[styles.searchWrap, { marginVertical: 10}]}>
         <FontAwesome name="search" size={14} color="#8B93A7" />
         <TextInput
           value={query}
@@ -73,7 +85,7 @@ export default function AllUsersScreen() {
           placeholderTextColor="#8B93A7"
           style={styles.searchInput}
         />
-      </View> */}
+      </View>
 
       <View style={styles.content}>
         {loading ? (
@@ -89,8 +101,9 @@ export default function AllUsersScreen() {
           </View>
         ) : (
           <>
+          <Text style={styles.foundText}>Found {filteredUsers.length} users</Text>
             <FlatList
-              data={users}
+              data={filteredUsers}
               keyExtractor={(item) => item.id}
               contentContainerStyle={styles.listContent}
               renderItem={({ item }) => (

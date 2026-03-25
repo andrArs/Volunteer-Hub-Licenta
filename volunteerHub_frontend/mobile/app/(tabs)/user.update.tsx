@@ -171,7 +171,6 @@ export default function UpdateUserScreen() {
 
   return (
     <View style={styles.page}>
-      {/* HEADER */}
       <View style={styles.header}>
         <Pressable onPress={() => router.back()} style={styles.backBtn}>
           <FontAwesome name="arrow-left" size={18} color="#fff" />
@@ -187,7 +186,6 @@ export default function UpdateUserScreen() {
       >
         <ScrollView keyboardShouldPersistTaps="handled">
           <View style={styles.card}>
-            {/* First Name */}
             <Text style={styles.label}>First Name</Text>
             <View style={styles.inputWrap}>
               <TextInput
@@ -202,7 +200,6 @@ export default function UpdateUserScreen() {
               />
             </View>
 
-            {/* Last Name */}
             <Text style={[styles.label, { marginTop: 12 }]}>
               Last Name
             </Text>
@@ -219,7 +216,6 @@ export default function UpdateUserScreen() {
               />
             </View>
 
-            {/* Email */}
             <Text style={[styles.label, { marginTop: 12 }]}>
               Email
             </Text>
@@ -237,7 +233,6 @@ export default function UpdateUserScreen() {
               />
             </View>
 
-            {/* DOB */}
             <Text style={[styles.label, { marginTop: 12 }]}>
               Date of Birth
             </Text>
@@ -269,7 +264,6 @@ export default function UpdateUserScreen() {
             </View>
           </View>
 
-          {/* ERRORS */}
           {(errorMsg || Object.values(errors).some(Boolean)) && (
             <View style={{ alignItems: "center", marginTop: 16 }}>
               {errorMsg && (
@@ -288,7 +282,6 @@ export default function UpdateUserScreen() {
             </View>
           )}
 
-          {/* BUTTON */}
           <Pressable
             disabled={submitting}
             style={[
@@ -305,7 +298,6 @@ export default function UpdateUserScreen() {
         </ScrollView>
       </KeyboardAvoidingView>
 
-      {/* iOS PICKER */}
       {Platform.OS === "ios" && showPickerIOS && (
         <Modal transparent animationType="fade">
           <Pressable

@@ -21,12 +21,6 @@ export default function UserDetailsScreen() {
   const [busyDelete, setBusyDelete] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-  const [showRejectModal, setShowRejectModal] = useState(false);
-  const [rejectReason, setRejectReason] = useState("");
-  const [busyStatusUpdate, setBusyStatusUpdate] = useState(false);
-
-
-
   const load = useCallback(async () => {
     if (!id) return;
     try {
