@@ -169,6 +169,11 @@ export default function EventDetailsScreen() {
     return formatDistance(dist);
   }, [userLocation, event]);
 
+  const isPastEvent = useMemo(() => {
+    if (!event?.startDateTime) return false;
+    return new Date(event.startDateTime).getTime() < new Date().getTime();
+  }, [event?.startDateTime]);
+
   async function handleApprove() {
     if (!event) return;
     try {
@@ -281,7 +286,7 @@ export default function EventDetailsScreen() {
       await deleteEvent(event.id);
       
       setShowDeleteModal(false);
-      router.replace("/events.view");
+      router.replace("/my.events");
     } catch (error) {
       alert("You don't have permission to delete this event or an error occurred.");
     } finally {
@@ -328,7 +333,7 @@ export default function EventDetailsScreen() {
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
-      {(isMine|| isAdmin) && (
+      {(isMine) && (
         <View style={{ marginBottom: -4, marginTop: 12 }}>
           {renderStatusBadge(event.status)}
         </View>
@@ -451,7 +456,11 @@ export default function EventDetailsScreen() {
             </Pressable>
           </View>
         </>
-      ) : (
+      ) : isPastEvent ? (
+          <View style={{ marginTop: 20, alignItems: 'center' }}>
+             <Text style={{ color: '#8B93A7', fontSize: 14, fontWeight: 'bold' }}>This event is no longer available.</Text>
+          </View>
+        ):(
         <View style={styles.actionsRow}>
           <Pressable
             style={[

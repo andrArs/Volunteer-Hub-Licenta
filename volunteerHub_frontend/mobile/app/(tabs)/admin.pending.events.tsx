@@ -95,12 +95,12 @@ export default function AdminPendingEventsScreen() {
                     </View>
                   </View>
 
-                  <View style={styles.metaRow}>
+                  {/* <View style={styles.metaRow}>
                     <View style={styles.metaItem}>
                       <FontAwesome name="user" size={14} color="#3F5E95" />
                       <Text style={styles.metaText}>Created by: {item.createdById.substring(0, 8)}...</Text>
                     </View>
-                  </View>
+                  </View> */}
                 </Pressable>
               )}
               ListEmptyComponent={
