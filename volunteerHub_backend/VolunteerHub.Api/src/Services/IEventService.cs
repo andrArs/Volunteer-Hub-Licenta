@@ -1,4 +1,5 @@
 using VolunteerHub.Api.src.DTO.Events;
+using VolunteerHub.Api.src.Entities.Enum;
 
 namespace VolunteerHub.Api.src.Services;
 
@@ -14,4 +15,6 @@ public interface IEventService
     Task <string> GetUserEventStatusAsync(Guid eventId, string userId);
     Task<List<EventResponse>> GetMyCreatedEventsAsync(string userId);
     Task<List<EventResponse>> GetMyAttendanceEventsAsync(string userId, string status);
+    Task<List<EventResponse>> GetPendingEventsAsync();
+    Task <bool> SetStatusAsync(Guid eventId, bool isAdmin, EventStatus status, string message);
 }

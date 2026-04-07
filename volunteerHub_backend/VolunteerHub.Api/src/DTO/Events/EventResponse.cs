@@ -17,5 +17,6 @@ public record EventResponse
     int? MaxVolunteers,
     EventStatus Status,
     DateTime CreatedAt,
-    string CreatedById
+    string CreatedById,
+    string? AdminNotes
 );

@@ -8,7 +8,8 @@ public class AppDbContext : IdentityDbContext<User>
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
     public DbSet<Event> Events { get; set; } = null!;
-    public DbSet<UserEvent> UserEvents { get; set; } = null!; 
+    public DbSet<UserEvent> UserEvents { get; set; } = null!;
+    public DbSet<Notification> Notifications { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -26,5 +27,17 @@ public class AppDbContext : IdentityDbContext<User>
             .HasOne(ue => ue.Event)
             .WithMany(e => e.UserEvents)
             .HasForeignKey(ue => ue.EventId);
+
+        builder.Entity<Notification>()
+            .HasOne(n => n.User)
+            .WithMany()
+            .HasForeignKey(n => n.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<Notification>()
+            .HasOne(n => n.Event)
+            .WithMany()
+            .HasForeignKey(n => n.EventId)
+            .OnDelete(DeleteBehavior.Cascade);
     } 
 }

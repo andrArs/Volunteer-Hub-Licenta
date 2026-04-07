@@ -82,13 +82,19 @@ export default function MyProfileScreen() {
         getMyProfile()
       ]);
 
+      
+      const now = new Date();
+      const upcoming = (going || []).filter(ev => {
+      const eventDate = new Date(ev.startDateTime);
+      return eventDate >= now;});
+
       setStats({
         attended: history.length, 
         organized: created.length 
       });
       setProfileInfo(myProfile);
 
-      const sortedUpcoming = going
+      const sortedUpcoming = upcoming
         .sort((a, b) => new Date(a.startDateTime).getTime() - new Date(b.startDateTime).getTime())
         .slice(0, 5);
 

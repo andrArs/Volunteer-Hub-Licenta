@@ -3,12 +3,15 @@ import { useRouter } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { useState } from "react";
 import { styles } from "@/src/styles/home.styles";
-import { logout } from "@/src/store/auth.store";
+import { getAuth, logout } from "@/src/store/auth.store";
 
 
 export default function HomeScreen() {
   const router = useRouter();
   const [aiText, setAiText] = useState("");
+
+  const auth = getAuth();
+  const isAdmin = auth?.roles?.includes("Admin") ?? auth?.roles?.includes("Admin") ?? false;
 
   async function handleLogout() {
     await logout();
@@ -23,6 +26,23 @@ export default function HomeScreen() {
 
       <ScrollView showsVerticalScrollIndicator={false} style={styles.content}>
         <View style={styles.grid}>
+
+          {isAdmin && (
+            <HomeCard
+              title="Manage Events"
+              icon="shield" 
+              onPress={() => router.push("/admin.pending.events")}
+            />
+          )}
+
+          {isAdmin && (
+            <HomeCard
+              title="Manage Users"
+              icon="users" 
+              onPress={() => router.push("/users.view")}
+            />
+          )}
+
           <HomeCard
             title="My Events"
             icon="calendar"

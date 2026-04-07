@@ -5,5 +5,13 @@ public record UserProfileResponse(
     string FirstName,
     string LastName,
     string Email,
-    DateOnly? DateOfBirth 
+    DateOnly? DateOfBirth,
+    List<string>? Roles = null
+);
+
+public record UpdateUserRequest(
+    string FirstName,
+    string LastName,
+    string Email,
+    DateOnly? DateOfBirth
 );

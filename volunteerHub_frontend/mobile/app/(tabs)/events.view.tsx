@@ -16,6 +16,7 @@ import { EVENT_CATEGORIES, EventCategory, type EventResponse } from "@/src/types
 import { styles } from "@/src/styles/events.list.styles";
 import * as Location from 'expo-location';
 import { calculateDistance, formatDistance } from "@/src/utils/location.utils";
+import { getAuth } from "@/src/store/auth.store";
 
 type DistanceOption = { label: string; valueKm: number | null };
 const DISTANCE_OPTIONS: DistanceOption[] = [
@@ -44,8 +45,20 @@ function formatStart(dt: string) {
   return `${dd}-${mm}-${yyyy} • ${hh}:${mi}`;
 }
 
+function renderMyEventBadge() {
+  return (
+    <View style={styles.badgeMyEvent}>
+      <Text style={styles.textBadgeMyEvent}>
+        MY EVENT
+      </Text>
+    </View>
+  );
+}
+
 export default function AllEventsScreen() {
   const router = useRouter();
+  const auth = getAuth();
+  const myUserId = auth?.userId ?? null;
 
   const [events, setEvents] = useState<EventResponse[]>([]);
   const [loading, setLoading] = useState(true);
@@ -219,9 +232,13 @@ export default function AllEventsScreen() {
               contentContainerStyle={styles.listContent}
               renderItem={({ item }) => (
                 <Pressable style={styles.card} onPress={() => openEvent(item)}>
-                  <Text style={styles.cardTitle} numberOfLines={1}>
-                    {item.title}
-                  </Text>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                    <Text style={[styles.cardTitle, { flex: 1, marginBottom: 0 }]} numberOfLines={1}>
+                      {item.title}
+                    </Text>
+                    {item.status !== undefined && item.createdById === myUserId && renderMyEventBadge()}
+                    
+                  </View>
 
                   <View style={styles.metaRow}>
                     <View style={styles.metaItem}>
