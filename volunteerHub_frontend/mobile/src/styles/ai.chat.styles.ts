@@ -1,7 +1,7 @@
 import { StyleSheet, Dimensions } from "react-native";
 
 const { width } = Dimensions.get("window");
-export const DRAWER_WIDTH = width * 0.75;
+export const DRAWER_WIDTH = width * 0.5;
 
 export const aiStyles = StyleSheet.create({
   container: {
