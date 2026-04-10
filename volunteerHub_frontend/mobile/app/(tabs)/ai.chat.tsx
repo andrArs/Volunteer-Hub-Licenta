@@ -289,6 +289,12 @@ export default function AiChatScreen() {
     <View style={aiStyles.container}>
 
       <View style={aiStyles.header}>
+        <Pressable
+            onPress={() => router.replace("/")}
+            style={aiStyles.headerBtn}>
+        <FontAwesome name="arrow-left" size={18} color="#3F5E95" />
+        </Pressable>
+        
         <Pressable style={aiStyles.headerBtn} onPress={openDrawer}>
           <FontAwesome name="bars" size={18} color="#3F5E95" />
         </Pressable>
