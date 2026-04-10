@@ -17,6 +17,12 @@ function TypingIndicator() {
     useRef(new Animated.Value(0)).current,
   ];
 
+type Segment =
+  | { type: "text"; content: string }
+  | { type: "event"; eventId: string; label: string }
+  | { type: "join"; eventId: string; status: "going" | "interested" };
+
+
   useEffect(() => {
     const animations = dots.map((dot, i) =>
       Animated.loop(
@@ -42,12 +48,86 @@ function TypingIndicator() {
   );
 }
 
+  function JoinConfirmCard({
+    eventId,
+    status,
+    onConfirm,
+  }: {
+    eventId: string;
+    status: "going" | "interested";
+    onConfirm: (eventId: string, status: "going" | "interested") => void;
+  }) {
+  const [loading, setLoading] = useState(false);
+  const [done, setDone] = useState(false);
+
+  const handleConfirm = async () => {
+    setLoading(true);
+    try {
+      await onConfirm(eventId, status);
+      setDone(true);
+    } catch {
+      Alert.alert("Error", "Could not update attendance. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (done) {
+    return (
+      <View style={aiStyles.joinCard}>
+        <FontAwesome
+          name="check-circle"
+          size={16}
+          color="#4CAF50"
+          style={{ marginRight: 8 }}
+        />
+        <Text style={aiStyles.joinCardDoneText}>
+          {status === "going" ? "You're going!" : "Marked as interested!"}
+        </Text>
+      </View>
+    );
+  }
+
+  return (
+    <View style={aiStyles.joinCard}>
+      <View style={aiStyles.joinCardInfo}>
+        <FontAwesome
+          name={status === "going" ? "calendar-check-o" : "star-o"}
+          size={14}
+          color="#3F5E95"
+        />
+        <Text style={aiStyles.joinCardText}>
+          Mark as{" "}
+          <Text style={{ fontWeight: "700" }}>
+            {status === "going" ? "Going" : "Interested"}
+          </Text>
+          ?
+        </Text>
+      </View>
+      <Pressable
+        style={[aiStyles.joinCardBtn, loading && { opacity: 0.6 }]}
+        onPress={handleConfirm}
+        disabled={loading}
+      >
+        {loading ? (
+          <ActivityIndicator size="small" color="#fff" />
+        ) : (
+          <Text style={aiStyles.joinCardBtnText}>Confirm</Text>
+        )}
+      </Pressable>
+    </View>
+  );
+}
+
+
 function MessageBubble({
   msg,
   onEventPress,
+  onJoinConfirm,
 }: {
   msg: MessageDto;
   onEventPress: (id: string) => void;
+  onJoinConfirm: (eventId: string, status: "going" | "interested") => Promise<void>;
 }) {
   const isUser = msg.role === "user";
   const time = new Date(msg.createdAt).toLocaleTimeString([], {
@@ -65,36 +145,52 @@ function MessageBubble({
   }
 
   const EVENT_CARD_REGEX = /\[EVENT_CARD:\s*([a-zA-Z0-9\-]+)\]/g;
+  const JOIN_EVENT_REGEX = /\[JOIN_EVENT:\s*([a-zA-Z0-9\-]+)\s*\|\s*(going|interested)\]/g;
 
-  const cleanText = (t: string) => t.replace(/\*\*(.*?)\*\*/g, "$1").trim();
+  const cleanText = (t: string) =>
+    t.replace(/\*\*(.*?)\*\*/g, "$1")
+    .replace(EVENT_CARD_REGEX, "")
+    .replace(JOIN_EVENT_REGEX, "")
+    .trim();
 
   type Segment =
     | { type: "text"; content: string }
-    | { type: "event"; eventId: string; label: string };
+    | { type: "event"; eventId: string; label: string }
+    | { type: "join"; eventId: string; status: "going" | "interested" };
 
   const segments: Segment[] = [];
   let lastIndex = 0;
   let match: RegExpExecArray | null;
 
-  EVENT_CARD_REGEX.lastIndex = 0;
+  const COMBINED_REGEX = /\[EVENT_CARD:\s*([a-zA-Z0-9\-]+)\]|\[JOIN_EVENT:\s*([a-zA-Z0-9\-]+)\s*\|\s*(going|interested)\]/g;
+  COMBINED_REGEX.lastIndex = 0;
 
-  while ((match = EVENT_CARD_REGEX.exec(msg.content)) !== null) {
+
+  while ((match = COMBINED_REGEX.exec(msg.content)) !== null) {
     if (match.index > lastIndex) {
-      const textBefore = cleanText(msg.content.slice(lastIndex, match.index));
-      if (textBefore) {
-        segments.push({ type: "text", content: textBefore });
-      }
-    }
-    segments.push({ type: "event", eventId: match[1].trim(), label: "" });
-    lastIndex = match.index + match[0].length;
-  }
+    const textBefore = msg.content.slice(lastIndex, match.index)
+      .replace(/\*\*(.*?)\*\*/g, "$1").trim();
+        if (textBefore) segments.push({ type: "text", content: textBefore });
+          }
 
-  if (lastIndex < msg.content.length) {
-    const textAfter = cleanText(msg.content.slice(lastIndex));
-    if (textAfter) {
-      segments.push({ type: "text", content: textAfter });
+      if (match[1]) {
+        segments.push({ type: "event", eventId: match[1].trim(), label: "" });
+      } else if (match[2]) {
+        segments.push({
+          type: "join",
+          eventId: match[2].trim(),
+          status: match[3] as "going" | "interested",
+        });
+      }
+
+      lastIndex = match.index + match[0].length;
     }
-  }
+
+    if (lastIndex < msg.content.length) {
+      const textAfter = msg.content.slice(lastIndex)
+        .replace(/\*\*(.*?)\*\*/g, "$1").trim();
+      if (textAfter) segments.push({ type: "text", content: textAfter });
+    }
 
   if (!segments.some((s) => s.type === "event")) {
     return (
@@ -268,6 +364,10 @@ export default function AiChatScreen() {
     }
   };
 
+  const handleJoinConfirm = async (eventId: string, status: "going" | "interested") => {
+    await aiService.updateAttendance(eventId, status);
+  };
+
   const scrollToBottom = () => {
     setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
   };
@@ -349,6 +449,7 @@ export default function AiChatScreen() {
               <MessageBubble
                 msg={item}
                 onEventPress={(id) => router.push(`/event.view?id=${id}` as any)}
+                onJoinConfirm={handleJoinConfirm}
               />
             )}
             ListFooterComponent={isSending ? <TypingIndicator /> : null}

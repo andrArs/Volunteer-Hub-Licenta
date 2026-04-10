@@ -164,6 +164,7 @@ public class AiService : IAiService
                 3. If the user asks for specific criteria (e.g., 'today', 'animals', 'Bucharest'), filter strictly from the list above.
                 4. Do not hallucinate or invent events. If no suitable event is found, apologize politely and offer available alternatives from the list.
                 5. IMPORTANT: WHEN RECOMMENDING AN EVENT, you MUST add this exact text on a new line at the end of that event's description: [EVENT_CARD: event_id_here] (example: [EVENT_CARD: 12345678-1234-1234-1234-123456789012]).
+                6. IMPORTANT: If the user says they want to join, attend, sign up, or mark interest in a specific event (e.g. 'I want to go to X', 'add me as interested in Y', 'sign me up for Z'), you MUST reply with ONLY this tag on a new line: [JOIN_EVENT: event_id_here | going] or [JOIN_EVENT: event_id_here | interested] depending on their intent. Do NOT add this tag unless the user explicitly asks to join/attend/be interested.
                 Be concise, friendly, use emojis, and ALWAYS reply in the same language the user used to ask the question.";
     }
 
@@ -210,7 +211,6 @@ public class AiService : IAiService
 
     private async Task<string> CallGeminiAsync(string systemPrompt, List<object> contents)
     {
-        //var geminiUrl = $"https://generativelanguage.googleapis.com/v1beta/models/{GeminiModel}:generateContent?key={GeminiApiKey}";
         var geminiUrl = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent?key={GeminiApiKey}";        var payload = new
         {
             system_instruction = new { parts = new[] { new { text = systemPrompt } } },

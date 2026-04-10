@@ -23,4 +23,10 @@ export const aiService = {
   async deleteConversation(id: string): Promise<void> {
     await api.delete(`/api/ai/conversations/${id}`, { method: "DELETE" });
   },
+
+  async updateAttendance(eventId: string, status: "going" | "interested" | "none"): Promise<void> {
+    await api.post(`/api/events/${eventId}/attendance`, {
+        Status: status
+    });
+  },
 };
