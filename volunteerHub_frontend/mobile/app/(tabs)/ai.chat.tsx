@@ -3,6 +3,7 @@ import {
   View, Text, TextInput, Pressable, FlatList,
   Animated, TouchableWithoutFeedback, ActivityIndicator,
   KeyboardAvoidingView, Platform, ScrollView, Alert,
+  Modal,
 } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -260,6 +261,9 @@ export default function AiChatScreen() {
 
   const flatListRef = useRef<FlatList>(null);
 
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [conversationToDelete, setConversationToDelete] = useState<string | null>(null);
+
   useEffect(() => {
     if (q?.trim()) sendMessage(q.trim());
   }, []);
@@ -316,18 +320,19 @@ export default function AiChatScreen() {
   };
 
   const deleteConversation = async (id: string) => {
-    Alert.alert("Delete", "Delete this conversation?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: async () => {
-          await aiService.deleteConversation(id);
-          setConversations((prev) => prev.filter((c) => c.id !== id));
-          if (conversationId === id) startNewChat();
-        },
-      },
-    ]);
+   setConversationToDelete(id);
+    setShowDeleteModal(true); 
+  };
+
+  const executeDelete = async () => {
+    if (!conversationToDelete) return;
+    
+    await aiService.deleteConversation(conversationToDelete);
+    setConversations((prev) => prev.filter((c) => c.id !== conversationToDelete));
+    if (conversationId === conversationToDelete) startNewChat();
+    
+    setShowDeleteModal(false);
+    setConversationToDelete(null);
   };
 
   const sendMessage = async (text?: string) => {
@@ -552,6 +557,39 @@ export default function AiChatScreen() {
           </ScrollView>
         )}
       </Animated.View>
+
+      <Modal
+        visible={showDeleteModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowDeleteModal(false)}
+      >
+        <View style={aiStyles.modalOverlay}>
+          <View style={aiStyles.modalContent}>
+            <Text style={aiStyles.modalTitle}>Delete Conversation</Text>
+            <Text style={aiStyles.modalText}>
+              Are you sure you want to delete this conversation? This action cannot be undone.
+            </Text>
+
+            <View style={aiStyles.modalActions}>
+              <Pressable
+                style={aiStyles.modalCancelBtn}
+                onPress={() => setShowDeleteModal(false)}
+              >
+                <Text style={aiStyles.modalCancelBtnText}>Cancel</Text>
+              </Pressable>
+
+              <Pressable
+                style={aiStyles.modalDeleteBtn}
+                onPress={executeDelete}
+              >
+                <Text style={aiStyles.modalDeleteBtnText}>Delete</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
     </View>
   );
 }

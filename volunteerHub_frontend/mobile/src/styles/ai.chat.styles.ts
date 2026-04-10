@@ -333,4 +333,57 @@ joinCardDoneText: {
   color: "#4CAF50",
   fontWeight: "600",
 },
+modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContent: {
+    width: 320,
+    backgroundColor: "#FFF",
+    borderRadius: 12,
+    padding: 20,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    marginBottom: 10,
+    color: "#1F2937",
+  },
+  modalText: {
+    fontSize: 14,
+    color: "#4B5563",
+    marginBottom: 20,
+  },
+  modalActions: {
+    flexDirection: "row",
+    gap: 12,
+  },
+  modalCancelBtn: {
+    flex: 1, 
+    paddingVertical: 10,
+    borderRadius: 8,
+    backgroundColor: "#F3F4F6",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  modalCancelBtnText: {
+    color: "#374151",
+    fontWeight: "600",
+  },
+  modalDeleteBtn: {
+    flex: 1, 
+    paddingVertical: 10,
+    borderRadius: 8,
+    backgroundColor: "#FEE2E2",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+  },
+  modalDeleteBtnText: {
+    color: "#DC2626",
+    fontWeight: "600",
+  },
 });
