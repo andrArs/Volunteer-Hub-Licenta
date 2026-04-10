@@ -377,9 +377,9 @@ export default function AiChatScreen() {
   }, [messages, isSending]);
 
   const suggestions = [
-    "Suggest events this weekend 🗓️",
-    "Animal care volunteering 🐾",
-    "Environment events 🌱",
+    "Suggest events this weekend",
+    "Animal care volunteering",
+    "Environment events",
   ];
 
   const formatDate = (iso: string) =>
@@ -467,6 +467,12 @@ export default function AiChatScreen() {
             multiline
             returnKeyType="send"
             onSubmitEditing={() => sendMessage()}
+            onKeyPress={(e: any) => {
+              if (Platform.OS === 'web' && e.nativeEvent.key === 'Enter' && !e.nativeEvent.shiftKey) {
+                e.preventDefault(); 
+                sendMessage();
+              }
+            }}
           />
           <Pressable
             style={[
