@@ -146,7 +146,7 @@ function MessageBubble({
   }
 
   const EVENT_CARD_REGEX = /\[EVENT_CARD:\s*([a-zA-Z0-9\-]+)\]/g;
-  const JOIN_EVENT_REGEX = /\[JOIN_EVENT:\s*([a-zA-Z0-9\-]+)\s*\|\s*(going|interested)\]/g;
+  const JOIN_EVENT_REGEX = /\[JOIN_EVENT:\s*([a-zA-Z0-9\-]+)\s*\|\s*(going|interested|go|)\]/g;
 
   const cleanText = (t: string) =>
     t.replace(/\*\*(.*?)\*\*/g, "$1")
@@ -163,7 +163,7 @@ function MessageBubble({
   let lastIndex = 0;
   let match: RegExpExecArray | null;
 
-  const COMBINED_REGEX = /\[EVENT_CARD:\s*([a-zA-Z0-9\-]+)\]|\[JOIN_EVENT:\s*([a-zA-Z0-9\-]+)\s*\|\s*(going|interested)\]/g;
+  const COMBINED_REGEX = /\[EVENT_CARD:\s*([a-zA-Z0-9\-]+)\]|\[JOIN_EVENT:\s*([a-zA-Z0-9\-]+)\s*\|\s*(going|interested|go)\]/g;
   COMBINED_REGEX.lastIndex = 0;
 
 
@@ -193,7 +193,7 @@ function MessageBubble({
       if (textAfter) segments.push({ type: "text", content: textAfter });
     }
 
-  if (!segments.some((s) => s.type === "event")) {
+  if (!segments.some((s) => s.type === "event" || s.type === "join")) {
     return (
       <View style={[aiStyles.messageBubble, aiStyles.aiBubble]}>
         <Text style={aiStyles.aiBubbleText}>{cleanText(msg.content)}</Text>
@@ -206,24 +206,31 @@ function MessageBubble({
     <View style={[aiStyles.messageBubble, aiStyles.aiBubble]}>
       {segments.map((seg, i) =>
         seg.type === "text" ? (
-          <Text key={i} style={aiStyles.aiBubbleText}>
-            {seg.content}
-          </Text>
-        ) : (
-          <View key={i} style={aiStyles.inlineEventCard}>
-            <View style={aiStyles.inlineEventInfo}>
-              <Text style={aiStyles.inlineEventTitle} numberOfLines={1}>
-                {getEventTitle(segments, i)}
-              </Text>
-            </View>
-            <Pressable
-              style={aiStyles.inlineEventBtn}
-              onPress={() => onEventPress(seg.eventId)}
-            >
-              <Text style={aiStyles.inlineEventBtnText}>View Event</Text>
-            </Pressable>
+         <Text key={i} style={aiStyles.aiBubbleText}>
+          {seg.content}
+        </Text>
+      ) : seg.type === "event" ? (
+        <View key={i} style={aiStyles.inlineEventCard}>
+          <View style={aiStyles.inlineEventInfo}>
+            <Text style={aiStyles.inlineEventTitle} numberOfLines={1}>
+              {getEventTitle(segments, i)}
+            </Text>
           </View>
-        )
+          <Pressable
+            style={aiStyles.inlineEventBtn}
+            onPress={() => onEventPress(seg.eventId)}
+          >
+            <Text style={aiStyles.inlineEventBtnText}>View Event</Text>
+          </Pressable>
+        </View>
+      ) : seg.type === "join" ? (
+        <JoinConfirmCard
+          key={i}
+          eventId={seg.eventId}
+          status={seg.status}
+          onConfirm={onJoinConfirm}
+        />
+      ) : null
       )}
       <Text style={aiStyles.timestampText}>{time}</Text>
     </View>
