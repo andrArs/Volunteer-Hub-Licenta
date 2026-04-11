@@ -137,12 +137,21 @@ public class AiService : IAiService
     {
         var now = DateTime.UtcNow;
 
-        var upcomingEvents = await _db.Events.AsNoTracking()
-        .Where(e => e.Status == EventStatus.Approved && e.StartDateTime >= now)
+        var upcomingEventsRaw = await _db.Events.AsNoTracking()
+        .Where(e => e.Status == EventStatus.Approved && e.StartDateTime >= now && e.CreatedById != userId)
         .OrderBy(e => e.StartDateTime)
         .Take(20) 
         .Select(e => new { e.Id, e.Title, e.Category, e.LocationName, e.StartDateTime })
         .ToListAsync();
+
+        var upcomingEvents = upcomingEventsRaw
+            .Select(e => new { 
+                e.Id, 
+                e.Title, 
+                Category = e.Category.ToString(),
+                e.LocationName, 
+                e.StartDateTime 
+            }).ToList();
 
         var userCategories = await _db.UserEvents.AsNoTracking()
             .Where(ue => ue.UserId == userId &&
@@ -151,9 +160,36 @@ public class AiService : IAiService
             .Distinct()
             .ToListAsync();
 
+        var attendanceHistoryRaw = await _db.UserEvents.AsNoTracking()
+            .Where(ue => ue.UserId == userId && 
+                (ue.Status == UserEventStatus.Going || ue.Status == UserEventStatus.Interested))
+            .OrderByDescending(ue => ue.Event.StartDateTime)
+            .Take(10)
+            .Select(ue => new { ue.Event.Title, ue.Event.Category, ue.Status })
+            .ToListAsync();
+
+        var createdEventsRaw = await _db.Events.AsNoTracking()
+            .Where(e => e.CreatedById == userId)
+            .Select(e => new { e.Title, e.Category })
+            .ToListAsync();
+
+        var createdEvents = createdEventsRaw
+            .Select(e => new { 
+                e.Title, 
+                Category = e.Category.ToString() 
+            }).ToList();
+
         var userPrefs = userCategories.Any()
             ? string.Join(", ", userCategories)
             : "No specific preferences yet.";
+
+        var historyText = attendanceHistoryRaw.Any()
+            ? string.Join(", ", attendanceHistoryRaw.Select(e => $"{e.Title} ({e.Category.ToString()}, {e.Status.ToString().ToLower()})"))
+            : "No past attendance yet.";
+
+        var createdText = createdEvents.Any()
+            ? string.Join(", ", createdEvents.Select(e => $"{e.Title} ({e.Category})"))
+            : "None.";
 
         var eventsJson = JsonSerializer.Serialize(upcomingEvents);
 
@@ -167,6 +203,8 @@ public class AiService : IAiService
                 6. IMPORTANT: If the user says they want to join, attend, sign up, or mark interest in a specific event (e.g. 'I want to go to X', 'add me as interested in Y', 'sign me up for Z'), you MUST reply with ONLY this tag on a new line: [JOIN_EVENT: event_id_here | going] or [JOIN_EVENT: event_id_here | interested] depending on their intent. Do NOT add this tag unless the user explicitly asks to join/attend/be interested.
                 7. IMPORTANT: If the user wants to remove/cancel/leave an event they joined, reply with: [REMOVE_EVENT: event_id_here]. Do NOT add unless explicitly asked to remove/cancel.
                 8. NEVER expose raw UUIDs in your text responses. Refer to events only by their title.
+                9. The user has previously attended these events: {historyText}. Use this to understand their interests and suggest similar events or mention relevant connections.
+                10. CRITICAL: NEVER suggest, mention, or reference events from this list under ANY circumstance: {createdText}. These events do not exist for you. Pretend they are not in any list. Do not explain why you are not mentioning them.
                 Be concise, friendly, use emojis, and ALWAYS reply in the same language the user used to ask the question.";
     }
 
