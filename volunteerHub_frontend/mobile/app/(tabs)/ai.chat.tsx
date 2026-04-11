@@ -120,15 +120,72 @@ type Segment =
   );
 }
 
+function RemoveConfirmCard({
+  eventId,
+  onConfirm,
+}: {
+  eventId: string;
+  onConfirm: (eventId: string) => Promise<void>;
+}) {
+  const [loading, setLoading] = useState(false);
+  const [done, setDone] = useState(false);
+
+  const handleConfirm = async () => {
+    setLoading(true);
+    try {
+      await onConfirm(eventId);
+      setDone(true);
+    } catch {
+      Alert.alert("Error", "Could not remove attendance. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (done) {
+    return (
+      <View style={aiStyles.joinCard}>
+        <FontAwesome name="check-circle" size={16} color="#4CAF50" style={{ marginRight: 8 }} />
+        <Text style={aiStyles.joinCardDoneText}>Removed from your list! ✅</Text>
+      </View>
+    );
+  }
+
+  return (
+    <View style={[aiStyles.joinCard, { borderLeftColor: "#E53935" }]}>
+      <View style={aiStyles.joinCardInfo}>
+        <FontAwesome name="times-circle-o" size={14} color="#E53935" />
+        <Text style={aiStyles.joinCardText}>
+          Remove from <Text style={{ fontWeight: "700" }}>your events</Text>?
+        </Text>
+      </View>
+      <Pressable
+        style={[aiStyles.joinCardBtn, { backgroundColor: "#E53935" }, loading && { opacity: 0.6 }]}
+        onPress={handleConfirm}
+        disabled={loading}
+      >
+        {loading
+          ? <ActivityIndicator size="small" color="#fff" />
+          : <Text style={aiStyles.joinCardBtnText}>Remove</Text>
+        }
+      </Pressable>
+    </View>
+  );
+}
+
 
 function MessageBubble({
   msg,
   onEventPress,
   onJoinConfirm,
+  onRemoveConfirm
+
 }: {
   msg: MessageDto;
   onEventPress: (id: string) => void;
   onJoinConfirm: (eventId: string, status: "going" | "interested") => Promise<void>;
+  onRemoveConfirm: (eventId: string) => Promise<void>; 
+
 }) {
   const isUser = msg.role === "user";
   const time = new Date(msg.createdAt).toLocaleTimeString([], {
@@ -157,13 +214,14 @@ function MessageBubble({
   type Segment =
     | { type: "text"; content: string }
     | { type: "event"; eventId: string; label: string }
-    | { type: "join"; eventId: string; status: "going" | "interested" };
+    | { type: "join"; eventId: string; status: "going" | "interested" }
+    | { type: "remove"; eventId: string };
 
   const segments: Segment[] = [];
   let lastIndex = 0;
   let match: RegExpExecArray | null;
 
-  const COMBINED_REGEX = /\[EVENT_CARD:\s*([a-zA-Z0-9\-]+)\]|\[JOIN_EVENT:\s*([a-zA-Z0-9\-]+)\s*\|\s*(going|interested|go)\]/g;
+  const COMBINED_REGEX = /\[EVENT_CARD:\s*([a-zA-Z0-9\-]+)\]|\[JOIN_EVENT:\s*([a-zA-Z0-9\-]+)\s*\|\s*(going|interested|go)\]|\[REMOVE_EVENT:\s*([a-zA-Z0-9\-]+)\]/g;
   COMBINED_REGEX.lastIndex = 0;
 
 
@@ -182,6 +240,11 @@ function MessageBubble({
           eventId: match[2].trim(),
           status: match[3] as "going" | "interested",
         });
+      } else if (match[4]) {
+        segments.push({
+          type: "remove",
+          eventId: match[4].trim(),
+        });
       }
 
       lastIndex = match.index + match[0].length;
@@ -193,7 +256,7 @@ function MessageBubble({
       if (textAfter) segments.push({ type: "text", content: textAfter });
     }
 
-  if (!segments.some((s) => s.type === "event" || s.type === "join")) {
+  if (!segments.some((s) => s.type === "event" || s.type === "join" || s.type === "remove")) {
     return (
       <View style={[aiStyles.messageBubble, aiStyles.aiBubble]}>
         <Text style={aiStyles.aiBubbleText}>{cleanText(msg.content)}</Text>
@@ -229,6 +292,12 @@ function MessageBubble({
           eventId={seg.eventId}
           status={seg.status}
           onConfirm={onJoinConfirm}
+        />
+        ) : seg.type === "remove" ? (
+        <RemoveConfirmCard
+          key={i}
+          eventId={seg.eventId}
+          onConfirm={onRemoveConfirm}
         />
       ) : null
       )}
@@ -380,6 +449,10 @@ export default function AiChatScreen() {
     await aiService.updateAttendance(eventId, status);
   };
 
+  const handleRemoveConfirm = async (eventId: string) => {
+    await aiService.updateAttendance(eventId, "none");
+  };
+
   const scrollToBottom = () => {
     setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
   };
@@ -462,6 +535,7 @@ export default function AiChatScreen() {
                 msg={item}
                 onEventPress={(id) => router.push(`/event.view?id=${id}` as any)}
                 onJoinConfirm={handleJoinConfirm}
+                onRemoveConfirm={handleRemoveConfirm}
               />
             )}
             ListFooterComponent={isSending ? <TypingIndicator /> : null}
