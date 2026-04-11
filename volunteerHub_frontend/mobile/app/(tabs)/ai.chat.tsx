@@ -614,11 +614,10 @@ export default function AiChatScreen() {
               >
                 <View style={aiStyles.conversationRow}>
                   <View style={{ flex: 1 }}>
-                    <Text
-                      style={aiStyles.conversationItemText}
-                      numberOfLines={1}
-                    >
-                      {conv.summary
+                    <Text style={aiStyles.conversationItemText} numberOfLines={1}>
+                      {conv.title 
+                        ? conv.title 
+                        : conv.summary
                         ? conv.summary.slice(0, 40) + "..."
                         : (conv.messages[0]?.content.slice(0, 40) ?? "Conversation") + "..."}
                     </Text>

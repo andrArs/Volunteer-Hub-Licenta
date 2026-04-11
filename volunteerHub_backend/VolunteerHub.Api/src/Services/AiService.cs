@@ -72,6 +72,21 @@ public class AiService : IAiService
         _db.AiMessages.AddRange(userMsg, botMsg);
         await _db.SaveChangesAsync();
 
+        if (conversation.Messages.Count <= 2 && conversation.Title == null)
+        {
+            try
+            {
+                var titleContents = new List<object>
+                {
+                    new { role = "user", parts = new[] { new { text = $"Generate a short, concise title (max 5 words) for a conversation that starts with this message: \"{req.Message}\". Reply ONLY with the title, no quotes, no punctuation." } } }
+                };
+                var title = await CallGeminiAsync(string.Empty, titleContents);
+                conversation.Title = title.Trim();
+                await _db.SaveChangesAsync();
+            }
+            catch { }
+        }
+
         try 
         { 
             await MaybeSummarizeAsync(conversation.Id); 
@@ -93,6 +108,7 @@ public class AiService : IAiService
             .Select(c => new ConversationDto(
                 c.Id,
                 c.CreatedAt,
+                c.Title,
                 c.Summary,
                 c.Messages
                     .OrderBy(m => m.CreatedAt)
@@ -115,6 +131,7 @@ public class AiService : IAiService
         return new ConversationDto(
             conversation.Id,
             conversation.CreatedAt,
+            conversation.Title,
             conversation.Summary,
             conversation.Messages
                 .Select(m => new MessageDto(m.Id, m.Role, m.Content, m.CreatedAt))

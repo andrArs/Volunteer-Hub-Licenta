@@ -8,6 +8,7 @@ export interface MessageDto {
 export interface ConversationDto {
   id: string;
   createdAt: string;
+  title: string | null;
   summary: string | null;
   messages: MessageDto[];
 }
