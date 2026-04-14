@@ -246,10 +246,19 @@ export default function UpdateUserScreen() {
                     if (d) setDateOfBirth(d);
                   }}
                   disabled={submitting}
-                  style={{
-                    height: 54,
-                    paddingLeft: 16,
-                  }}
+                  style={
+                            {
+                            height: 54,
+                            paddingLeft: 16,
+                            paddingRight: 16,
+                            fontSize: 15,
+                            border: "none",
+                            width: "100%",
+                            boxSizing: "border-box",
+                            background: "transparent",
+                            color: "#1E2A3B",
+                            } as any
+                        }
                 />
               ) : (
                 <Pressable
