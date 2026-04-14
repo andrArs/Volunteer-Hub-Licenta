@@ -28,7 +28,8 @@ builder.Services.AddIdentityCore<User>(options =>
 })
 .AddRoles<IdentityRole>()
 .AddEntityFrameworkStores<AppDbContext>()
-.AddSignInManager();
+.AddSignInManager()
+.AddDefaultTokenProviders();
 
 // JWT
 var jwtKey = builder.Configuration["Jwt:Key"]!;
@@ -52,6 +53,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
+builder.Services.AddMemoryCache();
+builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<JwtTokenService>();
 builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();

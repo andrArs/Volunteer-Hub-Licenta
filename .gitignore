@@ -13,6 +13,7 @@ node_modules/
 Thumbs.db
 
 .env
+.claude
 
 # Visual Studio
 .vs/

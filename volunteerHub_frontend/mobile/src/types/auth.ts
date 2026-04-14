@@ -17,3 +17,9 @@ export type RegisterRequest = {
   Email: string;
   Password: string;
 };
+
+export type ResetPasswordRequest = {
+  email: string;
+  code: string;
+  newPassword: string;
+};

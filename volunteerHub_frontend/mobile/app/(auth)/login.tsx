@@ -135,6 +135,14 @@ export default function LoginScreen() {
           </Text>
         </Pressable>
 
+        <Pressable
+          onPress={() => router.push("/(auth)/forgot-password")}
+          disabled={submitting}
+          style={{ alignSelf: "center", marginTop: 8 }}
+        >
+          <Text style={styles.footerLink}>Forgot password?</Text>
+        </Pressable>
+
         <View style={styles.footerRow}>
           <Text style={styles.footerText}>Don't have an account?</Text>
           <Pressable
