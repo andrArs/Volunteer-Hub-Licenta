@@ -10,6 +10,8 @@ public class AppDbContext : IdentityDbContext<User>
     public DbSet<Event> Events { get; set; } = null!;
     public DbSet<UserEvent> UserEvents { get; set; } = null!;
     public DbSet<Notification> Notifications { get; set; } = null!;
+    public DbSet<AiConversation> AiConversations => Set<AiConversation>();
+    public DbSet<AiMessage> AiMessages => Set<AiMessage>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -39,5 +41,23 @@ public class AppDbContext : IdentityDbContext<User>
             .WithMany()
             .HasForeignKey(n => n.EventId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<AiConversation>(entity =>
+        {
+        entity.HasKey(e => e.Id);
+        entity.HasOne(e => e.User)
+              .WithMany()
+              .HasForeignKey(e => e.UserId)
+              .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<AiMessage>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasOne(e => e.Conversation)
+                .WithMany(c => c.Messages)
+                .HasForeignKey(e => e.ConversationId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
     } 
 }

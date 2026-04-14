@@ -74,7 +74,7 @@ export default function HomeScreen() {
             </View>
 
             <Pressable
-              onPress={() => router.replace("/(tabs)/two")}
+              onPress={() => router.replace("/ai.chat")}
               style={styles.aiOpenBtn}
             >
               <Text style={styles.aiOpenBtnText}>Open chat</Text>
@@ -96,7 +96,7 @@ export default function HomeScreen() {
               returnKeyType="send"
               onSubmitEditing={() => {
                 router.push({
-                  pathname: "/(tabs)/ai-chat" as any,
+                  pathname: "/ai.chat" as any,
                   params: { q: aiText },
                 } as any);
               }}
@@ -106,7 +106,7 @@ export default function HomeScreen() {
               disabled={!aiText.trim()}
               onPress={() =>
                 router.push({
-                  pathname: "/(tabs)/ai-chat" as any,
+                  pathname: "/ai.chat" as any,
                   params: { q: aiText },
                 } as any)
               }
