@@ -154,6 +154,11 @@ public class AiService : IAiService
     {
         var now = DateTime.UtcNow;
 
+        var goingEventIds = await _db.UserEvents.AsNoTracking()
+            .Where(ue => ue.UserId == userId && ue.Status == UserEventStatus.Going)
+            .Select(ue => ue.EventId)
+            .ToListAsync();
+
         var upcomingEventsRaw = await _db.Events.AsNoTracking()
         .Where(e => e.Status == EventStatus.Approved && e.StartDateTime >= now && e.CreatedById != userId)
         .OrderBy(e => e.StartDateTime)
