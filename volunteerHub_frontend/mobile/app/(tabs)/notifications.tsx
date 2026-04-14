@@ -65,7 +65,6 @@ export default function NotificationsScreen() {
   async function handlePress(item: Notification) {
     if (markingId) return;
 
-    // Mark as read if not already read
     if (!item.isRead) {
       setMarkingId(item.id);
       try {
@@ -74,13 +73,11 @@ export default function NotificationsScreen() {
           prev.map((n) => (n.id === item.id ? { ...n, isRead: true } : n))
         );
       } catch {
-        // Silently fail — don't block navigation for a read status
       } finally {
         setMarkingId(null);
       }
     }
 
-    // Navigate to event if available
     if (item.eventId) {
       router.push(`/event.view?id=${item.eventId}`);
     }
@@ -95,7 +92,6 @@ export default function NotificationsScreen() {
       await markAllAsRead();
       setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
     } catch {
-      // silently fail — list stays as-is
     } finally {
       setMarkingAll(false);
     }
