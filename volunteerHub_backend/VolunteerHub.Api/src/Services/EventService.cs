@@ -118,7 +118,9 @@ public class EventService : IEventService
                 e.Status,
                 e.CreatedAt,
                 e.CreatedById,
-                e.AdminNotes
+                e.AdminNotes,
+                e.CreatedBy.FirstName + " " + e.CreatedBy.LastName,
+                e.CreatedBy.Email
             ))
             .ToListAsync();
 
@@ -278,7 +280,9 @@ public class EventService : IEventService
                 e.Status,
                 e.CreatedAt,
                 e.CreatedById,
-                e.AdminNotes
+                e.AdminNotes,
+                e.CreatedBy.FirstName + " " + e.CreatedBy.LastName,
+                e.CreatedBy.Email
             ))
             .ToListAsync();
 
@@ -314,7 +318,9 @@ public class EventService : IEventService
             .Select(e => new EventResponse(
                 e.Id, e.Title, e.Description, e.Category, e.StartDateTime,
                 e.EndDateTime, e.LocationName, e.Address, e.Latitude,
-                e.Longitude, e.MaxVolunteers, e.Status, e.CreatedAt, e.CreatedById, e.AdminNotes
+                e.Longitude, e.MaxVolunteers, e.Status, e.CreatedAt, e.CreatedById, e.AdminNotes,
+                e.CreatedBy.FirstName + " " + e.CreatedBy.LastName,
+                e.CreatedBy.Email
             ))
             .ToListAsync();
     }
@@ -326,7 +332,7 @@ public class EventService : IEventService
             .OrderBy(e => e.CreatedAt)
             .Select(e => new EventResponse(
                 e.Id,
-                e.Title,    
+                e.Title,
                 e.Description,
                 e.Category,
                 e.StartDateTime,
@@ -339,7 +345,9 @@ public class EventService : IEventService
                 e.Status,
                 e.CreatedAt,
                 e.CreatedById,
-                e.AdminNotes
+                e.AdminNotes,
+                e.CreatedBy.FirstName + " " + e.CreatedBy.LastName,
+                e.CreatedBy.Email
             ))
             .ToListAsync();
 
