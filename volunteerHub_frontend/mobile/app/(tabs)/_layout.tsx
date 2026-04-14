@@ -67,6 +67,7 @@ export default function TabLayout() {
       <Stack.Screen name="event.create" />
       <Stack.Screen name="event.update" />
       <Stack.Screen name="profile" />
+      <Stack.Screen name="notifications" />
       <Stack.Screen name="two" />
 
     </Stack>

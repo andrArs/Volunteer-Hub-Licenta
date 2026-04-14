@@ -44,4 +44,11 @@ public class NotificationService : INotificationService
         await _db.SaveChangesAsync();
         return true;
     }
+
+    public async Task MarkAllAsReadAsync(string userId)
+    {
+        await _db.Notifications
+            .Where(n => n.UserId == userId && !n.IsRead)
+            .ExecuteUpdateAsync(s => s.SetProperty(n => n.IsRead, true));
+    }
 }
