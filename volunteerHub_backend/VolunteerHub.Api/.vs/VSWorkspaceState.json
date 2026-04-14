@@ -7,6 +7,6 @@
     "\\src\\DTO\\Users",
     "\\src\\Services"
   ],
-  "SelectedNode": "\\src\\Controllers\\UserController.cs",
+  "SelectedNode": "\\src\\Services\\AiService.cs",
   "PreviewInSolutionExplorer": false
 }

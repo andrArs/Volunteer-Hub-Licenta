@@ -69,6 +69,11 @@ export default function TabLayout() {
       <Stack.Screen name="profile" />
       <Stack.Screen name="notifications" />
       <Stack.Screen name="two" />
+      <Stack.Screen name="admin.pending.events" />
+      <Stack.Screen name="users.view" />
+      <Stack.Screen name="user.view" />
+      <Stack.Screen name="user.update" />
+      <Stack.Screen name="ai.chat" />
 
     </Stack>
   );
