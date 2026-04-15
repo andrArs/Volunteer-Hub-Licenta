@@ -20,4 +20,7 @@ public class UserEvent
     public UserEventStatus Status { get; set; }
 
     public DateTime RegisteredAt { get; set; } = DateTime.UtcNow;
+
+    public bool Reminder24hSent { get; set; } = false;
+    public bool Reminder1hSent { get; set; } = false;
 }

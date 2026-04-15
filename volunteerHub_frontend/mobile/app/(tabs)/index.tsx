@@ -18,9 +18,14 @@ export default function HomeScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      getNotifications()
-        .then((data) => setUnreadCount(data.filter((n) => !n.isRead).length))
-        .catch(() => setUnreadCount(0));
+      const fetchCount = () =>
+        getNotifications()
+          .then((data) => setUnreadCount(data.filter((n) => !n.isRead).length))
+          .catch(() => setUnreadCount(0));
+
+      fetchCount();
+      const interval = setInterval(fetchCount, 30000);
+      return () => clearInterval(interval);
     }, [])
   );
 

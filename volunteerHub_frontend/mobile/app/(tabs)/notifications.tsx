@@ -59,6 +59,8 @@ export default function NotificationsScreen() {
   useFocusEffect(
     useCallback(() => {
       load();
+      const interval = setInterval(load, 30000);
+      return () => clearInterval(interval);
     }, [load])
   );
 
