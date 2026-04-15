@@ -273,7 +273,8 @@ public class AiService : IAiService
 
     private async Task<string> CallGeminiAsync(string systemPrompt, List<object> contents)
     {
-        var geminiUrl = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent?key={GeminiApiKey}";        var payload = new
+        var geminiUrl = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key={GeminiApiKey}"; 
+        var payload = new
         {
             system_instruction = new { parts = new[] { new { text = systemPrompt } } },
             contents
