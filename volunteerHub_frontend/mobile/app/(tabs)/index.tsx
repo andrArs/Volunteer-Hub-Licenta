@@ -1,17 +1,33 @@
 import { FontAwesome } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
-import { useState } from "react";
+
+import { useCallback, useState } from "react";
 import { styles } from "@/src/styles/home.styles";
 import { getAuth, logout } from "@/src/store/auth.store";
+import { getNotifications } from "@/src/api/notification.api";
 
 
 export default function HomeScreen() {
   const router = useRouter();
   const [aiText, setAiText] = useState("");
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const auth = getAuth();
-  const isAdmin = auth?.roles?.includes("Admin") ?? auth?.roles?.includes("Admin") ?? false;
+  const isAdmin = auth?.roles?.includes("Admin") ?? false;
+
+  useFocusEffect(
+    useCallback(() => {
+      const fetchCount = () =>
+        getNotifications()
+          .then((data) => setUnreadCount(data.filter((n) => !n.isRead).length))
+          .catch(() => setUnreadCount(0));
+
+      fetchCount();
+      const interval = setInterval(fetchCount, 30000);
+      return () => clearInterval(interval);
+    }, [])
+  );
 
   async function handleLogout() {
     await logout();
@@ -22,6 +38,20 @@ export default function HomeScreen() {
     <View style={styles.page}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Welcome to{"\n \n"}Volunteer Hub</Text>
+        <Pressable
+          style={bellStyles.btn}
+          onPress={() => router.push("/notifications")}
+          hitSlop={10}
+        >
+          <FontAwesome name="bell" size={20} color="#fff" />
+          {unreadCount > 0 && (
+            <View style={bellStyles.badge}>
+              <Text style={bellStyles.badgeText}>
+                {unreadCount > 99 ? "99+" : unreadCount}
+              </Text>
+            </View>
+          )}
+        </Pressable>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} style={styles.content}>
@@ -126,6 +156,27 @@ export default function HomeScreen() {
     </View>
   );
 }
+
+const bellStyles = StyleSheet.create({
+  btn: {
+    position: "absolute",
+    top: 56,
+    right: 22,
+  },
+  badge: {
+    position: "absolute",
+    top: -6,
+    right: -6,
+    backgroundColor: "#EF4444",
+    borderRadius: 10,
+    minWidth: 18,
+    height: 18,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 3,
+  },
+  badgeText: { color: "#fff", fontSize: 10, fontWeight: "800" },
+});
 
 function HomeCard({
   title,

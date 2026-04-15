@@ -18,5 +18,7 @@ public record EventResponse
     EventStatus Status,
     DateTime CreatedAt,
     string CreatedById,
-    string? AdminNotes
+    string? AdminNotes,
+    string? CreatorName = null,
+    string? CreatorEmail = null
 );

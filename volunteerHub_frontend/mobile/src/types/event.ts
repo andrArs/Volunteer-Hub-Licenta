@@ -64,6 +64,8 @@ export type EventResponse = {
     createdById: string;
     distance?: number | null;
     adminNotes?: string;
+    creatorName?: string;
+    creatorEmail?: string;
 }
 
 export enum EventStatus {

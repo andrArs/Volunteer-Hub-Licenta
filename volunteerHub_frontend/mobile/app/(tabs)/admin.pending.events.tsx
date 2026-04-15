@@ -88,6 +88,17 @@ export default function AdminPendingEventsScreen() {
                     </View>
                   </View>
 
+                  {(item.creatorName || item.creatorEmail) && (
+                    <View style={styles.metaRow}>
+                      <View style={styles.metaItem}>
+                        <FontAwesome name="user" size={14} color="#3F5E95" />
+                        <Text style={styles.metaText}>
+                          {item.creatorName}{item.creatorEmail ? ` - ${item.creatorEmail}` : ""}
+                        </Text>
+                      </View>
+                    </View>
+                  )}
+
                   <View style={styles.metaRow}>
                     <View style={styles.metaItem}>
                       <FontAwesome name="calendar" size={14} color="#3F5E95" />
@@ -95,12 +106,6 @@ export default function AdminPendingEventsScreen() {
                     </View>
                   </View>
 
-                  {/* <View style={styles.metaRow}>
-                    <View style={styles.metaItem}>
-                      <FontAwesome name="user" size={14} color="#3F5E95" />
-                      <Text style={styles.metaText}>Created by: {item.createdById.substring(0, 8)}...</Text>
-                    </View>
-                  </View> */}
                 </Pressable>
               )}
               ListEmptyComponent={

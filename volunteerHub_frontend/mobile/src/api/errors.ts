@@ -26,5 +26,13 @@ export function toAppError(err: unknown): AppError {
     return { type: "validation", message: data?.message ?? data?.error ?? "Validation error." };
   }
 
-  return { type: "server", message: data?.message ?? "Server error." };
+  if (status === 404) {
+    return { type: "server", message: "Resource not found." };
+  }
+
+  if (status >= 500) {
+    return { type: "server", message: "Server error. Please try again later." };
+  }
+
+  return { type: "server", message: data?.message ?? data?.error ?? "Something went wrong." };
 }
