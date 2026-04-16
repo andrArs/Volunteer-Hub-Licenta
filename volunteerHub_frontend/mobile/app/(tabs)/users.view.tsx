@@ -1,6 +1,6 @@
 import { FontAwesome } from "@expo/vector-icons";
 import { useFocusEffect, useRouter } from "expo-router";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -23,23 +23,45 @@ export default function AllUsersScreen() {
 
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [err, setErr] = useState<string | null>(null);
-  
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const [totalCount, setTotalCount] = useState(0);
+  const pageRef = useRef(1);
+
   const [query, setQuery] = useState("");
 
   const load = useCallback(async () => {
     try {
       setErr(null);
       setLoading(true);
-      const data = await getAllUsers();
-      setUsers(data);
-
+      pageRef.current = 1;
+      const result = await getAllUsers(1, 10);
+      setUsers(result.items);
+      setHasNextPage(result.hasNextPage);
+      setTotalCount(result.totalCount);
     } catch (e: any) {
       setErr(e?.message ?? "Failed to load users.");
     } finally {
       setLoading(false);
     }
   }, []);
+
+  const loadMore = useCallback(async () => {
+    if (loadingMore || !hasNextPage) return;
+    try {
+      setLoadingMore(true);
+      const nextPage = pageRef.current + 1;
+      const result = await getAllUsers(nextPage, 10);
+      setUsers(prev => [...prev, ...result.items]);
+      setHasNextPage(result.hasNextPage);
+      pageRef.current = nextPage;
+    } catch {
+      
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [loadingMore, hasNextPage]);
 
   useFocusEffect(
     useCallback(() => {
@@ -101,11 +123,20 @@ export default function AllUsersScreen() {
           </View>
         ) : (
           <>
-          <Text style={styles.foundText}>Found {filteredUsers.length} users</Text>
+          <Text style={styles.foundText}>Showing {filteredUsers.length} of {totalCount} users</Text>
             <FlatList
               data={filteredUsers}
               keyExtractor={(item) => item.id}
               contentContainerStyle={styles.listContent}
+              onEndReached={loadMore}
+              onEndReachedThreshold={0.3}
+              ListFooterComponent={
+                loadingMore ? (
+                  <View style={{ paddingVertical: 16, alignItems: "center" }}>
+                    <ActivityIndicator size="small" />
+                  </View>
+                ) : null
+              }
               renderItem={({ item }) => (
                 <Pressable style={styles.card} onPress={() => openUserProfile(item)}>
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
