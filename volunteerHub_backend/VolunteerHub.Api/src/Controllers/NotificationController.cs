@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using VolunteerHub.Api.src.DTO.Events;
 using VolunteerHub.Api.src.Services;
 
 namespace VolunteerHub.Api.src.Controllers;
@@ -18,14 +19,16 @@ public class NotificationController : ControllerBase
 
     [Authorize]
     [HttpGet]
-    public async Task<ActionResult> GetMyNotifications()
+    public async Task<ActionResult> GetMyNotifications(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrWhiteSpace(userId))
             return Unauthorized();
 
-        var notifications = await _notifications.GetNotificationsAsync(userId);
-        return Ok(notifications);
+        var result = await _notifications.GetNotificationsAsync(userId, pageNumber, pageSize);
+        return Ok(result);
     }
 
     [Authorize]

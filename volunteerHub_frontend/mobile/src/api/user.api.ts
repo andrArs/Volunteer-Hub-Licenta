@@ -1,5 +1,6 @@
 import { api } from "./client";
 import { UserProfile } from "../types/user";
+import { PagedResult } from "../types/event";
 
 
 export async function getMyProfile(): Promise<UserProfile> {
@@ -7,8 +8,8 @@ export async function getMyProfile(): Promise<UserProfile> {
   return res.data;
 }
 
-export async function getAllUsers(): Promise<UserProfile[]> {
-  const res = await api.get<UserProfile[]>("/api/users");
+export async function getAllUsers(pageNumber = 1, pageSize = 10): Promise<PagedResult<UserProfile>> {
+  const res = await api.get<PagedResult<UserProfile>>(`/api/users?pageNumber=${pageNumber}&pageSize=${pageSize}`);
   return res.data;
 }
 

@@ -19,8 +19,8 @@ export default function HomeScreen() {
   useFocusEffect(
     useCallback(() => {
       const fetchCount = () =>
-        getNotifications()
-          .then((data) => setUnreadCount(data.filter((n) => !n.isRead).length))
+        getNotifications(1, 100)
+          .then((result) => setUnreadCount(result.items.filter((n) => !n.isRead).length))
           .catch(() => setUnreadCount(0));
 
       fetchCount();

@@ -73,3 +73,12 @@ export enum EventStatus {
   Approved = 1,
   Rejected = 2
 }
+
+export type PagedResult<T> = {
+  items: T[];
+  totalCount: number;
+  pageNumber: number;
+  pageSize: number;
+  totalPages: number;
+  hasNextPage: boolean;
+}

@@ -1,7 +1,7 @@
 import { FontAwesome } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { ActivityIndicator, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { styles } from "@/src/styles/event.style";
 import { toAppError } from "@/src/api/errors";
 import { createEvent } from "@/src/api/event.api";
@@ -63,6 +63,7 @@ export default function CreateEventScreen() {
     const [locationSuggestions, setLocationSuggestions] = useState<any[]>([]);
     const [showLocationMenu, setShowLocationMenu] = useState(false);
     const [isGeocoding, setIsGeocoding] = useState(false);
+    const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     // iOS modal pickers
     const [showStartPickerIOS, setShowStartPickerIOS] = useState(false);
@@ -125,20 +126,24 @@ export default function CreateEventScreen() {
   }
 
 
-  const handleLocationChange = async (text: string) => {
+  const handleLocationChange = (text: string) => {
         setLocation(text);
         if (errorMsg) setErrorMsg(null);
         clearError("LocationName");
-        
+
         setLatitude("");
         setLongitude("");
 
+        if (debounceRef.current) clearTimeout(debounceRef.current);
+
         if (text.length > 2) {
-            setIsGeocoding(true);
-            const suggestions = await getPlacesSuggestions(text);
-            setLocationSuggestions(suggestions);
-            setShowLocationMenu(suggestions.length > 0);
-            setIsGeocoding(false);
+            debounceRef.current = setTimeout(async () => {
+                setIsGeocoding(true);
+                const suggestions = await getPlacesSuggestions(text);
+                setLocationSuggestions(suggestions);
+                setShowLocationMenu(suggestions.length > 0);
+                setIsGeocoding(false);
+            }, 400);
         } else {
             setShowLocationMenu(false);
             setLocationSuggestions([]);

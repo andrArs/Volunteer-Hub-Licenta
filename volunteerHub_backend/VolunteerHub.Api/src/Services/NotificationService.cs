@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using VolunteerHub.Api.src.Data;
+using VolunteerHub.Api.src.DTO.Events;
 using VolunteerHub.Api.src.DTO.Notifications;
 
 namespace VolunteerHub.Api.src.Services;
@@ -13,12 +14,22 @@ public class NotificationService : INotificationService
         _db = db;
     }
 
-    public async Task<List<NotificationResponse>> GetNotificationsAsync(string userId)
+    public async Task<PagedResult<NotificationResponse>> GetNotificationsAsync(string userId, int pageNumber, int pageSize)
     {
-        return await _db.Notifications
+        if (pageNumber < 1) pageNumber = 1;
+        if (pageSize < 1) pageSize = 10;
+        if (pageSize > 100) pageSize = 100;
+
+        var query = _db.Notifications
             .AsNoTracking()
             .Where(n => n.UserId == userId)
-            .OrderByDescending(n => n.CreatedAt)
+            .OrderByDescending(n => n.CreatedAt);
+
+        var totalCount = await query.CountAsync();
+
+        var items = await query
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
             .Select(n => new NotificationResponse(
                 n.Id,
                 n.Message,
@@ -27,6 +38,14 @@ public class NotificationService : INotificationService
                 n.EventId
             ))
             .ToListAsync();
+
+        return new PagedResult<NotificationResponse>
+        {
+            Items = items,
+            TotalCount = totalCount,
+            PageNumber = pageNumber,
+            PageSize = pageSize
+        };
     }
 
     public async Task<bool> MarkAsReadAsync(Guid notificationId, string userId)

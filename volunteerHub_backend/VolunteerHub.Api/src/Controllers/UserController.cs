@@ -3,8 +3,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using VolunteerHub.Api.src.DTO.Events;
 using VolunteerHub.Api.src.DTO.Users;
-using VolunteerHub.Api.src.Entities; 
+using VolunteerHub.Api.src.Entities;
 
 namespace VolunteerHub.Api.src.Controllers;
 
@@ -43,20 +44,41 @@ public class UsersController : ControllerBase
 
     [Authorize]
     [HttpGet]
-    public async Task<ActionResult> GetAllUsers()
+    public async Task<ActionResult> GetAllUsers(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10)
     {
-        var users = await _userManager.Users.ToListAsync();
-       var response = new List<UserProfileResponse>();
+        if (pageNumber < 1) pageNumber = 1;
+        if (pageSize < 1) pageSize = 10;
+        if (pageSize > 50) pageSize = 50;
 
+        var query = _userManager.Users.OrderBy(u => u.LastName).ThenBy(u => u.FirstName);
+
+        var totalCount = await query.CountAsync();
+
+        var users = await query
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        var items = new List<UserProfileResponse>();
         foreach (var user in users)
         {
             var roles = await _userManager.GetRolesAsync(user);
-            response.Add(new UserProfileResponse(
+            items.Add(new UserProfileResponse(
                 user.Id, user.FirstName, user.LastName, user.Email ?? "", user.DateOfBirth, roles.ToList()
             ));
         }
-        return Ok(response);
-        
+
+        var result = new PagedResult<UserProfileResponse>
+        {
+            Items = items,
+            TotalCount = totalCount,
+            PageNumber = pageNumber,
+            PageSize = pageSize
+        };
+
+        return Ok(result);
     }
 
     [Authorize(Roles = "Admin")]

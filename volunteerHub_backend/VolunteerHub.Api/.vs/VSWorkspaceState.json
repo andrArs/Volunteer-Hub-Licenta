@@ -7,6 +7,6 @@
     "\\src\\DTO\\Users",
     "\\src\\Services"
   ],
-  "SelectedNode": "\\src\\DTO\\LoginRequest.cs",
+  "SelectedNode": "\\src\\Services\\EventService.cs",
   "PreviewInSolutionExplorer": false
 }

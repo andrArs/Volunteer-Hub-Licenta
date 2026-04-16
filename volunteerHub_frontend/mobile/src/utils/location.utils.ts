@@ -1,22 +1,21 @@
-import axios from "axios";
-import { Platform } from "react-native";
+import { api } from "../api/client";
 
-const EARTH_RADIUS_KM = 6371; 
+const EARTH_RADIUS_KM = 6371;
 
 const toRad = (value: number) => (value * Math.PI) / 180;
 
 export const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
   const dLat = toRad(lat2 - lat1);
   const dLon = toRad(lon2 - lon1);
-  
+
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
     Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
     Math.sin(dLon / 2) * Math.sin(dLon / 2); // Haversine formula
-    
+
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  
-  return EARTH_RADIUS_KM * c; 
+
+  return EARTH_RADIUS_KM * c;
 };
 
 export const formatDistance = (distanceKm: number): string => {
@@ -29,20 +28,11 @@ export const formatDistance = (distanceKm: number): string => {
     }
 };
 
-const getGoogleUrl = (url: string) => {
-    if (Platform.OS === 'web') {
-        return `https://corsproxy.io/?${encodeURIComponent(url)}`;
-    }
-    return url;
-};
-
 export const getPlacesSuggestions = async (query: string) => {
-    if (query.trim().length < 3) return []; 
+    if (query.trim().length < 3) return [];
 
     try {
-        const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(query)}&key=${process.env.EXPO_PUBLIC_MAP_API_KEY}`;
-
-        const response = await axios.get(getGoogleUrl(url));
+        const response = await api.get(`/api/places/autocomplete?input=${encodeURIComponent(query)}`);
 
         if (response.data.status === "OK") {
             return response.data.predictions.map((item: any) => ({
@@ -60,9 +50,7 @@ export const getPlacesSuggestions = async (query: string) => {
 
 export const getLatLongFromPlaceId = async (placeId: string) => {
     try {
-        const url = `https://maps.googleapis.com/maps/api/place/details/json?placeid=${placeId}&key=${process.env.EXPO_PUBLIC_MAP_API_KEY}`;
-
-        const response = await axios.get(getGoogleUrl(url));
+        const response = await api.get(`/api/places/details?placeId=${encodeURIComponent(placeId)}`);
         const data = response.data;
 
         if (data.status === "OK" && data.result) {

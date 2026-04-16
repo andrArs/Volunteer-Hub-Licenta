@@ -23,8 +23,10 @@ public class EventsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<List<EventResponse>>> GetApprovedEvents()
-        => Ok(await _events.GetApprovedEventsAsync());
+    public async Task<ActionResult<PagedResult<EventResponse>>> GetApprovedEvents(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10)
+        => Ok(await _events.GetApprovedEventsAsync(pageNumber, pageSize));
 
 
     [HttpGet("{id:guid}")]
