@@ -7,7 +7,7 @@ public interface IEventService
 {
     Task<EventResponse> CreateEventAsync(string creatorUserId, EventRequest req);
     Task<EventResponse?> GetEventByIdAsync(Guid id);
-    Task<List<EventResponse>> GetApprovedEventsAsync(); // public list
+    Task<PagedResult<EventResponse>> GetApprovedEventsAsync(int pageNumber, int pageSize); // public list
     Task<EventResponse?> UpdateEventAsync(Guid id, string requesterUserId, EventRequest req, bool isAdmin);
     Task<bool> DeleteEventAsync(Guid id, string requesterUserId, bool isAdmin);
     Task<bool> UpdateEventAttendanceAsync(Guid eventId, string userId, string status);

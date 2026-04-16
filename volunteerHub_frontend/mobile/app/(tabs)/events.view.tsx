@@ -1,6 +1,6 @@
 import { FontAwesome } from "@expo/vector-icons";
 import { useFocusEffect, useRouter } from "expo-router";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -17,6 +17,8 @@ import { styles } from "@/src/styles/events.list.styles";
 import * as Location from 'expo-location';
 import { calculateDistance, formatDistance } from "@/src/utils/location.utils";
 import { getAuth } from "@/src/store/auth.store";
+
+const PAGE_SIZE = 4;
 
 type DistanceOption = { label: string; valueKm: number | null };
 const DISTANCE_OPTIONS: DistanceOption[] = [
@@ -62,7 +64,11 @@ export default function AllEventsScreen() {
 
   const [events, setEvents] = useState<EventResponse[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const [totalCount, setTotalCount] = useState(0);
+  const pageRef = useRef(1);
 
   const [query, setQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<EventCategory | "All">("All");
@@ -89,25 +95,37 @@ export default function AllEventsScreen() {
       }
     })();
   }, []);
-  
+
   const load = useCallback(async () => {
     try {
       setErr(null);
       setLoading(true);
-      const data = await getAllEvents();
-      const now = new Date();
-        const futureEvents = (data || []).filter(ev => {
-          const eventDate = new Date(ev.startDateTime);
-          return eventDate >= now;
-        });
-
-        setEvents(futureEvents);
+      pageRef.current = 1;
+      const result = await getAllEvents(1, PAGE_SIZE);
+      setEvents(result.items);
+      setHasNextPage(result.hasNextPage);
+      setTotalCount(result.totalCount);
     } catch (e: any) {
       setErr(e?.message ?? "Failed to load events.");
     } finally {
       setLoading(false);
     }
   }, []);
+
+  const loadMore = useCallback(async () => {
+    if (loadingMore || !hasNextPage) return;
+    try {
+      setLoadingMore(true);
+      const nextPage = pageRef.current + 1;
+      const result = await getAllEvents(nextPage, PAGE_SIZE);
+      setEvents(prev => [...prev, ...result.items]);
+      setHasNextPage(result.hasNextPage);
+      pageRef.current = nextPage;
+    } catch (e: any) {
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [loadingMore, hasNextPage]);
 
   useFocusEffect(
     useCallback(() => {
@@ -224,12 +242,23 @@ export default function AllEventsScreen() {
           </View>
         ) : (
           <>
-            <Text style={styles.foundText}>Found {filtered.length} events</Text>
+            <Text style={styles.foundText}>
+              Showing {filtered.length} of {totalCount} events
+            </Text>
 
             <FlatList
               data={filtered}
               keyExtractor={(item) => item.id}
               contentContainerStyle={styles.listContent}
+              onEndReached={loadMore}
+              onEndReachedThreshold={0.3}
+              ListFooterComponent={
+                loadingMore ? (
+                  <View style={{ paddingVertical: 16, alignItems: "center" }}>
+                    <ActivityIndicator size="small" />
+                  </View>
+                ) : null
+              }
               renderItem={({ item }) => (
                 <Pressable style={styles.card} onPress={() => openEvent(item)}>
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>

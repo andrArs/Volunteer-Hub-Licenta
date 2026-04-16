@@ -98,11 +98,22 @@ public class EventService : IEventService
         );
     }
 
-    public async Task<List<EventResponse>> GetApprovedEventsAsync()
+    public async Task<PagedResult<EventResponse>> GetApprovedEventsAsync(int pageNumber, int pageSize)
     {
-         var list = await _db.Events.AsNoTracking()
-            .Where(e => e.Status == EventStatus.Approved)
-            .OrderBy(e => e.StartDateTime)
+        if (pageNumber < 1) pageNumber = 1;
+        if (pageSize < 1) pageSize = 10;
+        if (pageSize > 50) pageSize = 50;
+
+        var now = DateTime.UtcNow;
+        var query = _db.Events.AsNoTracking()
+            .Where(e => e.Status == EventStatus.Approved && e.StartDateTime >= now)
+            .OrderBy(e => e.StartDateTime);
+
+        var totalCount = await query.CountAsync();
+
+        var items = await query
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
             .Select(e => new EventResponse(
                 e.Id,
                 e.Title,
@@ -124,7 +135,13 @@ public class EventService : IEventService
             ))
             .ToListAsync();
 
-        return list;
+        return new PagedResult<EventResponse>
+        {
+            Items = items,
+            TotalCount = totalCount,
+            PageNumber = pageNumber,
+            PageSize = pageSize
+        };
     }
 
     public async Task<EventResponse?> UpdateEventAsync(Guid id, string requesterUserId, EventRequest req, bool isAdmin)

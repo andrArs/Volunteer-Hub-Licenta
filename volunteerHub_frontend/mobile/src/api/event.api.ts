@@ -1,5 +1,5 @@
 import { api } from "./client";
-import type { EventRequest, EventResponse } from "../types/event";
+import type { EventRequest, EventResponse, PagedResult } from "../types/event";
 
 export async function createEvent(req: EventRequest): Promise<EventResponse> {   
     const res = await api.post<EventResponse>("/api/events", {
@@ -38,8 +38,8 @@ export async function updateEvent(eventId: string, req: EventRequest): Promise<E
     return res.data;
 }
 
-export async function getAllEvents(): Promise<EventResponse[]> {
-    const res = await api.get<EventResponse[]>("/api/events");
+export async function getAllEvents(pageNumber = 1, pageSize = 10): Promise<PagedResult<EventResponse>> {
+    const res = await api.get<PagedResult<EventResponse>>(`/api/events?pageNumber=${pageNumber}&pageSize=${pageSize}`);
     return res.data;
 }
 
