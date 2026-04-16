@@ -1,6 +1,6 @@
 import { FontAwesome } from "@expo/vector-icons";
 import { useFocusEffect, useRouter } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -39,22 +39,42 @@ export default function NotificationsScreen() {
   const router = useRouter();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasNextPage, setHasNextPage] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [markingId, setMarkingId] = useState<string | null>(null);
   const [markingAll, setMarkingAll] = useState(false);
+  const pageRef = useRef(1);
 
   const load = useCallback(async () => {
     try {
       setError(null);
       setLoading(true);
-      const data = await getNotifications();
-      setNotifications(data ?? []);
+      pageRef.current = 1;
+      const result = await getNotifications(1, 10);
+      setNotifications(result.items);
+      setHasNextPage(result.hasNextPage);
     } catch {
       setError("Failed to load notifications. Please try again.");
     } finally {
       setLoading(false);
     }
   }, []);
+
+  const loadMore = useCallback(async () => {
+    if (loadingMore || !hasNextPage) return;
+    try {
+      setLoadingMore(true);
+      const nextPage = pageRef.current + 1;
+      const result = await getNotifications(nextPage, 10);
+      setNotifications(prev => [...prev, ...result.items]);
+      setHasNextPage(result.hasNextPage);
+      pageRef.current = nextPage;
+    } catch {
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [loadingMore, hasNextPage]);
 
   useFocusEffect(
     useCallback(() => {
@@ -142,6 +162,15 @@ export default function NotificationsScreen() {
               keyExtractor={(item) => item.id}
               showsVerticalScrollIndicator={false}
               contentContainerStyle={styles.listContent}
+              onEndReached={loadMore}
+              onEndReachedThreshold={0.3}
+              ListFooterComponent={
+                loadingMore ? (
+                  <View style={{ paddingVertical: 16, alignItems: "center" }}>
+                    <ActivityIndicator size="small" color="#3F5E95" />
+                  </View>
+                ) : null
+              }
               renderItem={({ item }) => (
                 <Pressable
                   style={[styles.card, !item.isRead && styles.cardUnread]}
