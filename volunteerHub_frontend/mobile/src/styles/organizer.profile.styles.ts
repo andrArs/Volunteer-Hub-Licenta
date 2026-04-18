@@ -107,4 +107,8 @@ export const styles = StyleSheet.create({
 
   emptyWrap: { alignItems: "center", paddingTop: 40, gap: 12 },
   emptyText: { fontSize: 14, color: "#8B93A7", fontWeight: "700" },
+
+  starRow: { flexDirection: "row", gap: 2 },
+  flex1: { flex: 1 },
+  reviewRatingCol: { alignItems: "flex-end", gap: 4 },
 });

@@ -8,7 +8,7 @@ import { styles } from "@/src/styles/organizer.profile.styles";
 
 function StarRating({ rating, size = 14 }: { rating: number; size?: number }) {
   return (
-    <View style={{ flexDirection: "row", gap: 2 }}>
+    <View style={styles.starRow}>
       {[1, 2, 3, 4, 5].map((s) => (
         <FontAwesome
           key={s}
@@ -30,11 +30,11 @@ function ReviewCard({ item }: { item: ReviewResponse }) {
   return (
     <View style={styles.reviewCard}>
       <View style={styles.reviewHeader}>
-        <View style={{ flex: 1 }}>
+        <View style={styles.flex1}>
           <Text style={styles.reviewerName}>{item.reviewerName}</Text>
           <Text style={styles.reviewEvent}>{item.eventTitle}</Text>
         </View>
-        <View style={{ alignItems: "flex-end", gap: 4 }}>
+        <View style={styles.reviewRatingCol}>
           <StarRating rating={item.rating} size={13} />
           <Text style={styles.reviewDate}>{formatted}</Text>
         </View>

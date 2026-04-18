@@ -272,6 +272,34 @@ modalOverlay: {
     fontWeight: '700',
   },
   
+  statusBadgeWrap: { marginBottom: -4, marginTop: 12 },
+
+  adminNoteBox: {
+    backgroundColor: '#FEF2F2',
+    borderWidth: 1,
+    borderColor: '#FCA5A5',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 16,
+    flexDirection: 'row',
+    gap: 10,
+  },
+  adminNoteContent: { flex: 1 },
+  adminNoteTitle: { color: '#991B1B', fontWeight: '800', fontSize: 13, marginBottom: 4 },
+  adminNoteText: { color: '#B91C1C', fontSize: 13, lineHeight: 18 },
+
+  approveBtnBg: { backgroundColor: '#059669' },
+
+  rejectInput: {
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 8,
+    padding: 12,
+    minHeight: 80,
+    textAlignVertical: 'top',
+    marginBottom: 20,
+  },
+
   organizerCard: {
     flexDirection: 'row',
     alignItems: 'center',

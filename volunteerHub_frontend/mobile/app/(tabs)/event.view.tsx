@@ -378,7 +378,7 @@ export default function EventDetailsScreen() {
       showsVerticalScrollIndicator={false}
     >
       {(isMine) && (
-        <View style={{ marginBottom: -4, marginTop: 12 }}>
+        <View style={styles.statusBadgeWrap}>
           {renderStatusBadge(event.status)}
         </View>
       )}
@@ -388,22 +388,13 @@ export default function EventDetailsScreen() {
       </View>
 
       {isMine && event.status === EventStatus.Rejected && event.adminNotes && (
-        <View style={{
-          backgroundColor: '#FEF2F2',
-          borderWidth: 1,
-          borderColor: '#FCA5A5',
-          borderRadius: 8,
-          padding: 12,
-          marginBottom: 16,
-          flexDirection: 'row',
-          gap: 10
-        }}>
-          <FontAwesome name="exclamation-circle" size={18} color="#DC2626" style={{ marginTop: 2 }} />
-          <View style={{ flex: 1 }}>
-            <Text style={{ color: '#991B1B', fontWeight: '800', fontSize: 13, marginBottom: 4 }}>
+        <View style={styles.adminNoteBox}>
+          <FontAwesome name="exclamation-circle" size={18} color="#DC2626" />
+          <View style={styles.adminNoteContent}>
+            <Text style={styles.adminNoteTitle}>
               Admin Note (Action Required)
             </Text>
-            <Text style={{ color: '#B91C1C', fontSize: 13, lineHeight: 18 }}>
+            <Text style={styles.adminNoteText}>
               {event.adminNotes}
             </Text>
           </View>
@@ -462,7 +453,7 @@ export default function EventDetailsScreen() {
             <View style={styles.organizerAvatar}>
               <FontAwesome name="user" size={16} color="#3F5E95" />
             </View>
-            <View style={{ flex: 1 }}>
+            <View style={styles.adminNoteContent}>
               <Text style={styles.organizerCardName}>
                 {event.creatorName ?? 'View organizer profile'}
               </Text>
@@ -479,8 +470,8 @@ export default function EventDetailsScreen() {
          <>
          <Text style={styles.sectionTitle}>Moderation Controls</Text>
          <View style={styles.actionsRow}>
-           <Pressable 
-             style={[styles.primaryBtn, { backgroundColor: '#059669' }]} 
+           <Pressable
+             style={[styles.primaryBtn, styles.approveBtnBg]}
              onPress={handleApprove}
              disabled={busyStatusUpdate}
            >
@@ -637,15 +628,7 @@ export default function EventDetailsScreen() {
             </Text>
 
             <TextInput
-              style={{
-                borderWidth: 1,
-                borderColor: '#E5E7EB',
-                borderRadius: 8,
-                padding: 12,
-                minHeight: 80,
-                textAlignVertical: 'top',
-                marginBottom: 20,
-              }}
+              style={styles.rejectInput}
               placeholder="e.g. Please provide a more detailed address."
               multiline
               value={rejectReason}

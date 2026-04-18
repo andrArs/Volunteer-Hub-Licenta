@@ -5,7 +5,6 @@ import {
   ActivityIndicator,
   FlatList,
   Pressable,
-  StyleSheet,
   Text,
   View,
 } from "react-native";
@@ -136,7 +135,7 @@ export default function NotificationsScreen() {
           </View>
         ) : error ? (
           <View style={styles.center}>
-            <FontAwesome name="exclamation-circle" size={40} color="#DC2626" style={{ marginBottom: 12 }} />
+            <FontAwesome name="exclamation-circle" size={40} color="#DC2626" style={styles.iconMarginBottom12} />
             <Text style={styles.errorText}>{error}</Text>
             <Pressable onPress={load} style={styles.retryBtn}>
               <Text style={styles.retryText}>Retry</Text>
@@ -145,12 +144,12 @@ export default function NotificationsScreen() {
         ) : (
           <>
             {unreadCount > 0 && (
-              <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-                <Text style={[styles.unreadLabel, { marginBottom: 0 }]}>
+              <View style={styles.unreadHeaderRow}>
+                <Text style={styles.unreadLabel}>
                   {unreadCount} unread notification{unreadCount > 1 ? "s" : ""}
                 </Text>
                 <Pressable onPress={handleMarkAll} disabled={markingAll} hitSlop={8}>
-                  <Text style={{ color: "#3F5E95", fontSize: 13, fontWeight: "700", opacity: markingAll ? 0.5 : 1 }}>
+                  <Text style={[styles.markAllText, markingAll && styles.markAllDisabled]}>
                     {markingAll ? "Marking..." : "Mark all as read"}
                   </Text>
                 </Pressable>
@@ -166,7 +165,7 @@ export default function NotificationsScreen() {
               onEndReachedThreshold={0.3}
               ListFooterComponent={
                 loadingMore ? (
-                  <View style={{ paddingVertical: 16, alignItems: "center" }}>
+                  <View style={styles.listFooter}>
                     <ActivityIndicator size="small" color="#3F5E95" />
                   </View>
                 ) : null
@@ -206,8 +205,8 @@ export default function NotificationsScreen() {
                 </Pressable>
               )}
               ListEmptyComponent={
-                <View style={[styles.center, { marginTop: 60 }]}>
-                  <FontAwesome name="bell-o" size={48} color="#D1D5E0" style={{ marginBottom: 16 }} />
+                <View style={[styles.center, styles.emptyWrap]}>
+                  <FontAwesome name="bell-o" size={48} color="#D1D5E0" style={styles.iconMarginBottom16} />
                   <Text style={styles.emptyTitle}>No notifications yet</Text>
                   <Text style={styles.emptySubtitle}>
                     You'll be notified when your events are reviewed.

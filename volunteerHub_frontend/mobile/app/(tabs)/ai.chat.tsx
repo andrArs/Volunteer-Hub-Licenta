@@ -80,7 +80,7 @@ type Segment =
           name="check-circle"
           size={16}
           color="#4CAF50"
-          style={{ marginRight: 8 }}
+          style={aiStyles.iconMarginRight}
         />
         <Text style={aiStyles.joinCardDoneText}>
           {status === "going" ? "You're going!" : "Marked as interested!"}
@@ -99,14 +99,14 @@ type Segment =
         />
         <Text style={aiStyles.joinCardText}>
           Mark as{" "}
-          <Text style={{ fontWeight: "700" }}>
+          <Text style={aiStyles.boldText}>
             {status === "going" ? "Going" : "Interested"}
           </Text>
           ?
         </Text>
       </View>
       <Pressable
-        style={[aiStyles.joinCardBtn, loading && { opacity: 0.6 }]}
+        style={[aiStyles.joinCardBtn, loading && aiStyles.joinCardBtnDisabled]}
         onPress={handleConfirm}
         disabled={loading}
       >
@@ -145,22 +145,22 @@ function RemoveConfirmCard({
   if (done) {
     return (
       <View style={aiStyles.joinCard}>
-        <FontAwesome name="check-circle" size={16} color="#4CAF50" style={{ marginRight: 8 }} />
+        <FontAwesome name="check-circle" size={16} color="#4CAF50" style={aiStyles.iconMarginRight} />
         <Text style={aiStyles.joinCardDoneText}>Removed from your list! ✅</Text>
       </View>
     );
   }
 
   return (
-    <View style={[aiStyles.joinCard, { borderLeftColor: "#E53935" }]}>
+    <View style={[aiStyles.joinCard, aiStyles.joinCardRemove]}>
       <View style={aiStyles.joinCardInfo}>
         <FontAwesome name="times-circle-o" size={14} color="#E53935" />
         <Text style={aiStyles.joinCardText}>
-          Remove from <Text style={{ fontWeight: "700" }}>your events</Text>?
+          Remove from <Text style={aiStyles.boldText}>your events</Text>?
         </Text>
       </View>
       <Pressable
-        style={[aiStyles.joinCardBtn, { backgroundColor: "#E53935" }, loading && { opacity: 0.6 }]}
+        style={[aiStyles.joinCardBtn, aiStyles.joinCardRemoveBtnBg, loading && aiStyles.joinCardBtnDisabled]}
         onPress={handleConfirm}
         disabled={loading}
       >
@@ -483,7 +483,7 @@ export default function AiChatScreen() {
         <Pressable style={aiStyles.headerBtn} onPress={openDrawer}>
           <FontAwesome name="bars" size={18} color="#3F5E95" />
         </Pressable>
-        <View style={{ flex: 1 }}>
+        <View style={aiStyles.flex1}>
           <Text style={aiStyles.headerTitle}>AI Assistant</Text>
           <Text style={aiStyles.headerSubtitle}>VolunteerHub helper</Text>
         </View>
@@ -495,7 +495,7 @@ export default function AiChatScreen() {
       </View>
 
       <KeyboardAvoidingView
-        style={{ flex: 1 }}
+        style={aiStyles.flex1}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         keyboardVerticalOffset={0}
       >
@@ -529,7 +529,7 @@ export default function AiChatScreen() {
             ref={flatListRef}
             data={messages}
             keyExtractor={(item) => item.id}
-            contentContainerStyle={{ padding: 16, paddingBottom: 8 }}
+            contentContainerStyle={aiStyles.listContentPadding}
             renderItem={({ item }) => (
               <MessageBubble
                 msg={item}
@@ -596,9 +596,9 @@ export default function AiChatScreen() {
         <Text style={aiStyles.drawerSectionTitle}>History</Text>
 
         {loadingConversations ? (
-          <ActivityIndicator color="#3F5E95" style={{ marginTop: 20 }} />
+          <ActivityIndicator color="#3F5E95" style={aiStyles.drawerLoadingIndicator} />
         ) : conversations.length === 0 ? (
-          <Text style={{ color: "#8B93A7", fontSize: 13, marginTop: 8 }}>
+          <Text style={aiStyles.drawerEmptyText}>
             No conversations yet.
           </Text>
         ) : (
@@ -613,7 +613,7 @@ export default function AiChatScreen() {
                 onPress={() => selectConversation(conv)}
               >
                 <View style={aiStyles.conversationRow}>
-                  <View style={{ flex: 1 }}>
+                  <View style={aiStyles.flex1}>
                     <Text style={aiStyles.conversationItemText} numberOfLines={1}>
                       {conv.title 
                         ? conv.title 

@@ -254,15 +254,15 @@ export default function AllEventsScreen() {
               onEndReachedThreshold={0.3}
               ListFooterComponent={
                 loadingMore ? (
-                  <View style={{ paddingVertical: 16, alignItems: "center" }}>
+                  <View style={styles.listFooter}>
                     <ActivityIndicator size="small" />
                   </View>
                 ) : null
               }
               renderItem={({ item }) => (
                 <Pressable style={styles.card} onPress={() => openEvent(item)}>
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                    <Text style={[styles.cardTitle, { flex: 1, marginBottom: 0 }]} numberOfLines={1}>
+                  <View style={styles.cardHeaderRow}>
+                    <Text style={[styles.cardTitle, styles.cardTitleInRow]} numberOfLines={1}>
                       {item.title}
                     </Text>
                     {item.status !== undefined && item.createdById === myUserId && renderMyEventBadge()}
@@ -296,7 +296,7 @@ export default function AllEventsScreen() {
                     <View style={styles.metaRow}>
                       <View style={styles.metaItem}>
                         <FontAwesome name="location-arrow" size={13} color="#3F5E95" />
-                        <Text style={[styles.metaText, { color: '#3F5E95', fontWeight: '700' }]}>
+                        <Text style={[styles.metaText, styles.metaTextHighlight]}>
                           {formatDistance(item.distance)}
                         </Text>
                       </View>
@@ -315,7 +315,7 @@ export default function AllEventsScreen() {
         onPress={() => router.push("/events.map")}
       >
         <FontAwesome name="map" size={16} color="#fff" />
-        <Text style={{ color: '#fff', fontWeight: '800', marginLeft: 10, fontSize: 16 }}>
+        <Text style={styles.mapButtonText}>
           Map View
         </Text>
       </Pressable>

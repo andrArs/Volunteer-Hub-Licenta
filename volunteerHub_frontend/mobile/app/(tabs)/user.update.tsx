@@ -181,7 +181,7 @@ export default function UpdateUserScreen() {
       </View>
 
       <KeyboardAvoidingView
-        style={{ flex: 1 }}
+        style={styles.flex1}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         <ScrollView keyboardShouldPersistTaps="handled">
@@ -200,7 +200,7 @@ export default function UpdateUserScreen() {
               />
             </View>
 
-            <Text style={[styles.label, { marginTop: 12 }]}>
+            <Text style={[styles.label, styles.labelSpaced]}>
               Last Name
             </Text>
             <View style={styles.inputWrap}>
@@ -216,7 +216,7 @@ export default function UpdateUserScreen() {
               />
             </View>
 
-            <Text style={[styles.label, { marginTop: 12 }]}>
+            <Text style={[styles.label, styles.labelSpaced]}>
               Email
             </Text>
             <View style={styles.inputWrap}>
@@ -233,7 +233,7 @@ export default function UpdateUserScreen() {
               />
             </View>
 
-            <Text style={[styles.label, { marginTop: 12 }]}>
+            <Text style={[styles.label, styles.labelSpaced]}>
               Date of Birth
             </Text>
             <View style={styles.inputWrap}>
@@ -274,9 +274,9 @@ export default function UpdateUserScreen() {
           </View>
 
           {(errorMsg || Object.values(errors).some(Boolean)) && (
-            <View style={{ alignItems: "center", marginTop: 16 }}>
+            <View style={styles.errorContainer}>
               {errorMsg && (
-                <Text style={{ color: "#D92D20", fontWeight: "700" }}>
+                <Text style={styles.errorMain}>
                   {errorMsg}
                 </Text>
               )}
@@ -284,7 +284,7 @@ export default function UpdateUserScreen() {
               {Object.entries(errors)
                 .filter(([, v]) => v)
                 .map(([k, v]) => (
-                  <Text key={k} style={{ color: "#D92D20" }}>
+                  <Text key={k} style={styles.errorField}>
                     • {v}
                   </Text>
                 ))}
@@ -296,7 +296,7 @@ export default function UpdateUserScreen() {
             style={[
               styles.primaryBtn,
               submitting && styles.primaryBtnDisabled,
-              { marginTop: 20 },
+              styles.primaryBtnTopMargin,
             ]}
             onPress={onUpdateUser}
           >

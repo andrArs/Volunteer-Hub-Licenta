@@ -386,4 +386,14 @@ modalOverlay: {
     color: "#DC2626",
     fontWeight: "600",
   },
+
+  flex1: { flex: 1 },
+  iconMarginRight: { marginRight: 8 },
+  boldText: { fontWeight: "700" },
+  joinCardBtnDisabled: { opacity: 0.6 },
+  joinCardRemove: { borderLeftColor: "#E53935" },
+  joinCardRemoveBtnBg: { backgroundColor: "#E53935" },
+  listContentPadding: { padding: 16, paddingBottom: 8 },
+  drawerEmptyText: { color: "#8B93A7", fontSize: 13, marginTop: 8 },
+  drawerLoadingIndicator: { marginTop: 20 },
 });

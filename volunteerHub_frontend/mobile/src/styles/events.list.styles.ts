@@ -230,5 +230,48 @@ export const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '800',
     letterSpacing: 0.5
-  }
+  },
+
+  listFooter: { paddingVertical: 16, alignItems: "center" },
+
+  cardHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  cardTitleInRow: { flex: 1, marginBottom: 0 },
+
+  metaTextHighlight: { color: '#3F5E95', fontWeight: '700' },
+
+  mapButtonText: { color: '#fff', fontWeight: '800', marginLeft: 10, fontSize: 16 },
+
+  emptyText: { color: "#8B93A7", fontWeight: "600" },
+  centerWithTopMargin: { marginTop: 40 },
+
+  searchWrapMargin: { marginVertical: 10 },
+
+  rolesRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginBottom: 8,
+  },
+  rolesLabel: { fontSize: 12, fontWeight: '600', color: '#8B93A7' },
+
+  roleBadge: {
+    backgroundColor: '#E9EEF9',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  roleBadgeAdmin: {
+    backgroundColor: '#FEE2E2',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  roleBadgeText: { color: '#3F5E95', fontSize: 11, fontWeight: '800' },
+  roleBadgeTextAdmin: { color: '#DC2626', fontSize: 11, fontWeight: '800' },
 });

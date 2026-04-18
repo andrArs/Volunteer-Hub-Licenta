@@ -316,8 +316,8 @@ export default function CreateEventScreen() {
                 <View style={styles.rightSpacer} />
             </View>
 
-            <KeyboardAvoidingView 
-                style={{ flex: 1 }} 
+            <KeyboardAvoidingView
+                style={styles.flex1}
                 behavior={Platform.OS === "ios" ? "padding" : undefined}
             >
 
@@ -340,7 +340,7 @@ export default function CreateEventScreen() {
                         />
                     </View>
 
-                    <Text style={[styles.label, { marginTop: 12 }]}>Description</Text>
+                    <Text style={[styles.label, styles.labelSpaced]}>Description</Text>
                     <View style={styles.inputWrap}>
                         <TextInput 
                         value={Description}
@@ -357,7 +357,7 @@ export default function CreateEventScreen() {
                         />
                     </View>
 
-                    <Text style={[styles.label, { marginTop: 12 }]}>Category</Text>
+                    <Text style={[styles.label, styles.labelSpaced]}>Category</Text>
                     <View style={styles.inputWrap}>
                     <Pressable
                         style={styles.pressableInput}
@@ -378,8 +378,8 @@ export default function CreateEventScreen() {
                             <Pressable onPress={() => setShowCategoryModal(false)}>
                                 <Text style={styles.modalBtn}>Close</Text>
                             </Pressable>
-                            <Text style={{ fontWeight: "900", color: "#1E2A3B" }}>Category</Text>
-                            <View style={{ width: 46 }} />
+                            <Text style={styles.modalHeaderTitle}>Category</Text>
+                            <View style={styles.modalHeaderSpacer} />
                             </View>
 
                             {EVENT_CATEGORIES.map((c) => (
@@ -400,7 +400,7 @@ export default function CreateEventScreen() {
                     </Modal>
                     ) : null}
 
-                    <Text style={[styles.label, { marginTop: 12 }]}>Start Date and Time</Text>
+                    <Text style={[styles.label, styles.labelSpaced]}>Start Date and Time</Text>
                     <View style={styles.inputWrap}>
                     {Platform.OS === "web" ? (
                         <input
@@ -435,7 +435,7 @@ export default function CreateEventScreen() {
                     )}
                     </View>
 
-                    <Text style={[styles.label, { marginTop: 12 }]}>End Date and Time</Text>
+                    <Text style={[styles.label, styles.labelSpaced]}>End Date and Time</Text>
                     <View style={styles.inputWrap}>
                     {Platform.OS === "web" ? (
                         <input
@@ -470,7 +470,7 @@ export default function CreateEventScreen() {
                     )}
                     </View>
 
-                    <Text style={[styles.label, { marginTop: 12 }]}>Location</Text>
+                    <Text style={[styles.label, styles.labelSpaced]}>Location</Text>
                      <View style={styles.autocompleteWrapper}>
                         
                         {showLocationMenu && locationSuggestions.length > 0 && (
@@ -514,7 +514,7 @@ export default function CreateEventScreen() {
                         </View>
                     </View>
 
-                    <Text style={[styles.label, { marginTop: 12 }]}>Max Volunteers (Optional)</Text>
+                    <Text style={[styles.label, styles.labelSpaced]}>Max Volunteers (Optional)</Text>
                     <View style={styles.inputWrap}>
                         <TextInput 
                         value={MaxVolunteers}
@@ -534,9 +534,9 @@ export default function CreateEventScreen() {
                 </View>
 
                 {(errorMsg || Object.values(errors).some(Boolean)) ? (
-                <View style={{ alignItems:"center" ,marginTop: 16, paddingHorizontal: 4 }}>
+                <View style={styles.errorContainer}>
                     {errorMsg ? (
-                    <Text style={{ color: "#D92D20", fontWeight: "700", marginBottom: 6 }}>
+                    <Text style={styles.errorMain}>
                         {errorMsg}
                     </Text>
                     ) : null}
@@ -544,7 +544,7 @@ export default function CreateEventScreen() {
                     {Object.entries(errors)
                     .filter(([, msg]) => !!msg)
                     .map(([key, msg]) => (
-                        <Text key={key} style={{ color: "#D92D20", marginBottom: 4 }}>
+                        <Text key={key} style={styles.errorField}>
                         • {msg}
                         </Text>
                     ))}
@@ -553,8 +553,8 @@ export default function CreateEventScreen() {
 
 
                 <Pressable
-                    disabled={submitting} 
-                    style={[styles.primaryBtn, submitting && styles.primaryBtnDisabled, { marginTop: 20 }]}
+                    disabled={submitting}
+                    style={[styles.primaryBtn, submitting && styles.primaryBtnDisabled, styles.primaryBtnTopMargin]}
                     onPress={onCreateEvent}
                 >
                     <Text style={styles.primaryBtnText}>

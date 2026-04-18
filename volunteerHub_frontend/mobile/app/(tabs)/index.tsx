@@ -132,7 +132,7 @@ export default function HomeScreen() {
               }}
             />
             <Pressable
-              style={[styles.aiSendBtn, !aiText.trim() && { opacity: 0.5 }]}
+              style={[styles.aiSendBtn, !aiText.trim() && styles.aiSendBtnDisabled]}
               disabled={!aiText.trim()}
               onPress={() =>
                 router.push({

@@ -133,7 +133,7 @@ export default function MyProfileScreen() {
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         
         {loading ? (
-          <ActivityIndicator size="large" color="#3F5E95" style={{ marginTop: 40 }} />
+          <ActivityIndicator size="large" color="#3F5E95" style={styles.loadingIndicator} />
         ) : (
           <>
             <View style={styles.card}>

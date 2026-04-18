@@ -176,5 +176,7 @@ export const styles = StyleSheet.create({
     color: "#3F5E95",
     fontSize: 16,
     fontWeight: "800",
-  }
+  },
+
+  loadingIndicator: { marginTop: 40 },
 });
