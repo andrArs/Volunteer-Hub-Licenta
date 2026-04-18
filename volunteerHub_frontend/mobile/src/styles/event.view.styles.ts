@@ -272,6 +272,90 @@ modalOverlay: {
     fontWeight: '700',
   },
   
+  organizerCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: '#F9FAFB',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  organizerAvatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#E9EEF9',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  organizerCardName: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#1E2A3B',
+  },
+  organizerCardSubText: {
+    fontSize: 11,
+    color: '#8B93A7',
+    fontWeight: '600',
+    marginTop: 2,
+  },
+
+  pastEventWrap: {
+    marginTop: 20,
+  },
+  pastEventText: {
+    color: '#8B93A7',
+    fontSize: 14,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  leaveReviewBtn: {
+    marginTop: 16,
+    backgroundColor: '#3F5E95',
+  },
+  reviewedRow: {
+    marginTop: 16,
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 6,
+  },
+  reviewedText: {
+    color: '#059669',
+    fontSize: 13,
+    fontWeight: '800',
+  },
+
+  reviewModalContent: {
+    maxWidth: 420,
+  },
+  reviewModalText: {
+    marginBottom: 16,
+  },
+  reviewStarRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 8,
+    marginBottom: 20,
+  },
+  reviewCommentInput: {
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 8,
+    padding: 12,
+    minHeight: 80,
+    textAlignVertical: 'top',
+    marginBottom: 20,
+    fontSize: 13,
+    color: '#1E2A3B',
+  },
+  reviewSubmitBtn: {
+    backgroundColor: '#3F5E95',
+  },
+
   rolesCard: {
     backgroundColor: '#fff',
     borderRadius: 16,

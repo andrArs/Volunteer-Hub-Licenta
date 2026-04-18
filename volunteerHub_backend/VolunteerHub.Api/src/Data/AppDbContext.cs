@@ -12,6 +12,7 @@ public class AppDbContext : IdentityDbContext<User>
     public DbSet<Notification> Notifications { get; set; } = null!;
     public DbSet<AiConversation> AiConversations => Set<AiConversation>();
     public DbSet<AiMessage> AiMessages => Set<AiMessage>();
+    public DbSet<Review> Reviews { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -59,5 +60,23 @@ public class AppDbContext : IdentityDbContext<User>
                 .HasForeignKey(e => e.ConversationId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
-    } 
+
+        builder.Entity<Review>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasOne(e => e.Event)
+                .WithMany()
+                .HasForeignKey(e => e.EventId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.Reviewer)
+                .WithMany()
+                .HasForeignKey(e => e.ReviewerId)
+                .OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(e => e.Organizer)
+                .WithMany()
+                .HasForeignKey(e => e.OrganizerId)
+                .OnDelete(DeleteBehavior.Restrict);
+            entity.HasIndex(e => new { e.EventId, e.ReviewerId }).IsUnique();
+        });
+    }
 }
