@@ -98,7 +98,7 @@ export default function AllUsersScreen() {
     
       </View>
          
-      <View style={[styles.searchWrap, { marginVertical: 10}]}>
+      <View style={[styles.searchWrap, styles.searchWrapMargin]}>
         <FontAwesome name="search" size={14} color="#8B93A7" />
         <TextInput
           value={query}
@@ -132,15 +132,15 @@ export default function AllUsersScreen() {
               onEndReachedThreshold={0.3}
               ListFooterComponent={
                 loadingMore ? (
-                  <View style={{ paddingVertical: 16, alignItems: "center" }}>
+                  <View style={styles.listFooter}>
                     <ActivityIndicator size="small" />
                   </View>
                 ) : null
               }
               renderItem={({ item }) => (
                 <Pressable style={styles.card} onPress={() => openUserProfile(item)}>
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                    <Text style={[styles.cardTitle, { flex: 1, marginBottom: 0 }]} numberOfLines={1}>
+                  <View style={styles.cardHeaderRow}>
+                    <Text style={[styles.cardTitle, styles.cardTitleInRow]} numberOfLines={1}>
                       {item.firstName} {item.lastName}
                     </Text>
                   </View>
@@ -154,27 +154,14 @@ export default function AllUsersScreen() {
                 </View>
 
                 {item.roles && item.roles.length > 0 && (
-                  <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
-                    
-                    <Text style={{ fontSize: 12, fontWeight: '600', color: '#8B93A7' }}>
-                      Roles:
-                    </Text>
-
+                  <View style={styles.rolesRow}>
+                    <Text style={styles.rolesLabel}>Roles:</Text>
                     {item.roles.map(role => (
-                      <View 
-                        key={role} 
-                        style={{
-                          backgroundColor: role === 'Admin' ? '#FEE2E2' : '#E9EEF9',
-                          paddingHorizontal: 8,
-                          paddingVertical: 4,
-                          borderRadius: 8
-                        }}
+                      <View
+                        key={role}
+                        style={role === 'Admin' ? styles.roleBadgeAdmin : styles.roleBadge}
                       >
-                        <Text style={{
-                          color: role === 'Admin' ? '#DC2626' : '#3F5E95',
-                          fontSize: 11,
-                          fontWeight: '800'
-                        }}>
+                        <Text style={role === 'Admin' ? styles.roleBadgeTextAdmin : styles.roleBadgeText}>
                           {role}
                         </Text>
                       </View>

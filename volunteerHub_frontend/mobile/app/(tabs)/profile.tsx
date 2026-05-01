@@ -127,13 +127,15 @@ export default function MyProfileScreen() {
           <FontAwesome name="arrow-left" size={18} color="#fff" />
         </Pressable>
         <Text style={styles.headerTitle}>My Profile</Text>
-        <View style={styles.rightSpacer} />
+        <Pressable onPress={() => router.push("/profile.update")} style={styles.editBtn}>
+          <FontAwesome name="pencil" size={18} color="#fff" />
+        </Pressable>
       </View>
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         
         {loading ? (
-          <ActivityIndicator size="large" color="#3F5E95" style={{ marginTop: 40 }} />
+          <ActivityIndicator size="large" color="#3F5E95" style={styles.loadingIndicator} />
         ) : (
           <>
             <View style={styles.card}>

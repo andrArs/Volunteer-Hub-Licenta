@@ -1,4 +1,4 @@
-import { Platform, StyleSheet } from "react-native";
+import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
   page: {
@@ -96,7 +96,19 @@ export const styles = StyleSheet.create({
     backgroundColor: "#3F5E95", 
     borderRadius: 8 },
     
-  retryText: { 
-    color: "#fff", 
-    fontWeight: "700" }
+  retryText: {
+    color: "#fff",
+    fontWeight: "700" },
+
+  cardHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  cardTitleInRow: { flex: 1, marginBottom: 0 },
+
+  emptyWrap: { marginTop: 40 },
+  emptySuccessTitle: { color: "#059669", fontWeight: "800", fontSize: 16 },
+  emptySuccessSubtitle: { color: "#8B93A7", marginTop: 8 },
 });

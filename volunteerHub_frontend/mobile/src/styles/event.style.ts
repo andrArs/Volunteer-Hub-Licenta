@@ -201,7 +201,19 @@ autocompleteWrapper: {
     paddingRight: 12 
   },
   locationInput: {
-    flex: 1, 
-    borderBottomWidth: 0 
-  }
+    flex: 1,
+    borderBottomWidth: 0
+  },
+
+  flex1: { flex: 1 },
+  labelSpaced: { marginTop: 12 },
+
+  modalHeaderTitle: { fontWeight: "900", color: "#1E2A3B" },
+  modalHeaderSpacer: { width: 46 },
+
+  errorContainer: { alignItems: "center", marginTop: 16, paddingHorizontal: 4 },
+  errorMain: { color: "#D92D20", fontWeight: "700", marginBottom: 6 },
+  errorField: { color: "#D92D20", marginBottom: 4 },
+
+  primaryBtnTopMargin: { marginTop: 20 },
 });

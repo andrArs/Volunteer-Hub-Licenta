@@ -27,6 +27,10 @@ export async function updateUser(id: string, data: Partial<UserProfile>): Promis
   return res.data;
 }
 
+export async function updateMyProfile(data: { firstName: string; lastName: string; dateOfBirth?: string }): Promise<void> {
+  await api.put("/api/users/me", data);
+}
+
 export async function assignRole(id: string, roleName: string): Promise<void> {
   await api.post(`/api/users/${id}/roles`, { roleName });
 }

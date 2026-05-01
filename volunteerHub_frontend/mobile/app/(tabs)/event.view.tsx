@@ -1,15 +1,17 @@
 import { FontAwesome } from "@expo/vector-icons";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Alert, Modal, Platform, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Alert, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 
 import { getEventById, deleteEvent, updateEventAttendance, getEventParticipantsCount, getUserEventStatus } from "@/src/api/event.api";
-import { getAuth } from "@/src/store/auth.store"; 
+import { getMyReviewStatus, createReview } from "@/src/api/review.api";
+import { getAuth } from "@/src/store/auth.store";
 import { EVENT_CATEGORIES, EventStatus, type EventResponse } from "@/src/types/event";
 import { styles } from "@/src/styles/event.view.styles";
 import * as Haptics from 'expo-haptics';
 import * as Location from 'expo-location';
 import { calculateDistance, formatDistance } from "@/src/utils/location.utils";
+import { addEventToCalendar, removeEventFromCalendar } from "@/src/utils/calendar.utils";
 import { setEventStatus } from "@/src/api/admin.api";
 
 type AttendanceStatus = "none" | "interested" | "going";
@@ -88,6 +90,12 @@ export default function EventDetailsScreen() {
   const [rejectReason, setRejectReason] = useState("");
   const [busyStatusUpdate, setBusyStatusUpdate] = useState(false);
 
+  const [hasReviewed, setHasReviewed] = useState(false);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [reviewRating, setReviewRating] = useState(0);
+  const [reviewComment, setReviewComment] = useState("");
+  const [busyReview, setBusyReview] = useState(false);
+
   const [participantsCount, setParticipantsCount] = useState<number | null>(null);
 
   const [userLocation, setUserLocation] = useState<Location.LocationObjectCoords | null>(null);
@@ -96,18 +104,23 @@ export default function EventDetailsScreen() {
     if (!id) return;
     try {
       setLoading(true);
-      const [data, count, status] = await Promise.all([
-        getEventById(String(id)), 
+      const [data, count, attendStatus] = await Promise.all([
+        getEventById(String(id)),
         getEventParticipantsCount(String(id)),
-        getUserEventStatus(String(id))
-        ]);
+        getUserEventStatus(String(id)),
+      ]);
       setEvent(data);
       setParticipantsCount(count);
-      setStatus(status as AttendanceStatus);
+      setStatus(attendStatus as AttendanceStatus);
+
+      if (myUserId) {
+        const reviewed = await getMyReviewStatus(String(id)).catch(() => false);
+        setHasReviewed(reviewed);
+      }
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, myUserId]);
   
 
   useFocusEffect(
@@ -174,6 +187,13 @@ export default function EventDetailsScreen() {
     return new Date(event.startDateTime).getTime() < new Date().getTime();
   }, [event?.startDateTime]);
 
+  const isEventEnded = useMemo(() => {
+    if (!event?.endDateTime) return false;
+    return new Date(event.endDateTime).getTime() < new Date().getTime();
+  }, [event?.endDateTime]);
+
+  const canReview = isEventEnded && status === "going" && !isMine && !!myUserId;
+
   async function handleApprove() {
     if (!event) return;
     try {
@@ -223,6 +243,9 @@ export default function EventDetailsScreen() {
 
     try {
       await updateEventAttendance(event.id, next);
+      if (previousStatus === "going" && Platform.OS !== "web") {
+        await removeEventFromCalendar(event);
+      }
     } catch (error) {
       console.error("Error updating attendance status:", error);
       setStatus(previousStatus);
@@ -255,6 +278,13 @@ export default function EventDetailsScreen() {
     setStatus(next);
     try {
       await updateEventAttendance(event.id, next);
+      if (Platform.OS !== "web") {
+        if (next === "going") {
+          addEventToCalendar(event);
+        } else if (previousStatus === "going") {
+          await removeEventFromCalendar(event);
+        }
+      }
     } catch (error) {
       console.error("Error updating attendance status:", error);
       setStatus(previousStatus);
@@ -291,6 +321,31 @@ export default function EventDetailsScreen() {
       alert("You don't have permission to delete this event or an error occurred.");
     } finally {
       setBusyDelete(false);
+    }
+  }
+
+  async function submitReview() {
+    if (!event) return;
+    if (reviewRating === 0) {
+      Alert.alert("Rating required", "Please select a star rating before submitting.");
+      return;
+    }
+    try {
+      setBusyReview(true);
+      await createReview(event.id, {
+        rating: reviewRating,
+        comment: reviewComment.trim() || null,
+      });
+      setHasReviewed(true);
+      setShowReviewModal(false);
+      setReviewRating(0);
+      setReviewComment("");
+      Alert.alert("Thank you!", "Your review has been submitted.");
+    } catch (error: any) {
+      const msg = error?.response?.data?.message ?? "Could not submit review. Please try again.";
+      Alert.alert("Error", msg);
+    } finally {
+      setBusyReview(false);
     }
   }
 
@@ -334,7 +389,7 @@ export default function EventDetailsScreen() {
       showsVerticalScrollIndicator={false}
     >
       {(isMine) && (
-        <View style={{ marginBottom: -4, marginTop: 12 }}>
+        <View style={styles.statusBadgeWrap}>
           {renderStatusBadge(event.status)}
         </View>
       )}
@@ -344,22 +399,13 @@ export default function EventDetailsScreen() {
       </View>
 
       {isMine && event.status === EventStatus.Rejected && event.adminNotes && (
-        <View style={{
-          backgroundColor: '#FEF2F2',
-          borderWidth: 1,
-          borderColor: '#FCA5A5',
-          borderRadius: 8,
-          padding: 12,
-          marginBottom: 16,
-          flexDirection: 'row',
-          gap: 10
-        }}>
-          <FontAwesome name="exclamation-circle" size={18} color="#DC2626" style={{ marginTop: 2 }} />
-          <View style={{ flex: 1 }}>
-            <Text style={{ color: '#991B1B', fontWeight: '800', fontSize: 13, marginBottom: 4 }}>
+        <View style={styles.adminNoteBox}>
+          <FontAwesome name="exclamation-circle" size={18} color="#DC2626" />
+          <View style={styles.adminNoteContent}>
+            <Text style={styles.adminNoteTitle}>
               Admin Note (Action Required)
             </Text>
-            <Text style={{ color: '#B91C1C', fontSize: 13, lineHeight: 18 }}>
+            <Text style={styles.adminNoteText}>
               {event.adminNotes}
             </Text>
           </View>
@@ -408,12 +454,35 @@ export default function EventDetailsScreen() {
         ) : null}
       </View>
 
+      {!isMine && event.createdById && (
+        <>
+          <Text style={styles.sectionTitle}>Organizer</Text>
+          <Pressable
+            style={styles.organizerCard}
+            onPress={() => router.push({ pathname: '/organizer.profile', params: { organizerId: event.createdById } })}
+          >
+            <View style={styles.organizerAvatar}>
+              <FontAwesome name="user" size={16} color="#3F5E95" />
+            </View>
+            <View style={styles.adminNoteContent}>
+              <Text style={styles.organizerCardName}>
+                {event.creatorName ?? 'View organizer profile'}
+              </Text>
+              <Text style={styles.organizerCardSubText}>
+                Tap to see reviews
+              </Text>
+            </View>
+            <FontAwesome name="chevron-right" size={12} color="#8B93A7" />
+          </Pressable>
+        </>
+      )}
+
        {isAdmin && event.status === EventStatus.Pending && (
          <>
          <Text style={styles.sectionTitle}>Moderation Controls</Text>
          <View style={styles.actionsRow}>
-           <Pressable 
-             style={[styles.primaryBtn, { backgroundColor: '#059669' }]} 
+           <Pressable
+             style={[styles.primaryBtn, styles.approveBtnBg]}
              onPress={handleApprove}
              disabled={busyStatusUpdate}
            >
@@ -457,8 +526,25 @@ export default function EventDetailsScreen() {
           </View>
         </>
       ) : isPastEvent ? (
-          <View style={{ marginTop: 20, alignItems: 'center' }}>
-             <Text style={{ color: '#8B93A7', fontSize: 14, fontWeight: 'bold' }}>This event is no longer available.</Text>
+          <View style={styles.pastEventWrap}>
+            <Text style={styles.pastEventText}>
+              This event has already taken place.
+            </Text>
+            {canReview && !hasReviewed && (
+              <Pressable
+                style={[styles.primaryBtn, styles.leaveReviewBtn]}
+                onPress={() => setShowReviewModal(true)}
+              >
+                <FontAwesome name="star" size={14} color="#FFFFFF" />
+                <Text style={styles.primaryBtnText}>Leave a Review</Text>
+              </Pressable>
+            )}
+            {canReview && hasReviewed && (
+              <View style={styles.reviewedRow}>
+                <FontAwesome name="check-circle" size={16} color="#059669" />
+                <Text style={styles.reviewedText}>You reviewed this event</Text>
+              </View>
+            )}
           </View>
         ):(
         <View style={styles.actionsRow}>
@@ -553,15 +639,7 @@ export default function EventDetailsScreen() {
             </Text>
 
             <TextInput
-              style={{
-                borderWidth: 1,
-                borderColor: '#E5E7EB',
-                borderRadius: 8,
-                padding: 12,
-                minHeight: 80,
-                textAlignVertical: 'top',
-                marginBottom: 20,
-              }}
+              style={styles.rejectInput}
               placeholder="e.g. Please provide a more detailed address."
               multiline
               value={rejectReason}
@@ -590,6 +668,69 @@ export default function EventDetailsScreen() {
             </View>
           </View>
         </View>
+      </Modal>
+
+      <Modal
+        visible={showReviewModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowReviewModal(false)}
+      >
+        <KeyboardAvoidingView
+          style={styles.modalOverlay}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        >
+          <View style={[styles.modalContent, styles.reviewModalContent]}>
+            <Text style={styles.modalTitle}>Leave a Review</Text>
+            <Text style={[styles.modalText, styles.reviewModalText]}>
+              How was your experience at this event?
+            </Text>
+
+            <View style={styles.reviewStarRow}>
+              {[1, 2, 3, 4, 5].map((star) => (
+                <Pressable key={star} onPress={() => setReviewRating(star)} hitSlop={6}>
+                  <FontAwesome
+                    name={star <= reviewRating ? "star" : "star-o"}
+                    size={32}
+                    color={star <= reviewRating ? "#F59E0B" : "#D1D5DB"}
+                  />
+                </Pressable>
+              ))}
+            </View>
+
+            <TextInput
+              style={styles.reviewCommentInput}
+              placeholder="Share your experience (optional)"
+              multiline
+              value={reviewComment}
+              onChangeText={setReviewComment}
+              maxLength={1000}
+            />
+
+            <View style={styles.modalActions}>
+              <Pressable
+                style={styles.secondaryBtn}
+                onPress={() => {
+                  setShowReviewModal(false);
+                  setReviewRating(0);
+                  setReviewComment("");
+                }}
+                disabled={busyReview}
+              >
+                <Text style={styles.secondaryBtnText}>Cancel</Text>
+              </Pressable>
+
+              <Pressable
+                style={[styles.primaryBtn, styles.reviewSubmitBtn, busyReview && styles.btnDisabled]}
+                onPress={submitReview}
+                disabled={busyReview}
+              >
+                <FontAwesome name="check" size={14} color="#FFFFFF" />
+                <Text style={styles.primaryBtnText}>{busyReview ? "Submitting..." : "Submit"}</Text>
+              </Pressable>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
       </Modal>
 
   </View>

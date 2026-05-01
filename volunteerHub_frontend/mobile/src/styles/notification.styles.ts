@@ -68,4 +68,17 @@ export const styles = StyleSheet.create({
   retryText: { color: "#fff", fontWeight: "700" },
   emptyTitle: { fontSize: 16, fontWeight: "800", color: "#4A5568", marginBottom: 8 },
   emptySubtitle: { fontSize: 13, color: "#8B93A7", textAlign: "center", paddingHorizontal: 30 },
+
+  unreadHeaderRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  markAllText: { color: "#3F5E95", fontSize: 13, fontWeight: "700" },
+  markAllDisabled: { opacity: 0.5 },
+  listFooter: { paddingVertical: 16, alignItems: "center" },
+  iconMarginBottom12: { marginBottom: 12 },
+  iconMarginBottom16: { marginBottom: 16 },
+  emptyWrap: { marginTop: 60 },
 });

@@ -118,4 +118,6 @@ export const styles = StyleSheet.create({
     marginBottom: 14,
   },
   logoutText: { color: "#3F5E95", fontWeight: "900", fontSize: 14.5 },
+
+  aiSendBtnDisabled: { opacity: 0.5 },
 });

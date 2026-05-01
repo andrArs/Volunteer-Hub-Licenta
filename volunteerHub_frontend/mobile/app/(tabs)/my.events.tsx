@@ -285,8 +285,8 @@ export default function MyEventsScreen() {
               showsVerticalScrollIndicator={false}
               renderItem={({ item }) => (
                 <Pressable style={styles.card} onPress={() => openEvent(item)}>
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                    <Text style={[styles.cardTitle, { flex: 1, marginBottom: 0 }]} numberOfLines={1}>
+                  <View style={styles.cardHeaderRow}>
+                    <Text style={[styles.cardTitle, styles.cardTitleInRow]} numberOfLines={1}>
                       {item.title}
                     </Text>
                     {activeTab === "Created" && item.status !== undefined && renderStatusBadge(item.status)}
@@ -319,7 +319,7 @@ export default function MyEventsScreen() {
                   <View style={styles.metaRow}>
                     <View style={styles.metaItem}>
                       <FontAwesome name="location-arrow" size={13} color="#3F5E95" />
-                      <Text style={[styles.metaText, { color: '#3F5E95', fontWeight: '700' }]}>
+                      <Text style={[styles.metaText, styles.metaTextHighlight]}>
                        {formatDistance(item.distance)}
                     </Text>
                     </View>
@@ -329,8 +329,8 @@ export default function MyEventsScreen() {
                 </Pressable>
               )}
               ListEmptyComponent={
-                <View style={[styles.center, { marginTop: 40 }]}>
-                  <Text style={{ color: "#8B93A7", fontWeight: "600" }}>
+                <View style={[styles.center, styles.centerWithTopMargin]}>
+                  <Text style={styles.emptyText}>
                     No events found.
                   </Text>
                 </View>

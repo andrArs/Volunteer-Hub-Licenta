@@ -16,6 +16,7 @@ export default function MapComponent() {
   const [events, setEvents] = useState<EventResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [userLocation, setUserLocation] = useState<Location.LocationObjectCoords | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   useEffect(() => {
     let locationWatcher: Location.LocationSubscription | null = null;
@@ -36,7 +37,7 @@ export default function MapComponent() {
           );
         }
 
-        const result = await getAllEvents(1, 100);
+        const result = await getAllEvents(1, 500);
         setEvents(result.items);
       } catch (error) {
         console.error("Error initializing map:", error);
@@ -103,6 +104,7 @@ export default function MapComponent() {
         initialRegion={initialRegion}
         showsUserLocation={true}
         showsMyLocationButton={true}
+        onPress={() => setSelectedId(null)}
       >
         {heatmapPoints.length > 0 && (
           <Heatmap
@@ -128,7 +130,8 @@ export default function MapComponent() {
             <Marker
               key={ev.id}
               coordinate={{ latitude: ev.displayLat, longitude: ev.displayLng }}
-              pinColor="#3F5E95" 
+              pinColor={selectedId === ev.id ? "#FF6B35" : "#3F5E95"}
+              onPress={() => setSelectedId(ev.id)}
             >
               <Callout tooltip onPress={() => router.push(`/event.view?id=${ev.id}`)}>
                 <View style={styles.calloutContainer}>
