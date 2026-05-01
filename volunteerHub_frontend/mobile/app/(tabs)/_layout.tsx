@@ -73,6 +73,7 @@ export default function TabLayout() {
       <Stack.Screen name="users.view" />
       <Stack.Screen name="user.view" />
       <Stack.Screen name="user.update" />
+      <Stack.Screen name="profile.update" />
       <Stack.Screen name="ai.chat" />
 
     </Stack>

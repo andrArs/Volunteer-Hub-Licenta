@@ -179,4 +179,11 @@ export const styles = StyleSheet.create({
   },
 
   loadingIndicator: { marginTop: 40 },
+
+  editBtn: {
+    width: 44,
+    height: 44,
+    alignItems: "flex-end",
+    justifyContent: "center",
+  },
 });

@@ -81,6 +81,26 @@ public class UsersController : ControllerBase
         return Ok(result);
     }
 
+    [Authorize]
+    [HttpPut("me")]
+    public async Task<ActionResult> UpdateMyProfile([FromBody] UpdateMyProfileRequest request)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(userId)) return Unauthorized();
+
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user == null) return NotFound(new { message = "User not found." });
+
+        user.FirstName = request.FirstName;
+        user.LastName = request.LastName;
+        user.DateOfBirth = request.DateOfBirth ?? user.DateOfBirth;
+
+        var result = await _userManager.UpdateAsync(user);
+        if (!result.Succeeded) return BadRequest(result.Errors);
+
+        return NoContent();
+    }
+
     [Authorize(Roles = "Admin")]
     [HttpGet("{id}")]
     public async Task<ActionResult> GetUserById(string id)

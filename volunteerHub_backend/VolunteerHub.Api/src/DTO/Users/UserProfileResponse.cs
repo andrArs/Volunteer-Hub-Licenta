@@ -15,3 +15,8 @@ public record UpdateUserRequest(
     string Email,
     DateOnly? DateOfBirth
 );
+public record UpdateMyProfileRequest(
+    string FirstName,
+    string LastName,
+    DateOnly? DateOfBirth
+);
