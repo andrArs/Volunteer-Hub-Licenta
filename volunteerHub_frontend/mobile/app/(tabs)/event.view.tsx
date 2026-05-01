@@ -11,6 +11,7 @@ import { styles } from "@/src/styles/event.view.styles";
 import * as Haptics from 'expo-haptics';
 import * as Location from 'expo-location';
 import { calculateDistance, formatDistance } from "@/src/utils/location.utils";
+import { addEventToCalendar, removeEventFromCalendar } from "@/src/utils/calendar.utils";
 import { setEventStatus } from "@/src/api/admin.api";
 
 type AttendanceStatus = "none" | "interested" | "going";
@@ -242,6 +243,9 @@ export default function EventDetailsScreen() {
 
     try {
       await updateEventAttendance(event.id, next);
+      if (previousStatus === "going" && Platform.OS !== "web") {
+        await removeEventFromCalendar(event);
+      }
     } catch (error) {
       console.error("Error updating attendance status:", error);
       setStatus(previousStatus);
@@ -274,6 +278,13 @@ export default function EventDetailsScreen() {
     setStatus(next);
     try {
       await updateEventAttendance(event.id, next);
+      if (Platform.OS !== "web") {
+        if (next === "going") {
+          addEventToCalendar(event);
+        } else if (previousStatus === "going") {
+          await removeEventFromCalendar(event);
+        }
+      }
     } catch (error) {
       console.error("Error updating attendance status:", error);
       setStatus(previousStatus);
