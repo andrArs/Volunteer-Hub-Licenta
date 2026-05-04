@@ -312,4 +312,9 @@ export const styles = StyleSheet.create({
     color: "#8B93A7",
     fontWeight: "600",
   },
+  optionsRemoveText: {
+    fontSize: 16,
+    color: "#C1121F",
+    fontWeight: "600",
+  },
 });

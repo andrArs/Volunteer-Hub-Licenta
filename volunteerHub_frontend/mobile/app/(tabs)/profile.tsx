@@ -18,7 +18,7 @@ import { getMyCreatedEvents, getMyAttendanceEvents } from "@/src/api/event.api";
 import { getAuth, logout } from "@/src/store/auth.store";
 import { type EventResponse } from "@/src/types/event";
 import { styles } from "@/src/styles/profile.styles";
-import { getMyProfile, uploadProfilePicture } from "@/src/api/user.api";
+import { getMyProfile, uploadProfilePicture, removeProfilePicture } from "@/src/api/user.api";
 import { UserProfile } from "@/src/types/user";
 
 function formatDateTime(dt: string) {
@@ -140,6 +140,18 @@ export default function MyProfileScreen() {
       setProfileInfo((prev) => (prev ? { ...prev, profilePictureUrl: url } : prev));
     } catch {
       Alert.alert("Error", "Could not upload picture. Please try again.");
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  async function handleRemovePhoto() {
+    try {
+      setUploading(true);
+      await removeProfilePicture();
+      setProfileInfo((prev) => (prev ? { ...prev, profilePictureUrl: undefined } : prev));
+    } catch {
+      Alert.alert("Error", "Could not remove picture. Please try again.");
     } finally {
       setUploading(false);
     }
@@ -309,6 +321,20 @@ export default function MyProfileScreen() {
             >
               <Text style={styles.optionsBtnText}>Change Photo</Text>
             </Pressable>
+            {profileInfo?.profilePictureUrl && (
+              <>
+                <View style={styles.optionsDivider} />
+                <Pressable
+                  style={styles.optionsBtn}
+                  onPress={() => {
+                    setShowOptionsSheet(false);
+                    handleRemovePhoto();
+                  }}
+                >
+                  <Text style={styles.optionsRemoveText}>Remove Photo</Text>
+                </Pressable>
+              </>
+            )}
             <View style={styles.optionsDivider} />
             <Pressable style={styles.optionsBtn} onPress={() => setShowOptionsSheet(false)}>
               <Text style={styles.optionsCancelText}>Cancel</Text>

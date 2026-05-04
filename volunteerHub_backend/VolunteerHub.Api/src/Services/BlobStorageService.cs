@@ -29,4 +29,11 @@ public class BlobStorageService : IBlobStorageService
 
         return blobClient.Uri.ToString();
     }
+
+    public async Task DeleteProfilePictureAsync(string blobUrl)
+    {
+        var blobName = Path.GetFileName(new Uri(blobUrl).LocalPath);
+        var blobClient = _containerClient.GetBlobClient(blobName);
+        await blobClient.DeleteIfExistsAsync();
+    }
 }

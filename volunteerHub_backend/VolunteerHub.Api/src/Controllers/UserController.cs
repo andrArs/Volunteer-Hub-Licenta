@@ -67,6 +67,26 @@ public class UsersController : ControllerBase
     }
 
     [Authorize]
+    [HttpDelete("me/profile-picture")]
+    public async Task<ActionResult> DeleteProfilePicture()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(userId)) return Unauthorized();
+
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user == null) return NotFound(new { message = "User not found." });
+
+        if (!string.IsNullOrEmpty(user.ProfilePicture))
+        {
+            await _blobStorageService.DeleteProfilePictureAsync(user.ProfilePicture);
+            user.ProfilePicture = null;
+            await _userManager.UpdateAsync(user);
+        }
+
+        return NoContent();
+    }
+
+    [Authorize]
     [HttpGet]
     public async Task<ActionResult> GetAllUsers(
         [FromQuery] int pageNumber = 1,

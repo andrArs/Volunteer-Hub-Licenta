@@ -55,6 +55,10 @@ export async function uploadProfilePicture(uri: string, mimeType?: string): Prom
   return res.data.url;
 }
 
+export async function removeProfilePicture(): Promise<void> {
+  await api.delete("/api/users/me/profile-picture");
+}
+
 export async function assignRole(id: string, roleName: string): Promise<void> {
   await api.post(`/api/users/${id}/roles`, { roleName });
 }
