@@ -160,6 +160,12 @@ modalOverlay: {
     alignItems: 'center',
     marginBottom: 12,
   },
+  avatarCircleImage: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    marginBottom: 12,
+  },
   avatarName: {
     fontSize: 20,
     fontWeight: '800',

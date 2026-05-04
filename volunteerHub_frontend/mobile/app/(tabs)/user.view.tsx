@@ -1,7 +1,7 @@
 import { FontAwesome } from "@expo/vector-icons";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useCallback, useState } from "react";
-import { ActivityIndicator, Alert, Modal, Pressable, ScrollView, Switch, Text, View } from "react-native";
+import { ActivityIndicator, Alert, Image, Modal, Pressable, ScrollView, Switch, Text, View } from "react-native";
 import { getAuth } from "@/src/store/auth.store"; 
 import { styles } from "@/src/styles/user.styles";
 import { UserProfile } from "@/src/types/user";
@@ -122,9 +122,13 @@ export default function UserDetailsScreen() {
     >
       <View style={styles.userCard}>
         <View style={styles.avatarContainer}>
-          <View style={styles.avatarCircle}>
-            <FontAwesome name="user" size={32} color="#3F5E95" />
-          </View>
+          {user.profilePictureUrl ? (
+            <Image source={{ uri: user.profilePictureUrl }} style={styles.avatarCircleImage} />
+          ) : (
+            <View style={styles.avatarCircle}>
+              <FontAwesome name="user" size={32} color="#3F5E95" />
+            </View>
+          )}
           <Text style={styles.avatarName}>
             {user.firstName} {user.lastName}
           </Text>
