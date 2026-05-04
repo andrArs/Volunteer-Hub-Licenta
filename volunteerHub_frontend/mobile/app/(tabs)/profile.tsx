@@ -192,7 +192,6 @@ export default function MyProfileScreen() {
                 <Text style={styles.avatarName}>
                   {profileInfo?.firstName} {profileInfo?.lastName}
                 </Text>
-                <Text style={styles.avatarEmail}>{userEmail}</Text>
               </View>
 
               <View style={styles.userDetailsBox}>
