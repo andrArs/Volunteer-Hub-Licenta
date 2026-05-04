@@ -1,13 +1,24 @@
 import { FontAwesome } from "@expo/vector-icons";
 import { useFocusEffect, useRouter } from "expo-router";
 import React, { useCallback, useState } from "react";
-import { ActivityIndicator, Pressable, ScrollView, Text, View, Alert } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  Image,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
+import * as ImagePicker from "expo-image-picker";
 
 import { getMyCreatedEvents, getMyAttendanceEvents } from "@/src/api/event.api";
-import { getAuth, logout } from "@/src/store/auth.store"; 
+import { getAuth, logout } from "@/src/store/auth.store";
 import { type EventResponse } from "@/src/types/event";
 import { styles } from "@/src/styles/profile.styles";
-import { getMyProfile } from "@/src/api/user.api";
+import { getMyProfile, uploadProfilePicture } from "@/src/api/user.api";
 import { UserProfile } from "@/src/types/user";
 
 function formatDateTime(dt: string) {
@@ -27,47 +38,39 @@ function formatDateOnly(dt: string) {
   const dd = String(d.getDate()).padStart(2, "0");
   const mm = String(d.getMonth() + 1).padStart(2, "0");
   const yyyy = d.getFullYear();
-  return `${dd}.${mm}.${yyyy}`; 
+  return `${dd}.${mm}.${yyyy}`;
 }
 
 function getReminderPill(dateString: string) {
   const evDate = new Date(dateString);
   const today = new Date();
-  
   evDate.setHours(0, 0, 0, 0);
   today.setHours(0, 0, 0, 0);
-  
-  const diffTime = evDate.getTime() - today.getTime();
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-  if (diffDays === 0) return { label: "Today", bg: "#F05A4A" }; 
-  if (diffDays === 1) return { label: "Tomorrow", bg: "#F8A01A" }; 
-  return { label: `${diffDays} days`, bg: "#3F5E95" }; 
+  const diffDays = Math.ceil((evDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  if (diffDays === 0) return { label: "Today", bg: "#F05A4A" };
+  if (diffDays === 1) return { label: "Tomorrow", bg: "#F8A01A" };
+  return { label: `${diffDays} days`, bg: "#3F5E95" };
 }
 
 function calculateAge(dob?: string | null): number | string {
   if (!dob) return "N/A";
-  
   const birthDate = new Date(dob);
   const today = new Date();
-  
   let age = today.getFullYear() - birthDate.getFullYear();
   const monthDiff = today.getMonth() - birthDate.getMonth();
-  
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-    age--;
-  }
-  
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) age--;
   return age;
 }
 
 export default function MyProfileScreen() {
   const router = useRouter();
-  const auth = getAuth(); 
-  
-  const userEmail = auth?.email || "test@yahoo.com";
+  const auth = getAuth();
+  const userEmail = auth?.email || "";
 
   const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [showPhotoModal, setShowPhotoModal] = useState(false);
+  const [showOptionsSheet, setShowOptionsSheet] = useState(false);
   const [stats, setStats] = useState({ attended: 0, organized: 0 });
   const [upcomingEvents, setUpcomingEvents] = useState<EventResponse[]>([]);
   const [profileInfo, setProfileInfo] = useState<UserProfile | null>(null);
@@ -79,27 +82,19 @@ export default function MyProfileScreen() {
         getMyCreatedEvents(),
         getMyAttendanceEvents("history"),
         getMyAttendanceEvents("going"),
-        getMyProfile()
+        getMyProfile(),
       ]);
 
-      
       const now = new Date();
-      const upcoming = (going || []).filter(ev => {
-      const eventDate = new Date(ev.startDateTime);
-      return eventDate >= now;});
+      const upcoming = (going || []).filter((ev) => new Date(ev.startDateTime) >= now);
 
-      setStats({
-        attended: history.length, 
-        organized: created.length 
-      });
+      setStats({ attended: history.length, organized: created.length });
       setProfileInfo(myProfile);
-
-      const sortedUpcoming = upcoming
-        .sort((a, b) => new Date(a.startDateTime).getTime() - new Date(b.startDateTime).getTime())
-        .slice(0, 5);
-
-      setUpcomingEvents(sortedUpcoming);
-
+      setUpcomingEvents(
+        upcoming
+          .sort((a, b) => new Date(a.startDateTime).getTime() - new Date(b.startDateTime).getTime())
+          .slice(0, 5)
+      );
     } catch (error) {
       console.error("Failed to load profile data", error);
     } finally {
@@ -113,12 +108,47 @@ export default function MyProfileScreen() {
     }, [loadProfileData])
   );
 
-  
   async function handleLogout() {
-        await logout();
-        router.replace("/(auth)/login");
+    await logout();
+    router.replace("/(auth)/login");
   }
-  
+
+  async function pickAndUploadPicture() {
+    if (uploading) return;
+
+    if (Platform.OS !== "web") {
+      const { granted } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!granted) {
+        Alert.alert("Permission needed", "Please allow access to your photo library.");
+        return;
+      }
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+
+    if (result.canceled) return;
+
+    const asset = result.assets[0];
+    try {
+      setUploading(true);
+      const url = await uploadProfilePicture(asset.uri, asset.mimeType ?? undefined);
+      setProfileInfo((prev) => (prev ? { ...prev, profilePictureUrl: url } : prev));
+    } catch {
+      Alert.alert("Error", "Could not upload picture. Please try again.");
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  function handleAvatarPress() {
+    if (uploading) return;
+    setShowOptionsSheet(true);
+  }
 
   return (
     <View style={styles.page}>
@@ -133,45 +163,69 @@ export default function MyProfileScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        
         {loading ? (
           <ActivityIndicator size="large" color="#3F5E95" style={styles.loadingIndicator} />
         ) : (
           <>
-            <View style={styles.card}>
-              <View style={styles.infoRow}>
-                <FontAwesome name="user" size={18} color="#3F5E95" style={styles.infoIcon} />
-                <Text style={styles.infoTextBold}>
-                  {profileInfo?.firstName} {profileInfo?.lastName} 
-                  </Text>
+            <View style={styles.userCard}>
+              <View style={styles.avatarContainer}>
+                <Pressable onPress={handleAvatarPress} style={styles.avatarCircleWrap}>
+                  {profileInfo?.profilePictureUrl ? (
+                    <Image
+                      source={{ uri: profileInfo.profilePictureUrl }}
+                      style={styles.avatarCircleImage}
+                    />
+                  ) : (
+                    <View style={styles.avatarCircle}>
+                      <FontAwesome name="user" size={32} color="#3F5E95" />
+                    </View>
+                  )}
+                  <View style={styles.cameraOverlay}>
+                    {uploading ? (
+                      <ActivityIndicator size="small" color="#fff" />
+                    ) : (
+                      <FontAwesome name="camera" size={11} color="#fff" />
+                    )}
+                  </View>
+                </Pressable>
+
+                <Text style={styles.avatarName}>
+                  {profileInfo?.firstName} {profileInfo?.lastName}
+                </Text>
+                <Text style={styles.avatarEmail}>{userEmail}</Text>
               </View>
-              <View style={styles.divider} />
-              <View style={styles.infoRow}>
-                <FontAwesome name="envelope" size={16} color="#3F5E95" style={styles.infoIcon} />
-                <Text style={styles.infoText}>{userEmail}</Text>
-              </View>
-              {profileInfo?.dateOfBirth && (
-                <>
-                  <View style={styles.divider} />
-                  <View style={styles.infoRow}>
-                    <FontAwesome name="birthday-cake" size={16} color="#3F5E95" style={styles.infoIcon} />
-                    <Text style={styles.infoText}>
+
+              <View style={styles.userDetailsBox}>
+                <View style={styles.userDetailRow}>
+                  <Text style={styles.userDetailLabel}>First Name</Text>
+                  <Text style={styles.userDetailValue}>{profileInfo?.firstName || "."}</Text>
+                </View>
+                <View style={styles.userDetailRow}>
+                  <Text style={styles.userDetailLabel}>Last Name</Text>
+                  <Text style={styles.userDetailValue}>{profileInfo?.lastName || "."}</Text>
+                </View>
+                <View style={profileInfo?.dateOfBirth ? styles.userDetailRow : styles.userDetailRowLast}>
+                  <Text style={styles.userDetailLabel}>Email</Text>
+                  <Text style={styles.userDetailValue}>{userEmail || "."}</Text>
+                </View>
+                {profileInfo?.dateOfBirth && (
+                  <View style={styles.userDetailRowLast}>
+                    <Text style={styles.userDetailLabel}>Date of Birth</Text>
+                    <Text style={styles.userDetailValue}>
                       {calculateAge(profileInfo.dateOfBirth)} years old ({formatDateOnly(profileInfo.dateOfBirth)})
                     </Text>
                   </View>
-                </>
-              )}
+                )}
+              </View>
             </View>
 
             <View style={[styles.card, styles.statsCard]}>
-              <Pressable style={styles.statBox} 
-                onPress={() => router.push("/my.events")}>
+              <Pressable style={styles.statBox} onPress={() => router.push("/my.events")}>
                 <Text style={styles.statNumber}>{stats.attended}</Text>
                 <Text style={styles.statLabel}>Events{"\n"}Attended</Text>
               </Pressable>
               <View style={styles.statDivider} />
-              <Pressable style={styles.statBox} 
-                onPress={() => router.push("/my.events")}>
+              <Pressable style={styles.statBox} onPress={() => router.push("/my.events")}>
                 <Text style={styles.statNumber}>{stats.organized}</Text>
                 <Text style={styles.statLabel}>Events{"\n"}Organized</Text>
               </Pressable>
@@ -187,16 +241,22 @@ export default function MyProfileScreen() {
                 upcomingEvents.map((ev, index) => {
                   const pill = getReminderPill(ev.startDateTime);
                   return (
-                    <View key={ev.id} style={[styles.reminderItem, index !== upcomingEvents.length - 1 && styles.reminderBorder]}>
+                    <View
+                      key={ev.id}
+                      style={[
+                        styles.reminderItem,
+                        index !== upcomingEvents.length - 1 && styles.reminderBorder,
+                      ]}
+                    >
                       <View style={styles.reminderIconBox}>
                         <FontAwesome name="calendar-check-o" size={18} color="#3F5E95" />
                       </View>
-                      
                       <View style={styles.reminderTextWrap}>
-                        <Text style={styles.reminderTitle} numberOfLines={1}>{ev.title}</Text>
+                        <Text style={styles.reminderTitle} numberOfLines={1}>
+                          {ev.title}
+                        </Text>
                         <Text style={styles.reminderDate}>{formatDateTime(ev.startDateTime)}</Text>
                       </View>
-
                       <View style={[styles.pill, { backgroundColor: pill.bg }]}>
                         <Text style={styles.pillText}>{pill.label}</Text>
                       </View>
@@ -215,6 +275,48 @@ export default function MyProfileScreen() {
         </Pressable>
       </View>
 
+      <Modal visible={showPhotoModal} transparent animationType="fade">
+        <Pressable style={styles.photoModalOverlay} onPress={() => setShowPhotoModal(false)}>
+          <Image
+            source={{ uri: profileInfo?.profilePictureUrl }}
+            style={styles.photoModalImage}
+          />
+        </Pressable>
+      </Modal>
+
+      <Modal visible={showOptionsSheet} transparent animationType="fade">
+        <Pressable style={styles.optionsOverlay} onPress={() => setShowOptionsSheet(false)}>
+          <View style={styles.optionsSheet}>
+            {profileInfo?.profilePictureUrl && (
+              <>
+                <Pressable
+                  style={styles.optionsBtn}
+                  onPress={() => {
+                    setShowOptionsSheet(false);
+                    setShowPhotoModal(true);
+                  }}
+                >
+                  <Text style={styles.optionsBtnText}>View Photo</Text>
+                </Pressable>
+                <View style={styles.optionsDivider} />
+              </>
+            )}
+            <Pressable
+              style={styles.optionsBtn}
+              onPress={() => {
+                setShowOptionsSheet(false);
+                pickAndUploadPicture();
+              }}
+            >
+              <Text style={styles.optionsBtnText}>Change Photo</Text>
+            </Pressable>
+            <View style={styles.optionsDivider} />
+            <Pressable style={styles.optionsBtn} onPress={() => setShowOptionsSheet(false)}>
+              <Text style={styles.optionsCancelText}>Cancel</Text>
+            </Pressable>
+          </View>
+        </Pressable>
+      </Modal>
     </View>
   );
 }
