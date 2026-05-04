@@ -17,7 +17,8 @@
       "supportsTablet": true,
       "infoPlist": {
         "NSCalendarsUsageDescription": "Volunteer Hub needs calendar access to add events you're attending.",
-        "NSCalendarsFullAccessUsageDescription": "Volunteer Hub needs calendar access to add events you're attending."
+        "NSCalendarsFullAccessUsageDescription": "Volunteer Hub needs calendar access to add events you're attending.",
+        "NSPhotoLibraryUsageDescription": "Volunteer Hub needs access to your photo library to set your profile picture."
       }
     },
     "android": {
@@ -38,7 +39,8 @@
       "expo-router",
       "expo-secure-store",
       "@react-native-community/datetimepicker",
-      "expo-calendar"
+      "expo-calendar",
+      "expo-image-picker"
     ],
     "experiments": {
       "typedRoutes": true

@@ -2,6 +2,7 @@ import { FontAwesome } from "@expo/vector-icons";
 import { useFocusEffect, useRouter } from "expo-router";
 import React, { useCallback, useState } from "react";
 import {
+  ActionSheetIOS,
   ActivityIndicator,
   Alert,
   Image,
@@ -113,17 +114,7 @@ export default function MyProfileScreen() {
     router.replace("/(auth)/login");
   }
 
-  async function pickAndUploadPicture() {
-    if (uploading) return;
-
-    if (Platform.OS !== "web") {
-      const { granted } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (!granted) {
-        Alert.alert("Permission needed", "Please allow access to your photo library.");
-        return;
-      }
-    }
-
+  async function openImagePicker() {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images"],
       allowsEditing: true,
@@ -159,7 +150,33 @@ export default function MyProfileScreen() {
 
   function handleAvatarPress() {
     if (uploading) return;
-    setShowOptionsSheet(true);
+
+    if (Platform.OS === "ios") {
+      const hasPhoto = !!profileInfo?.profilePictureUrl;
+      const options = [
+        ...(hasPhoto ? ["View Photo"] : []),
+        "Change Photo",
+        ...(hasPhoto ? ["Remove Photo"] : []),
+        "Cancel",
+      ];
+      const cancelIndex = options.length - 1;
+      const destructiveIndex = hasPhoto ? options.indexOf("Remove Photo") : -1;
+
+      ActionSheetIOS.showActionSheetWithOptions(
+        { options, cancelButtonIndex: cancelIndex, destructiveButtonIndex: destructiveIndex },
+        (index) => {
+          if (hasPhoto && index === options.indexOf("View Photo")) {
+            setShowPhotoModal(true);
+          } else if (index === options.indexOf("Change Photo")) {
+            openImagePicker();
+          } else if (hasPhoto && index === options.indexOf("Remove Photo")) {
+            handleRemovePhoto();
+          }
+        }
+      );
+    } else {
+      setShowOptionsSheet(true);
+    }
   }
 
   return (
@@ -304,7 +321,7 @@ export default function MyProfileScreen() {
                   style={styles.optionsBtn}
                   onPress={() => {
                     setShowOptionsSheet(false);
-                    setShowPhotoModal(true);
+                    setTimeout(() => setShowPhotoModal(true), 300);
                   }}
                 >
                   <Text style={styles.optionsBtnText}>View Photo</Text>
@@ -314,9 +331,17 @@ export default function MyProfileScreen() {
             )}
             <Pressable
               style={styles.optionsBtn}
-              onPress={() => {
+              onPress={async () => {
+                if (Platform.OS !== "web") {
+                  const { granted } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+                  if (!granted) {
+                    setShowOptionsSheet(false);
+                    setTimeout(() => Alert.alert("Permission needed", "Please allow access to your photo library."), 300);
+                    return;
+                  }
+                }
                 setShowOptionsSheet(false);
-                pickAndUploadPicture();
+                setTimeout(() => openImagePicker(), 500);
               }}
             >
               <Text style={styles.optionsBtnText}>Change Photo</Text>
