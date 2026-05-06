@@ -10,6 +10,7 @@ import {
   Modal,
   Platform,
   Pressable,
+  RefreshControl,
   ScrollView,
   Text,
   View,
@@ -70,6 +71,7 @@ export default function MyProfileScreen() {
   const userEmail = auth?.email || "";
 
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [showPhotoModal, setShowPhotoModal] = useState(false);
   const [showOptionsSheet, setShowOptionsSheet] = useState(false);
@@ -77,9 +79,9 @@ export default function MyProfileScreen() {
   const [upcomingEvents, setUpcomingEvents] = useState<EventResponse[]>([]);
   const [profileInfo, setProfileInfo] = useState<UserProfile | null>(null);
 
-  const loadProfileData = useCallback(async () => {
+  const loadProfileData = useCallback(async (isRefresh = false) => {
     try {
-      setLoading(true);
+      if (!isRefresh) setLoading(true);
       const [created, history, going, myProfile] = await Promise.all([
         getMyCreatedEvents(),
         getMyAttendanceEvents("history"),
@@ -101,8 +103,14 @@ export default function MyProfileScreen() {
       console.error("Failed to load profile data", error);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   }, []);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    loadProfileData(true);
+  }, [loadProfileData]);
 
   useFocusEffect(
     useCallback(() => {
@@ -192,7 +200,7 @@ export default function MyProfileScreen() {
         </Pressable>
       </View>
 
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#3F5E95"]} tintColor="#3F5E95" />}>
         {loading ? (
           <ActivityIndicator size="large" color="#3F5E95" style={styles.loadingIndicator} />
         ) : (

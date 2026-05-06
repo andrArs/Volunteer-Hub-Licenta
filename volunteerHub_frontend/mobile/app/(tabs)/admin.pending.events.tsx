@@ -2,7 +2,7 @@ import { FontAwesome } from "@expo/vector-icons";
 import { useFocusEffect, useRouter } from "expo-router";
 import { goBack } from "@/src/utils/navigation";
 import React, { useCallback, useState } from "react";
-import { ActivityIndicator, FlatList, Pressable, Text, View, StyleSheet } from "react-native";
+import { ActivityIndicator, FlatList, Pressable, RefreshControl, Text, View, StyleSheet } from "react-native";
 import { getPendingEvents } from "@/src/api/admin.api";
 import { EVENT_CATEGORIES, type EventResponse } from "@/src/types/event";
 import { styles } from "@/src/styles/events.pending";
@@ -25,19 +25,26 @@ export default function AdminPendingEventsScreen() {
   const [events, setEvents] = useState<EventResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (isRefresh = false) => {
     try {
       setErr(null);
-      setLoading(true);
+      if (!isRefresh) setLoading(true);
       const data = await getPendingEvents();
       setEvents(data || []);
     } catch (e: any) {
       setErr(e?.message ?? "Failed to load pending events.");
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   }, []);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    load(true);
+  }, [load]);
 
   useFocusEffect(
     useCallback(() => {
@@ -63,7 +70,7 @@ export default function AdminPendingEventsScreen() {
         ) : err ? (
           <View style={styles.center}>
             <Text style={styles.errorText}>{err}</Text>
-            <Pressable onPress={load} style={styles.retryBtn}>
+            <Pressable onPress={() => load()} style={styles.retryBtn}>
               <Text style={styles.retryText}>Retry</Text>
             </Pressable>
           </View>
@@ -76,6 +83,7 @@ export default function AdminPendingEventsScreen() {
               keyExtractor={(item) => item.id}
               contentContainerStyle={styles.listContent}
               showsVerticalScrollIndicator={false}
+              refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#3F5E95"]} tintColor="#3F5E95" />}
               renderItem={({ item }) => (
                 <Pressable 
                   style={styles.card} 

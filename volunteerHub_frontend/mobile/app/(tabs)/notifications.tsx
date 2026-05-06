@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
   FlatList,
   Pressable,
+  RefreshControl,
   Text,
   View,
 } from "react-native";
@@ -44,12 +45,13 @@ export default function NotificationsScreen() {
   const [error, setError] = useState<string | null>(null);
   const [markingId, setMarkingId] = useState<string | null>(null);
   const [markingAll, setMarkingAll] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const pageRef = useRef(1);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (isRefresh = false) => {
     try {
       setError(null);
-      setLoading(true);
+      if (!isRefresh) setLoading(true);
       pageRef.current = 1;
       const result = await getNotifications(1, 10);
       setNotifications(result.items);
@@ -58,8 +60,14 @@ export default function NotificationsScreen() {
       setError("Failed to load notifications. Please try again.");
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   }, []);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    load(true);
+  }, [load]);
 
   const loadMore = useCallback(async () => {
     if (loadingMore || !hasNextPage) return;
@@ -138,7 +146,7 @@ export default function NotificationsScreen() {
           <View style={styles.center}>
             <FontAwesome name="exclamation-circle" size={40} color="#DC2626" style={styles.iconMarginBottom12} />
             <Text style={styles.errorText}>{error}</Text>
-            <Pressable onPress={load} style={styles.retryBtn}>
+            <Pressable onPress={() => load()} style={styles.retryBtn}>
               <Text style={styles.retryText}>Retry</Text>
             </Pressable>
           </View>
@@ -164,6 +172,7 @@ export default function NotificationsScreen() {
               contentContainerStyle={styles.listContent}
               onEndReached={loadMore}
               onEndReachedThreshold={0.3}
+              refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#3F5E95"]} tintColor="#3F5E95" />}
               ListFooterComponent={
                 loadingMore ? (
                   <View style={styles.listFooter}>

@@ -2,7 +2,7 @@ import { FontAwesome } from "@expo/vector-icons";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { goBack } from "@/src/utils/navigation";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Alert, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Alert, KeyboardAvoidingView, Modal, Platform, Pressable, RefreshControl, ScrollView, Text, TextInput, View } from "react-native";
 
 import { getEventById, deleteEvent, updateEventAttendance, getEventParticipantsCount, getUserEventStatus } from "@/src/api/event.api";
 import { getMyReviewStatus, createReview } from "@/src/api/review.api";
@@ -80,6 +80,7 @@ export default function EventDetailsScreen() {
   const isAdmin = auth?.roles?.includes("Admin") ?? auth?.roles?.includes("Admin") ?? false;
 
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [event, setEvent] = useState<EventResponse | null>(null);
 
   const [status, setStatus] = useState<AttendanceStatus>("none");
@@ -101,10 +102,10 @@ export default function EventDetailsScreen() {
 
   const [userLocation, setUserLocation] = useState<Location.LocationObjectCoords | null>(null);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (isRefresh = false) => {
     if (!id) return;
     try {
-      setLoading(true);
+      if (!isRefresh) setLoading(true);
       const [data, count, attendStatus] = await Promise.all([
         getEventById(String(id)),
         getEventParticipantsCount(String(id)),
@@ -120,8 +121,14 @@ export default function EventDetailsScreen() {
       }
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   }, [id, myUserId]);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    load(true);
+  }, [load]);
   
 
   useFocusEffect(
@@ -388,6 +395,7 @@ export default function EventDetailsScreen() {
       style={styles.page}
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#3F5E95"]} tintColor="#3F5E95" />}
     >
       {(isMine) && (
         <View style={styles.statusBadgeWrap}>

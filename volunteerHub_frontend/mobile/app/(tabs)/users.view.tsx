@@ -8,6 +8,7 @@ import {
   Modal,
   Platform,
   Pressable,
+  RefreshControl,
   Text,
   TextInput,
   View,
@@ -28,14 +29,15 @@ export default function AllUsersScreen() {
   const [err, setErr] = useState<string | null>(null);
   const [hasNextPage, setHasNextPage] = useState(false);
   const [totalCount, setTotalCount] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
   const pageRef = useRef(1);
 
   const [query, setQuery] = useState("");
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (isRefresh = false) => {
     try {
       setErr(null);
-      setLoading(true);
+      if (!isRefresh) setLoading(true);
       pageRef.current = 1;
       const result = await getAllUsers(1, 10);
       setUsers(result.items);
@@ -45,8 +47,14 @@ export default function AllUsersScreen() {
       setErr(e?.message ?? "Failed to load users.");
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   }, []);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    load(true);
+  }, [load]);
 
   const loadMore = useCallback(async () => {
     if (loadingMore || !hasNextPage) return;
@@ -118,7 +126,7 @@ export default function AllUsersScreen() {
         ) : err ? (
           <View style={styles.center}>
             <Text style={styles.errorText}>{err}</Text>
-            <Pressable onPress={load} style={styles.retryBtn}>
+            <Pressable onPress={() => load()} style={styles.retryBtn}>
               <Text style={styles.retryText}>Retry</Text>
             </Pressable>
           </View>
@@ -131,6 +139,7 @@ export default function AllUsersScreen() {
               contentContainerStyle={styles.listContent}
               onEndReached={loadMore}
               onEndReachedThreshold={0.3}
+              refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#3F5E95"]} tintColor="#3F5E95" />}
               ListFooterComponent={
                 loadingMore ? (
                   <View style={styles.listFooter}>

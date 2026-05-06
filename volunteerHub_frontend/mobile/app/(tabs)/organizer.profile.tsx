@@ -2,7 +2,7 @@ import { FontAwesome } from "@expo/vector-icons";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { goBack } from "@/src/utils/navigation";
 import React, { useCallback, useState } from "react";
-import { ActivityIndicator, FlatList, Pressable, Text, View } from "react-native";
+import { ActivityIndicator, FlatList, Pressable, RefreshControl, Text, View } from "react-native";
 import { getOrganizerReviews } from "@/src/api/review.api";
 import type { OrganizerReviewsResponse, ReviewResponse } from "@/src/types/review";
 import { styles } from "@/src/styles/organizer.profile.styles";
@@ -52,13 +52,14 @@ export default function OrganizerProfileScreen() {
   const { organizerId } = useLocalSearchParams<{ organizerId: string }>();
 
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [data, setData] = useState<OrganizerReviewsResponse | null>(null);
   const [notFound, setNotFound] = useState(false);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (isRefresh = false) => {
     if (!organizerId) return;
     try {
-      setLoading(true);
+      if (!isRefresh) setLoading(true);
       setNotFound(false);
       const result = await getOrganizerReviews(String(organizerId));
       setData(result);
@@ -66,8 +67,14 @@ export default function OrganizerProfileScreen() {
       if (err?.response?.status === 404) setNotFound(true);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   }, [organizerId]);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    load(true);
+  }, [load]);
 
   useFocusEffect(
     useCallback(() => {
@@ -103,6 +110,7 @@ export default function OrganizerProfileScreen() {
           renderItem={({ item }) => <ReviewCard item={item} />}
           contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#3F5E95"]} tintColor="#3F5E95" />}
           ListHeaderComponent={
             <View>
               <View style={styles.profileCard}>

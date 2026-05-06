@@ -2,7 +2,7 @@ import { FontAwesome } from "@expo/vector-icons";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { goBack } from "@/src/utils/navigation";
 import React, { useCallback, useState } from "react";
-import { ActivityIndicator, Alert, Image, Modal, Pressable, ScrollView, Switch, Text, View } from "react-native";
+import { ActivityIndicator, Alert, Image, Modal, Pressable, RefreshControl, ScrollView, Switch, Text, View } from "react-native";
 import { getAuth } from "@/src/store/auth.store"; 
 import { styles } from "@/src/styles/user.styles";
 import { UserProfile } from "@/src/types/user";
@@ -17,22 +17,28 @@ export default function UserDetailsScreen() {
   const isAdmin = auth?.roles?.includes("Admin") ?? auth?.roles?.includes("Admin") ?? false;
 
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [user, setUser] = useState<UserProfile | null>(null);
 
   const [busyDelete, setBusyDelete] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (isRefresh = false) => {
     if (!id) return;
     try {
-      setLoading(true);
-      const [data] = await Promise.all([
-        getUserById(String(id))]);
+      if (!isRefresh) setLoading(true);
+      const [data] = await Promise.all([getUserById(String(id))]);
       setUser(data);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   }, [id]);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    load(true);
+  }, [load]);
   
 
   useFocusEffect(
@@ -120,6 +126,7 @@ export default function UserDetailsScreen() {
       style={styles.page}
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#3F5E95"]} tintColor="#3F5E95" />}
     >
       <View style={styles.userCard}>
         <View style={styles.avatarContainer}>

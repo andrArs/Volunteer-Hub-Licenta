@@ -1,6 +1,6 @@
 import { FontAwesome } from "@expo/vector-icons";
 import { useFocusEffect, useRouter } from "expo-router";
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { useCallback, useState } from "react";
 import { styles } from "@/src/styles/home.styles";
@@ -12,22 +12,30 @@ export default function HomeScreen() {
   const router = useRouter();
   const [aiText, setAiText] = useState("");
   const [unreadCount, setUnreadCount] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
 
   const auth = getAuth();
   const isAdmin = auth?.roles?.includes("Admin") ?? false;
 
+  const fetchCount = useCallback(() =>
+    getNotifications(1, 100)
+      .then((result) => setUnreadCount(result.items.filter((n) => !n.isRead).length))
+      .catch(() => setUnreadCount(0)),
+  []);
+
   useFocusEffect(
     useCallback(() => {
-      const fetchCount = () =>
-        getNotifications(1, 100)
-          .then((result) => setUnreadCount(result.items.filter((n) => !n.isRead).length))
-          .catch(() => setUnreadCount(0));
-
       fetchCount();
       const interval = setInterval(fetchCount, 30000);
       return () => clearInterval(interval);
-    }, [])
+    }, [fetchCount])
   );
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await fetchCount();
+    setRefreshing(false);
+  }, [fetchCount]);
 
   async function handleLogout() {
     await logout();
@@ -54,7 +62,7 @@ export default function HomeScreen() {
         </Pressable>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} style={styles.content}>
+      <ScrollView showsVerticalScrollIndicator={false} style={styles.content} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#3F5E95"]} tintColor="#3F5E95" />}>
         <View style={styles.grid}>
 
           {isAdmin && (

@@ -8,6 +8,7 @@ import {
   Modal,
   Platform,
   Pressable,
+  RefreshControl,
   Text,
   TextInput,
   View,
@@ -87,6 +88,7 @@ export default function MyEventsScreen() {
   const [events, setEvents] = useState<EventResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   const [activeTab, setActiveTab] = useState<TabType>("Going");
 
@@ -99,11 +101,11 @@ export default function MyEventsScreen() {
 
   const [userLocation, setUserLocation] = useState<Location.LocationObjectCoords | null>(null);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (isRefresh = false) => {
     try {
       setErr(null);
-      setLoading(true);
-      
+      if (!isRefresh) setLoading(true);
+
       let data: EventResponse[] = [];
 
       if (activeTab === "Created") {
@@ -136,8 +138,14 @@ export default function MyEventsScreen() {
       setErr(e?.message ?? "Failed to load events.");
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
-  }, [activeTab]); 
+  }, [activeTab]);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    load(true);
+  }, [load]); 
 
   useFocusEffect(
     useCallback(() => {
@@ -271,7 +279,7 @@ export default function MyEventsScreen() {
         ) : err ? (
           <View style={styles.center}>
             <Text style={styles.errorText}>{err}</Text>
-            <Pressable onPress={load} style={styles.retryBtn}>
+            <Pressable onPress={() => load()} style={styles.retryBtn}>
               <Text style={styles.retryText}>Retry</Text>
             </Pressable>
           </View>
@@ -284,6 +292,7 @@ export default function MyEventsScreen() {
               keyExtractor={(item) => item.id}
               contentContainerStyle={styles.listContent}
               showsVerticalScrollIndicator={false}
+              refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#3F5E95"]} tintColor="#3F5E95" />}
               renderItem={({ item }) => (
                 <Pressable style={styles.card} onPress={() => openEvent(item)}>
                   <View style={styles.cardHeaderRow}>
