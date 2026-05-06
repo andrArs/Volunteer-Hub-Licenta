@@ -19,6 +19,7 @@ import DateTimePicker, {
 import { styles } from "@/src/styles/event.style";
 import { toAppError } from "@/src/api/errors";
 import { getMyProfile, updateMyProfile } from "@/src/api/user.api";
+import { t, useLanguage } from "@/src/i18n/index";
 
 type FieldErrors = Partial<{
   FirstName: string;
@@ -40,6 +41,7 @@ function parseWebInputToDate(value: string): Date | null {
 
 export default function UpdateMyProfileScreen() {
   const router = useRouter();
+  useLanguage();
 
   const [FirstName, setFirstName] = useState("");
   const [LastName, setLastName] = useState("");
@@ -76,7 +78,7 @@ export default function UpdateMyProfileScreen() {
           const d = new Date(user.dateOfBirth ?? "");
           setDateOfBirth(isNaN(d.getTime()) ? new Date() : d);
         } catch {
-          setErrorMsg("Failed to load profile.");
+          setErrorMsg(t("profileUpdate.failedToLoad"));
         }
       })();
 
@@ -92,16 +94,16 @@ export default function UpdateMyProfileScreen() {
     const fn = FirstName.trim();
     const ln = LastName.trim();
 
-    if (!fn) u.FirstName = "First name is required.";
-    else if (fn.length > 100) u.FirstName = "First name must be max 100 characters.";
+    if (!fn) u.FirstName = t("profileUpdate.errors.firstNameRequired");
+    else if (fn.length > 100) u.FirstName = t("profileUpdate.errors.firstNameTooLong");
 
-    if (!ln) u.LastName = "Last name is required.";
-    else if (ln.length > 100) u.LastName = "Last name must be max 100 characters.";
+    if (!ln) u.LastName = t("profileUpdate.errors.lastNameRequired");
+    else if (ln.length > 100) u.LastName = t("profileUpdate.errors.lastNameTooLong");
 
     if (!DateOfBirth || isNaN(DateOfBirth.getTime()))
-      u.DateOfBirth = "Date of birth is required.";
+      u.DateOfBirth = t("profileUpdate.errors.dateOfBirthRequired");
     else if (DateOfBirth.getTime() > Date.now())
-      u.DateOfBirth = "Date of birth cannot be in the future.";
+      u.DateOfBirth = t("profileUpdate.errors.dateOfBirthFuture");
 
     return u;
   }
@@ -159,7 +161,7 @@ export default function UpdateMyProfileScreen() {
           <FontAwesome name="arrow-left" size={18} color="#fff" />
         </Pressable>
 
-        <Text style={styles.headerTitle}>Edit Profile</Text>
+        <Text style={styles.headerTitle}>{t("profileUpdate.title")}</Text>
         <View style={styles.rightSpacer} />
       </View>
 
@@ -169,35 +171,35 @@ export default function UpdateMyProfileScreen() {
       >
         <ScrollView keyboardShouldPersistTaps="handled">
           <View style={styles.card}>
-            <Text style={styles.label}>First Name</Text>
+            <Text style={styles.label}>{t("profileUpdate.firstName")}</Text>
             <View style={styles.inputWrap}>
               <TextInput
                 value={FirstName}
-                onChangeText={(t) => {
-                  setFirstName(t);
+                onChangeText={(val) => {
+                  setFirstName(val);
                   clearError("FirstName");
                 }}
-                placeholder="First Name"
+                placeholder={t("profileUpdate.firstName")}
                 style={styles.input}
                 editable={!submitting}
               />
             </View>
 
-            <Text style={[styles.label, styles.labelSpaced]}>Last Name</Text>
+            <Text style={[styles.label, styles.labelSpaced]}>{t("profileUpdate.lastName")}</Text>
             <View style={styles.inputWrap}>
               <TextInput
                 value={LastName}
-                onChangeText={(t) => {
-                  setLastName(t);
+                onChangeText={(val) => {
+                  setLastName(val);
                   clearError("LastName");
                 }}
-                placeholder="Last Name"
+                placeholder={t("profileUpdate.lastName")}
                 style={styles.input}
                 editable={!submitting}
               />
             </View>
 
-            <Text style={[styles.label, styles.labelSpaced]}>Date of Birth</Text>
+            <Text style={[styles.label, styles.labelSpaced]}>{t("profileUpdate.dateOfBirth")}</Text>
             <View style={styles.inputWrap}>
               {Platform.OS === "web" ? (
                 <input
@@ -257,7 +259,7 @@ export default function UpdateMyProfileScreen() {
             onPress={onSave}
           >
             <Text style={styles.primaryBtnText}>
-              {submitting ? "Saving..." : "Save Changes"}
+              {submitting ? t("profileUpdate.saving") : t("profileUpdate.save")}
             </Text>
           </Pressable>
         </ScrollView>
@@ -274,7 +276,7 @@ export default function UpdateMyProfileScreen() {
                 style={styles.modalBtn}
                 onPress={() => setShowPickerIOS(false)}
               >
-                Done
+                {t("common.done")}
               </Text>
 
               <DateTimePicker

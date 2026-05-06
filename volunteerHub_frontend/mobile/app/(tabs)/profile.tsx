@@ -23,6 +23,7 @@ import { type EventResponse } from "@/src/types/event";
 import { styles } from "@/src/styles/profile.styles";
 import { getMyProfile, uploadProfilePicture, removeProfilePicture } from "@/src/api/user.api";
 import { UserProfile } from "@/src/types/user";
+import { t, useLanguage } from "@/src/i18n/index";
 
 function formatDateTime(dt: string) {
   const d = new Date(dt);
@@ -50,9 +51,9 @@ function getReminderPill(dateString: string) {
   evDate.setHours(0, 0, 0, 0);
   today.setHours(0, 0, 0, 0);
   const diffDays = Math.ceil((evDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-  if (diffDays === 0) return { label: "Today", bg: "#F05A4A" };
-  if (diffDays === 1) return { label: "Tomorrow", bg: "#F8A01A" };
-  return { label: `${diffDays} days`, bg: "#3F5E95" };
+  if (diffDays === 0) return { label: t("profile.today"), bg: "#F05A4A" };
+  if (diffDays === 1) return { label: t("profile.tomorrow"), bg: "#F8A01A" };
+  return { label: t("profile.days", { count: diffDays }), bg: "#3F5E95" };
 }
 
 function calculateAge(dob?: string | null): number | string {
@@ -67,6 +68,7 @@ function calculateAge(dob?: string | null): number | string {
 
 export default function MyProfileScreen() {
   const router = useRouter();
+  useLanguage();
   const auth = getAuth();
   const userEmail = auth?.email || "";
 
@@ -138,7 +140,7 @@ export default function MyProfileScreen() {
       const url = await uploadProfilePicture(asset.uri, asset.mimeType ?? undefined);
       setProfileInfo((prev) => (prev ? { ...prev, profilePictureUrl: url } : prev));
     } catch {
-      Alert.alert("Error", "Could not upload picture. Please try again.");
+      Alert.alert(t("common.error"), t("profile.couldNotUpload"));
     } finally {
       setUploading(false);
     }
@@ -150,7 +152,7 @@ export default function MyProfileScreen() {
       await removeProfilePicture();
       setProfileInfo((prev) => (prev ? { ...prev, profilePictureUrl: undefined } : prev));
     } catch {
-      Alert.alert("Error", "Could not remove picture. Please try again.");
+      Alert.alert(t("common.error"), t("profile.couldNotRemove"));
     } finally {
       setUploading(false);
     }
@@ -161,23 +163,28 @@ export default function MyProfileScreen() {
 
     if (Platform.OS === "ios") {
       const hasPhoto = !!profileInfo?.profilePictureUrl;
+      const optView = t("profile.viewPhoto");
+      const optChange = t("profile.changePhoto");
+      const optRemove = t("profile.removePhoto");
+      const optCancel = t("common.cancel");
+
       const options = [
-        ...(hasPhoto ? ["View Photo"] : []),
-        "Change Photo",
-        ...(hasPhoto ? ["Remove Photo"] : []),
-        "Cancel",
+        ...(hasPhoto ? [optView] : []),
+        optChange,
+        ...(hasPhoto ? [optRemove] : []),
+        optCancel,
       ];
       const cancelIndex = options.length - 1;
-      const destructiveIndex = hasPhoto ? options.indexOf("Remove Photo") : -1;
+      const destructiveIndex = hasPhoto ? options.indexOf(optRemove) : -1;
 
       ActionSheetIOS.showActionSheetWithOptions(
         { options, cancelButtonIndex: cancelIndex, destructiveButtonIndex: destructiveIndex },
         (index) => {
-          if (hasPhoto && index === options.indexOf("View Photo")) {
+          if (hasPhoto && index === options.indexOf(optView)) {
             setShowPhotoModal(true);
-          } else if (index === options.indexOf("Change Photo")) {
+          } else if (index === options.indexOf(optChange)) {
             openImagePicker();
-          } else if (hasPhoto && index === options.indexOf("Remove Photo")) {
+          } else if (hasPhoto && index === options.indexOf(optRemove)) {
             handleRemovePhoto();
           }
         }
@@ -193,7 +200,7 @@ export default function MyProfileScreen() {
         <Pressable onPress={() => goBack()} hitSlop={10} style={styles.backBtn}>
           <FontAwesome name="arrow-left" size={18} color="#fff" />
         </Pressable>
-        <Text style={styles.headerTitle}>My Profile</Text>
+        <Text style={styles.headerTitle}>{t("profile.title")}</Text>
         <Pressable onPress={() => router.push("/profile.update")} style={styles.editBtn}>
           <FontAwesome name="pencil" size={18} color="#fff" />
         </Pressable>
@@ -233,22 +240,22 @@ export default function MyProfileScreen() {
 
               <View style={styles.userDetailsBox}>
                 <View style={styles.userDetailRow}>
-                  <Text style={styles.userDetailLabel}>First Name</Text>
+                  <Text style={styles.userDetailLabel}>{t("profile.firstName")}</Text>
                   <Text style={styles.userDetailValue}>{profileInfo?.firstName || "."}</Text>
                 </View>
                 <View style={styles.userDetailRow}>
-                  <Text style={styles.userDetailLabel}>Last Name</Text>
+                  <Text style={styles.userDetailLabel}>{t("profile.lastName")}</Text>
                   <Text style={styles.userDetailValue}>{profileInfo?.lastName || "."}</Text>
                 </View>
                 <View style={profileInfo?.dateOfBirth ? styles.userDetailRow : styles.userDetailRowLast}>
-                  <Text style={styles.userDetailLabel}>Email</Text>
+                  <Text style={styles.userDetailLabel}>{t("profile.email")}</Text>
                   <Text style={styles.userDetailValue}>{userEmail || "."}</Text>
                 </View>
                 {profileInfo?.dateOfBirth && (
                   <View style={styles.userDetailRowLast}>
-                    <Text style={styles.userDetailLabel}>Date of Birth</Text>
+                    <Text style={styles.userDetailLabel}>{t("profile.dateOfBirth")}</Text>
                     <Text style={styles.userDetailValue}>
-                      {calculateAge(profileInfo.dateOfBirth)} years old ({formatDateOnly(profileInfo.dateOfBirth)})
+                      {t("profile.yearsOld", { age: calculateAge(profileInfo.dateOfBirth) })} ({formatDateOnly(profileInfo.dateOfBirth)})
                     </Text>
                   </View>
                 )}
@@ -258,21 +265,21 @@ export default function MyProfileScreen() {
             <View style={[styles.card, styles.statsCard]}>
               <Pressable style={styles.statBox} onPress={() => router.push("/my.events")}>
                 <Text style={styles.statNumber}>{stats.attended}</Text>
-                <Text style={styles.statLabel}>Events{"\n"}Attended</Text>
+                <Text style={styles.statLabel}>{t("profile.eventsAttended")}</Text>
               </Pressable>
               <View style={styles.statDivider} />
               <Pressable style={styles.statBox} onPress={() => router.push("/my.events")}>
                 <Text style={styles.statNumber}>{stats.organized}</Text>
-                <Text style={styles.statLabel}>Events{"\n"}Organized</Text>
+                <Text style={styles.statLabel}>{t("profile.eventsOrganized")}</Text>
               </Pressable>
             </View>
 
             <View style={styles.card}>
-              <Text style={styles.sectionTitle}>Upcoming Event Reminders</Text>
+              <Text style={styles.sectionTitle}>{t("profile.upcomingReminders")}</Text>
               <View style={styles.divider} />
 
               {upcomingEvents.length === 0 ? (
-                <Text style={styles.emptyText}>No upcoming events. Go find some!</Text>
+                <Text style={styles.emptyText}>{t("profile.noUpcoming")}</Text>
               ) : (
                 upcomingEvents.map((ev, index) => {
                   const pill = getReminderPill(ev.startDateTime);
@@ -307,7 +314,7 @@ export default function MyProfileScreen() {
 
       <View style={styles.footer}>
         <Pressable style={styles.logoutBtn} onPress={handleLogout}>
-          <Text style={styles.logoutText}>Logout</Text>
+          <Text style={styles.logoutText}>{t("profile.logout")}</Text>
         </Pressable>
       </View>
 
@@ -332,7 +339,7 @@ export default function MyProfileScreen() {
                     setTimeout(() => setShowPhotoModal(true), 300);
                   }}
                 >
-                  <Text style={styles.optionsBtnText}>View Photo</Text>
+                  <Text style={styles.optionsBtnText}>{t("profile.viewPhoto")}</Text>
                 </Pressable>
                 <View style={styles.optionsDivider} />
               </>
@@ -344,7 +351,7 @@ export default function MyProfileScreen() {
                   const { granted } = await ImagePicker.requestMediaLibraryPermissionsAsync();
                   if (!granted) {
                     setShowOptionsSheet(false);
-                    setTimeout(() => Alert.alert("Permission needed", "Please allow access to your photo library."), 300);
+                    setTimeout(() => Alert.alert(t("profile.permissionNeeded"), t("profile.permissionMessage")), 300);
                     return;
                   }
                 }
@@ -352,7 +359,7 @@ export default function MyProfileScreen() {
                 setTimeout(() => openImagePicker(), 500);
               }}
             >
-              <Text style={styles.optionsBtnText}>Change Photo</Text>
+              <Text style={styles.optionsBtnText}>{t("profile.changePhoto")}</Text>
             </Pressable>
             {profileInfo?.profilePictureUrl && (
               <>
@@ -364,13 +371,13 @@ export default function MyProfileScreen() {
                     handleRemovePhoto();
                   }}
                 >
-                  <Text style={styles.optionsRemoveText}>Remove Photo</Text>
+                  <Text style={styles.optionsRemoveText}>{t("profile.removePhoto")}</Text>
                 </Pressable>
               </>
             )}
             <View style={styles.optionsDivider} />
             <Pressable style={styles.optionsBtn} onPress={() => setShowOptionsSheet(false)}>
-              <Text style={styles.optionsCancelText}>Cancel</Text>
+              <Text style={styles.optionsCancelText}>{t("common.cancel")}</Text>
             </Pressable>
           </View>
         </Pressable>

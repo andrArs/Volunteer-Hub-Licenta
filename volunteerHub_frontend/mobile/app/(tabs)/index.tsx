@@ -6,10 +6,12 @@ import { useCallback, useState } from "react";
 import { styles } from "@/src/styles/home.styles";
 import { getAuth, logout } from "@/src/store/auth.store";
 import { getNotifications } from "@/src/api/notification.api";
+import { t, useLanguage } from "@/src/i18n/index";
 
 
 export default function HomeScreen() {
   const router = useRouter();
+  const { locale, setLocale } = useLanguage();
   const [aiText, setAiText] = useState("");
   const [unreadCount, setUnreadCount] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
@@ -45,7 +47,21 @@ export default function HomeScreen() {
   return (
     <View style={styles.page}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Welcome to{"\n \n"}Volunteer Hub</Text>
+        <View style={styles.langRow}>
+          <Pressable
+            onPress={() => setLocale("en")}
+            style={[styles.langBtn, locale === "en" && styles.langBtnActive]}
+          >
+            <Text style={[styles.langText, locale === "en" && styles.langTextActive]}>EN</Text>
+          </Pressable>
+          <Pressable
+            onPress={() => setLocale("ro")}
+            style={[styles.langBtn, locale === "ro" && styles.langBtnActive]}
+          >
+            <Text style={[styles.langText, locale === "ro" && styles.langTextActive]}>RO</Text>
+          </Pressable>
+        </View>
+        <Text style={styles.headerTitle}>{t("home.welcome")}</Text>
         <Pressable
           style={bellStyles.btn}
           onPress={() => router.push("/notifications")}
@@ -67,38 +83,38 @@ export default function HomeScreen() {
 
           {isAdmin && (
             <HomeCard
-              title="Manage Events"
-              icon="shield" 
+              title={t("home.manageEvents")}
+              icon="shield"
               onPress={() => router.push("/admin.pending.events")}
             />
           )}
 
           {isAdmin && (
             <HomeCard
-              title="Manage Users"
-              icon="users" 
+              title={t("home.manageUsers")}
+              icon="users"
               onPress={() => router.push("/users.view")}
             />
           )}
 
           <HomeCard
-            title="My Events"
+            title={t("home.myEvents")}
             icon="calendar"
             onPress={() => router.push("/my.events")}
           />
           <HomeCard
-            title="View Events"
+            title={t("home.viewEvents")}
             icon="search"
             onPress={() => router.push("/events.view")}
           />
 
           <HomeCard
-            title="Create Event"
+            title={t("home.createEvent")}
             icon="plus-circle"
             onPress={() => router.push("/event.create")}
           />
           <HomeCard
-            title="My Profile"
+            title={t("home.myProfile")}
             icon="user"
             onPress={() => router.push("/profile")}
           />
@@ -108,27 +124,25 @@ export default function HomeScreen() {
           <View style={styles.aiHeaderRow}>
             <View style={styles.aiBadge}>
               <FontAwesome name="comment" size={14} color="#3F5E95" />
-              <Text style={styles.aiBadgeText}>AI helper</Text>
+              <Text style={styles.aiBadgeText}>{t("home.aiBadge")}</Text>
             </View>
 
             <Pressable
               onPress={() => router.replace("/ai.chat")}
               style={styles.aiOpenBtn}
             >
-              <Text style={styles.aiOpenBtnText}>Open chat</Text>
+              <Text style={styles.aiOpenBtnText}>{t("home.openChat")}</Text>
               <FontAwesome name="chevron-right" size={12} color="#3F5E95" />
             </Pressable>
           </View>
 
-          <Text style={styles.aiHint}>
-            Ask for event suggestions.
-          </Text>
+          <Text style={styles.aiHint}>{t("home.aiHint")}</Text>
 
           <View style={styles.aiInputRow}>
             <TextInput
               value={aiText}
               onChangeText={setAiText}
-              placeholder="e.g. Suggest volunteering events this weekend"
+              placeholder={t("home.aiPlaceholder")}
               placeholderTextColor="#8B93A7"
               style={styles.aiInput}
               returnKeyType="send"
@@ -158,7 +172,7 @@ export default function HomeScreen() {
           style={styles.logoutBtn}
           onPress={handleLogout}
         >
-          <Text style={styles.logoutText}>Logout</Text>
+          <Text style={styles.logoutText}>{t("home.logout")}</Text>
         </Pressable>
       </ScrollView>
     </View>
