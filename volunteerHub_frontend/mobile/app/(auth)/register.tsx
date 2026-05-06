@@ -56,8 +56,7 @@ export default function RegisterScreen() {
         if (token) {
           router.replace("/(tabs)");
         }
-      } catch (e) {
-        console.error("Auth check failed:", e);
+      } catch {
       }
     }
 

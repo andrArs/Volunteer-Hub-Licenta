@@ -38,8 +38,7 @@ export default function RootLayout() {
       try {
         const token = await getToken();
         setIsLoggedIn(!!token);
-      } catch (e) {
-        console.error("Failed to restore auth state:", e);
+      } catch {
         setIsLoggedIn(false);
       } finally {
         setAuthReady(true);

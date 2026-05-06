@@ -99,8 +99,7 @@ export default function MyProfileScreen() {
           .sort((a, b) => new Date(a.startDateTime).getTime() - new Date(b.startDateTime).getTime())
           .slice(0, 5)
       );
-    } catch (error) {
-      console.error("Failed to load profile data", error);
+    } catch {
     } finally {
       setLoading(false);
       setRefreshing(false);

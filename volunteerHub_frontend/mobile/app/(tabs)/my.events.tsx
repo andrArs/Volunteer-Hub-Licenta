@@ -161,8 +161,7 @@ export default function MyEventsScreen() {
 
         let location = await Location.getCurrentPositionAsync({});
         setUserLocation(location.coords);
-      } catch (error) {
-        console.error("Error fetching location:", error);
+      } catch {
       }
     })();
   }, []);

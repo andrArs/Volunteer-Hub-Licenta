@@ -86,15 +86,11 @@ export default function AllEventsScreen() {
     (async () => {
       try {
         let { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== 'granted') {
-          console.log('Permission to access location was denied');
-          return;
-        }
+        if (status !== 'granted') return;
 
         let location = await Location.getCurrentPositionAsync({});
         setUserLocation(location.coords);
-      } catch (error) {
-        console.error("Error fetching location:", error);
+      } catch {
       }
     })();
   }, []);

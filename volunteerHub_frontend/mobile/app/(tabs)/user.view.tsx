@@ -82,8 +82,7 @@ export default function UserDetailsScreen() {
         await assignRole(user.id, role);
         setUser({ ...user, roles: [...(user.roles || []), role] });
       }
-    } catch (e) {
-      console.error(e);
+    } catch {
       Alert.alert("Error", "Could not update role.");
     }
   }

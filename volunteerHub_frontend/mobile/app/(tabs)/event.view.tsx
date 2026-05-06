@@ -144,8 +144,7 @@ export default function EventDetailsScreen() {
         if (status !== 'granted') return;
         const loc = await Location.getCurrentPositionAsync({});
         setUserLocation(loc.coords);
-      } catch (e) {
-        console.error("Error getting location:", e);
+      } catch {
       }
     })();
   }, []);
@@ -254,8 +253,7 @@ export default function EventDetailsScreen() {
       if (previousStatus === "going" && Platform.OS !== "web") {
         await removeEventFromCalendar(event);
       }
-    } catch (error) {
-      console.error("Error updating attendance status:", error);
+    } catch {
       setStatus(previousStatus);
 
       if (previousStatus === "going") {
@@ -293,8 +291,7 @@ export default function EventDetailsScreen() {
           await removeEventFromCalendar(event);
         }
       }
-    } catch (error) {
-      console.error("Error updating attendance status:", error);
+    } catch {
       setStatus(previousStatus);
 
       if (next === "going" && previousStatus !== "going") {
