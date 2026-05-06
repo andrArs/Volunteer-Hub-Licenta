@@ -1,5 +1,6 @@
 import { FontAwesome } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { goBack } from "@/src/utils/navigation";
 import { useState } from "react";
 import {
   KeyboardAvoidingView,
@@ -90,7 +91,7 @@ export default function ForgotPasswordScreen() {
         </Pressable>
 
         <View style={styles.footerRow}>
-          <Pressable onPress={() => router.back()} disabled={submitting}>
+          <Pressable onPress={() => goBack("/(auth)/login")} disabled={submitting}>
             <Text style={styles.footerLink}>Back to Login</Text>
           </Pressable>
         </View>

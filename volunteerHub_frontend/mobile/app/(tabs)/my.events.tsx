@@ -1,5 +1,6 @@
 import { FontAwesome } from "@expo/vector-icons";
 import { useFocusEffect, useRouter } from "expo-router";
+import { goBack } from "@/src/utils/navigation";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -214,7 +215,7 @@ export default function MyEventsScreen() {
   return (
     <View style={styles.page}>
       <View style={styles.header}>
-        <Pressable onPress={() => router.back()} hitSlop={10} style={styles.backBtn}>
+        <Pressable onPress={() => goBack()} hitSlop={10} style={styles.backBtn}>
           <FontAwesome name="arrow-left" size={18} color="#fff" />
         </Pressable>
         <Text style={styles.headerTitle}>My Events</Text>

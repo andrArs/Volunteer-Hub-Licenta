@@ -1,5 +1,6 @@
 import { FontAwesome } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { goBack } from "@/src/utils/navigation";
 import { ActivityIndicator, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { useMemo, useRef, useState } from "react";
 import { styles } from "@/src/styles/event.style";
@@ -314,7 +315,7 @@ export default function UpdateEventScreen() {
                 maxVolunteers: mv && mv > 0 ? mv : null,
             });
 
-            router.back();
+            goBack();
         } catch (e) {
             const err = toAppError(e);
             setErrorMsg(err.message);
@@ -327,7 +328,7 @@ export default function UpdateEventScreen() {
         <View style={styles.page}>
            <View style={styles.header}>
                 <Pressable
-                    onPress={() =>router.back()}
+                    onPress={() =>goBack()}
                     hitSlop={10}
                     style={styles.backBtn}
                 >

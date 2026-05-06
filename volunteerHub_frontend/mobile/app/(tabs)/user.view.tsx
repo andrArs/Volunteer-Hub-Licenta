@@ -1,5 +1,6 @@
 import { FontAwesome } from "@expo/vector-icons";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { goBack } from "@/src/utils/navigation";
 import React, { useCallback, useState } from "react";
 import { ActivityIndicator, Alert, Image, Modal, Pressable, ScrollView, Switch, Text, View } from "react-native";
 import { getAuth } from "@/src/store/auth.store"; 
@@ -93,7 +94,7 @@ export default function UserDetailsScreen() {
     return (
       <View style={styles.center}>
         <Text style={styles.errorText}>User not found.</Text>
-        <Pressable onPress={() => router.back()} style={styles.backBtn}>
+        <Pressable onPress={() => goBack("/users.view")} style={styles.backBtn}>
           <Text style={styles.backBtnText}>Go back</Text>
         </Pressable>
       </View>
@@ -104,7 +105,7 @@ export default function UserDetailsScreen() {
   <View style={styles.page}>
     <View style={styles.header}>
       <Pressable
-        onPress={() => router.back()}
+        onPress={() => goBack("/users.view")}
         hitSlop={10}
         style={styles.backBtn}
       >

@@ -1,5 +1,6 @@
 import { FontAwesome } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter, useFocusEffect } from "expo-router";
+import { goBack } from "@/src/utils/navigation";
 import {
   KeyboardAvoidingView,
   Modal,
@@ -160,7 +161,7 @@ export default function UpdateUserScreen() {
         dateOfBirth: formatForWebInput(DateOfBirth),
       });
 
-      router.back();
+      goBack();
     } catch (e) {
       const err = toAppError(e);
       setErrorMsg(err.message);
@@ -172,7 +173,7 @@ export default function UpdateUserScreen() {
   return (
     <View style={styles.page}>
       <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={styles.backBtn}>
+        <Pressable onPress={() => goBack()} style={styles.backBtn}>
           <FontAwesome name="arrow-left" size={18} color="#fff" />
         </Pressable>
 

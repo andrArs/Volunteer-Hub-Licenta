@@ -1,5 +1,6 @@
 import { FontAwesome } from "@expo/vector-icons";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { goBack } from "@/src/utils/navigation";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Alert, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 
@@ -200,7 +201,7 @@ export default function EventDetailsScreen() {
       setBusyStatusUpdate(true);
       await setEventStatus(event.id, EventStatus.Approved, "");
       Alert.alert("Success", "Event approved successfully!");
-      router.back(); 
+      goBack("/events.view"); 
     } catch (error) {
       Alert.alert("Error", "Could not approve event.");
     } finally {
@@ -218,7 +219,7 @@ export default function EventDetailsScreen() {
       await setEventStatus(event.id, EventStatus.Rejected, rejectReason.trim());
       setShowRejectModal(false);
       Alert.alert("Success", "Event has been rejected.");
-      router.back();
+      goBack("/events.view");
     } catch (error) {
       Alert.alert("Error", "Could not reject event.");
     } finally {
@@ -361,7 +362,7 @@ export default function EventDetailsScreen() {
     return (
       <View style={styles.center}>
         <Text style={styles.errorText}>Event not found.</Text>
-        <Pressable onPress={() => router.back()} style={styles.backBtn}>
+        <Pressable onPress={() => goBack("/events.view")} style={styles.backBtn}>
           <Text style={styles.backBtnText}>Go back</Text>
         </Pressable>
       </View>
@@ -372,7 +373,7 @@ export default function EventDetailsScreen() {
   <View style={styles.page}>
     <View style={styles.header}>
       <Pressable
-        onPress={() => router.back()}
+        onPress={() => goBack("/events.view")}
         hitSlop={10}
         style={styles.backBtn}
       >

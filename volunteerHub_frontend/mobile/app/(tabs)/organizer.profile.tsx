@@ -1,5 +1,6 @@
 import { FontAwesome } from "@expo/vector-icons";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { goBack } from "@/src/utils/navigation";
 import React, { useCallback, useState } from "react";
 import { ActivityIndicator, FlatList, Pressable, Text, View } from "react-native";
 import { getOrganizerReviews } from "@/src/api/review.api";
@@ -77,7 +78,7 @@ export default function OrganizerProfileScreen() {
   return (
     <View style={styles.page}>
       <View style={styles.header}>
-        <Pressable onPress={() => router.back()} hitSlop={10} style={styles.backBtn}>
+        <Pressable onPress={() => goBack()} hitSlop={10} style={styles.backBtn}>
           <FontAwesome name="arrow-left" size={18} color="#fff" />
         </Pressable>
         <Text style={styles.headerTitle}>Organizer Profile</Text>
@@ -91,7 +92,7 @@ export default function OrganizerProfileScreen() {
       ) : notFound || !data ? (
         <View style={styles.center}>
           <Text style={styles.errorText}>Organizer not found.</Text>
-          <Pressable onPress={() => router.back()} style={styles.backTextBtn}>
+          <Pressable onPress={() => goBack()} style={styles.backTextBtn}>
             <Text style={styles.backTextBtnText}>Go back</Text>
           </Pressable>
         </View>
