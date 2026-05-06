@@ -2,10 +2,11 @@ import { FontAwesome } from "@expo/vector-icons";
 import { useFocusEffect, useRouter } from "expo-router";
 import { goBack } from "@/src/utils/navigation";
 import React, { useCallback, useState } from "react";
-import { ActivityIndicator, FlatList, Pressable, RefreshControl, Text, View, StyleSheet } from "react-native";
+import { ActivityIndicator, FlatList, Pressable, RefreshControl, Text, View } from "react-native";
 import { getPendingEvents } from "@/src/api/admin.api";
 import { EVENT_CATEGORIES, type EventResponse } from "@/src/types/event";
 import { styles } from "@/src/styles/events.pending";
+import { t, useLanguage } from "@/src/i18n/index";
 
 function categoryLabel(cat: number) {
   return EVENT_CATEGORIES.find((c) => c.value === cat)?.label ?? "Unknown";
@@ -22,6 +23,7 @@ function formatStart(dt: string) {
 
 export default function AdminPendingEventsScreen() {
   const router = useRouter();
+  useLanguage();
   const [events, setEvents] = useState<EventResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
@@ -34,7 +36,7 @@ export default function AdminPendingEventsScreen() {
       const data = await getPendingEvents();
       setEvents(data || []);
     } catch (e: any) {
-      setErr(e?.message ?? "Failed to load pending events.");
+      setErr(e?.message ?? t("adminPending.failedToLoad"));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -58,7 +60,7 @@ export default function AdminPendingEventsScreen() {
         <Pressable onPress={() => goBack()} hitSlop={10} style={styles.backBtn}>
           <FontAwesome name="arrow-left" size={18} color="#fff" />
         </Pressable>
-        <Text style={styles.headerTitle}>Pending Approvals</Text>
+        <Text style={styles.headerTitle}>{t("adminPending.title")}</Text>
         <View style={styles.rightSpacer} />
       </View>
 
@@ -71,12 +73,16 @@ export default function AdminPendingEventsScreen() {
           <View style={styles.center}>
             <Text style={styles.errorText}>{err}</Text>
             <Pressable onPress={() => load()} style={styles.retryBtn}>
-              <Text style={styles.retryText}>Retry</Text>
+              <Text style={styles.retryText}>{t("common.retry")}</Text>
             </Pressable>
           </View>
         ) : (
           <>
-            <Text style={styles.foundText}>{events.length} event(s) awaiting review</Text>
+            <Text style={styles.foundText}>
+              {events.length === 1
+                ? t("adminPending.awaitingSingular")
+                : t("adminPending.awaitingPlural", { count: events.length })}
+            </Text>
 
             <FlatList
               data={events}
@@ -94,7 +100,7 @@ export default function AdminPendingEventsScreen() {
                       {item.title}
                     </Text>
                     <View style={styles.pendingBadge}>
-                        <Text style={styles.pendingBadgeText}>PENDING</Text>
+                        <Text style={styles.pendingBadgeText}>{t("adminPending.pending")}</Text>
                     </View>
                   </View>
 
@@ -122,10 +128,10 @@ export default function AdminPendingEventsScreen() {
                 <View style={[styles.center, { marginTop: 40 }]}>
                   <FontAwesome name="check-circle" size={48} color="#D1FAE5" style={{ marginBottom: 16 }} />
                   <Text style={{ color: "#059669", fontWeight: "800", fontSize: 16 }}>
-                    All caught up!
+                    {t("adminPending.allCaughtUp")}
                   </Text>
                   <Text style={{ color: "#8B93A7", marginTop: 8 }}>
-                    There are no pending events to review.
+                    {t("adminPending.noPending")}
                   </Text>
                 </View>
               }

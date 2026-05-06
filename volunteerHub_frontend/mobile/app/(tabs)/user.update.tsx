@@ -19,6 +19,7 @@ import DateTimePicker, {
 import { styles } from "@/src/styles/event.style";
 import { toAppError } from "@/src/api/errors";
 import { getUserById, updateUser } from "@/src/api/user.api";
+import { t, useLanguage } from "@/src/i18n/index";
 
 type FieldErrors = Partial<{
   FirstName: string;
@@ -43,6 +44,7 @@ function parseWebInputToDate(value: string): Date | null {
 export default function UpdateUserScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
+  useLanguage();
 
   const [FirstName, setFirstName] = useState("");
   const [LastName, setLastName] = useState("");
@@ -84,7 +86,7 @@ export default function UpdateUserScreen() {
           const d = new Date(user.dateOfBirth ?? "");
           setDateOfBirth(isNaN(d.getTime()) ? new Date() : d);
         } catch {
-          setErrorMsg("Failed to load user.");
+          setErrorMsg(t("userUpdate.failedToLoad"));
         }
       })();
 
@@ -101,22 +103,22 @@ export default function UpdateUserScreen() {
     const ln = LastName.trim();
     const e = Email.trim();
 
-    if (!fn) u.FirstName = "First name is required.";
+    if (!fn) u.FirstName = t("userUpdate.errors.firstNameRequired");
     else if (fn.length > 100)
-      u.FirstName = "First name must be max 100 characters.";
+      u.FirstName = t("userUpdate.errors.firstNameTooLong");
 
-    if (!ln) u.LastName = "Last name is required.";
+    if (!ln) u.LastName = t("userUpdate.errors.lastNameRequired");
     else if (ln.length > 100)
-      u.LastName = "Last name must be max 100 characters.";
+      u.LastName = t("userUpdate.errors.lastNameTooLong");
 
-    if (!e) u.Email = "Email is required.";
+    if (!e) u.Email = t("userUpdate.errors.emailRequired");
     else if (!/\S+@\S+\.\S+/.test(e))
-      u.Email = "Email is invalid.";
+      u.Email = t("userUpdate.errors.emailInvalid");
 
     if (!DateOfBirth || isNaN(DateOfBirth.getTime()))
-      u.DateOfBirth = "Date of birth is required.";
+      u.DateOfBirth = t("userUpdate.errors.dateOfBirthRequired");
     else if (DateOfBirth.getTime() > Date.now())
-      u.DateOfBirth = "Date of birth cannot be in the future.";
+      u.DateOfBirth = t("userUpdate.errors.dateOfBirthFuture");
 
     return u;
   }
@@ -177,7 +179,7 @@ export default function UpdateUserScreen() {
           <FontAwesome name="arrow-left" size={18} color="#fff" />
         </Pressable>
 
-        <Text style={styles.headerTitle}>Update User</Text>
+        <Text style={styles.headerTitle}>{t("userUpdate.title")}</Text>
         <View style={styles.rightSpacer} />
       </View>
 
@@ -187,56 +189,50 @@ export default function UpdateUserScreen() {
       >
         <ScrollView keyboardShouldPersistTaps="handled">
           <View style={styles.card}>
-            <Text style={styles.label}>First Name</Text>
+            <Text style={styles.label}>{t("userUpdate.firstName")}</Text>
             <View style={styles.inputWrap}>
               <TextInput
                 value={FirstName}
-                onChangeText={(t) => {
-                  setFirstName(t);
+                onChangeText={(val) => {
+                  setFirstName(val);
                   clearError("FirstName");
                 }}
-                placeholder="First Name"
+                placeholder={t("userUpdate.firstName")}
                 style={styles.input}
                 editable={!submitting}
               />
             </View>
 
-            <Text style={[styles.label, styles.labelSpaced]}>
-              Last Name
-            </Text>
+            <Text style={[styles.label, styles.labelSpaced]}>{t("userUpdate.lastName")}</Text>
             <View style={styles.inputWrap}>
               <TextInput
                 value={LastName}
-                onChangeText={(t) => {
-                  setLastName(t);
+                onChangeText={(val) => {
+                  setLastName(val);
                   clearError("LastName");
                 }}
-                placeholder="Last Name"
+                placeholder={t("userUpdate.lastName")}
                 style={styles.input}
                 editable={!submitting}
               />
             </View>
 
-            <Text style={[styles.label, styles.labelSpaced]}>
-              Email
-            </Text>
+            <Text style={[styles.label, styles.labelSpaced]}>{t("userUpdate.email")}</Text>
             <View style={styles.inputWrap}>
               <TextInput
                 value={Email}
-                onChangeText={(t) => {
-                  setEmail(t);
+                onChangeText={(val) => {
+                  setEmail(val);
                   clearError("Email");
                 }}
-                placeholder="Email"
+                placeholder={t("userUpdate.email")}
                 keyboardType="email-address"
                 style={styles.input}
                 editable={!submitting}
               />
             </View>
 
-            <Text style={[styles.label, styles.labelSpaced]}>
-              Date of Birth
-            </Text>
+            <Text style={[styles.label, styles.labelSpaced]}>{t("userUpdate.dateOfBirth")}</Text>
             <View style={styles.inputWrap}>
               {Platform.OS === "web" ? (
                 <input
@@ -302,7 +298,7 @@ export default function UpdateUserScreen() {
             onPress={onUpdateUser}
           >
             <Text style={styles.primaryBtnText}>
-              {submitting ? "Updating..." : "Update User"}
+              {submitting ? t("userUpdate.updating") : t("userUpdate.title")}
             </Text>
           </Pressable>
         </ScrollView>
@@ -319,7 +315,7 @@ export default function UpdateUserScreen() {
                 style={styles.modalBtn}
                 onPress={() => setShowPickerIOS(false)}
               >
-                Done
+                {t("common.done")}
               </Text>
 
               <DateTimePicker

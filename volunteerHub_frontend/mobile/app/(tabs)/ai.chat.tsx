@@ -10,6 +10,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { aiStyles, DRAWER_WIDTH } from "@/src/styles/ai.chat.styles";
 import { ConversationDto, MessageDto } from "@/src/types/chat";
 import { aiService } from "@/src/api/ai.chat.api";
+import { t, useLanguage } from "@/src/i18n/index";
 
 function TypingIndicator() {
   const dots = [
@@ -67,7 +68,7 @@ type Segment =
       await onConfirm(eventId, status);
       setDone(true);
     } catch {
-      Alert.alert("Error", "Could not update attendance. Please try again.");
+      Alert.alert(t("common.error"), t("aiChat.attendanceError"));
     } finally {
       setLoading(false);
     }
@@ -83,7 +84,7 @@ type Segment =
           style={aiStyles.iconMarginRight}
         />
         <Text style={aiStyles.joinCardDoneText}>
-          {status === "going" ? "You're going!" : "Marked as interested!"}
+          {status === "going" ? t("aiChat.joinGoingDone") : t("aiChat.joinInterestedDone")}
         </Text>
       </View>
     );
@@ -98,9 +99,9 @@ type Segment =
           color="#3F5E95"
         />
         <Text style={aiStyles.joinCardText}>
-          Mark as{" "}
+          {t("aiChat.joinMarkAs")}{" "}
           <Text style={aiStyles.boldText}>
-            {status === "going" ? "Going" : "Interested"}
+            {status === "going" ? t("aiChat.joinGoing") : t("aiChat.joinInterested")}
           </Text>
           ?
         </Text>
@@ -113,7 +114,7 @@ type Segment =
         {loading ? (
           <ActivityIndicator size="small" color="#fff" />
         ) : (
-          <Text style={aiStyles.joinCardBtnText}>Confirm</Text>
+          <Text style={aiStyles.joinCardBtnText}>{t("common.confirm")}</Text>
         )}
       </Pressable>
     </View>
@@ -136,7 +137,7 @@ function RemoveConfirmCard({
       await onConfirm(eventId);
       setDone(true);
     } catch {
-      Alert.alert("Error", "Could not remove attendance. Please try again.");
+      Alert.alert(t("common.error"), t("aiChat.removeError"));
     } finally {
       setLoading(false);
     }
@@ -146,7 +147,7 @@ function RemoveConfirmCard({
     return (
       <View style={aiStyles.joinCard}>
         <FontAwesome name="check-circle" size={16} color="#4CAF50" style={aiStyles.iconMarginRight} />
-        <Text style={aiStyles.joinCardDoneText}>Removed from your list! ✅</Text>
+        <Text style={aiStyles.joinCardDoneText}>{t("aiChat.removeDone")}</Text>
       </View>
     );
   }
@@ -156,7 +157,7 @@ function RemoveConfirmCard({
       <View style={aiStyles.joinCardInfo}>
         <FontAwesome name="times-circle-o" size={14} color="#E53935" />
         <Text style={aiStyles.joinCardText}>
-          Remove from <Text style={aiStyles.boldText}>your events</Text>?
+          {t("aiChat.removeFrom")} <Text style={aiStyles.boldText}>{t("aiChat.removeYourEvents")}</Text>?
         </Text>
       </View>
       <Pressable
@@ -166,7 +167,7 @@ function RemoveConfirmCard({
       >
         {loading
           ? <ActivityIndicator size="small" color="#fff" />
-          : <Text style={aiStyles.joinCardBtnText}>Remove</Text>
+          : <Text style={aiStyles.joinCardBtnText}>{t("common.delete")}</Text>
         }
       </Pressable>
     </View>
@@ -205,8 +206,8 @@ function MessageBubble({
   const EVENT_CARD_REGEX = /\[EVENT_CARD:\s*([a-zA-Z0-9\-]+)\]/g;
   const JOIN_EVENT_REGEX = /\[JOIN_EVENT:\s*([a-zA-Z0-9\-]+)\s*\|\s*(going|interested|go|)\]/g;
 
-  const cleanText = (t: string) =>
-    t.replace(/\*\*(.*?)\*\*/g, "$1")
+  const cleanText = (str: string) =>
+    str.replace(/\*\*(.*?)\*\*/g, "$1")
     .replace(EVENT_CARD_REGEX, "")
     .replace(JOIN_EVENT_REGEX, "")
     .trim();
@@ -283,7 +284,7 @@ function MessageBubble({
             style={aiStyles.inlineEventBtn}
             onPress={() => onEventPress(seg.eventId)}
           >
-            <Text style={aiStyles.inlineEventBtnText}>View Event</Text>
+            <Text style={aiStyles.inlineEventBtnText}>{t("aiChat.viewEvent")}</Text>
           </Pressable>
         </View>
       ) : seg.type === "join" ? (
@@ -317,12 +318,13 @@ function getEventTitle(
       return lastLine.replace(/^\d+\.\s*/, "").trim();
     }
   }
-  return "Event";
+  return t("aiChat.eventFallback");
 }
 
 export default function AiChatScreen() {
   const router = useRouter();
   const { q } = useLocalSearchParams<{ q?: string }>();
+  useLanguage();
 
   const [messages, setMessages] = useState<MessageDto[]>([]);
   const [conversationId, setConversationId] = useState<string | null>(null);
@@ -382,7 +384,7 @@ export default function AiChatScreen() {
       setConversationId(full.id);
       setMessages(full.messages);
     } catch {
-      Alert.alert("Error", "Could not load conversation.");
+      Alert.alert(t("common.error"), t("aiChat.loadConversationError"));
     } finally {
       setIsLoading(false);
     }
@@ -438,7 +440,7 @@ export default function AiChatScreen() {
       };
       setMessages((prev) => [...prev, aiMsg]);
     } catch {
-      Alert.alert("Error", "Could not get a response. Please try again.");
+      Alert.alert(t("common.error"), t("aiChat.sendError"));
       setMessages((prev) => prev.slice(0, -1));
     } finally {
       setIsSending(false);
@@ -462,9 +464,9 @@ export default function AiChatScreen() {
   }, [messages, isSending]);
 
   const suggestions = [
-    "Suggest events this weekend",
-    "Animal care volunteering",
-    "Environment events",
+    t("aiChat.suggestion1"),
+    t("aiChat.suggestion2"),
+    t("aiChat.suggestion3"),
   ];
 
   const formatDate = (iso: string) =>
@@ -484,8 +486,8 @@ export default function AiChatScreen() {
           <FontAwesome name="bars" size={18} color="#3F5E95" />
         </Pressable>
         <View style={aiStyles.flex1}>
-          <Text style={aiStyles.headerTitle}>AI Assistant</Text>
-          <Text style={aiStyles.headerSubtitle}>VolunteerHub helper</Text>
+          <Text style={aiStyles.headerTitle}>{t("aiChat.title")}</Text>
+          <Text style={aiStyles.headerSubtitle}>{t("aiChat.subtitle")}</Text>
         </View>
         {conversationId && (
           <Pressable style={aiStyles.headerBtn} onPress={startNewChat}>
@@ -508,10 +510,8 @@ export default function AiChatScreen() {
             <View style={aiStyles.emptyIcon}>
               <FontAwesome name="comment" size={30} color="#3F5E95" />
             </View>
-            <Text style={aiStyles.emptyTitle}>How can I help?</Text>
-            <Text style={aiStyles.emptySubtitle}>
-              Ask me anything about volunteer events. I'll find the best ones for you!
-            </Text>
+            <Text style={aiStyles.emptyTitle}>{t("aiChat.emptyTitle")}</Text>
+            <Text style={aiStyles.emptySubtitle}>{t("aiChat.emptySubtitle")}</Text>
             <View style={aiStyles.suggestionsRow}>
               {suggestions.map((s) => (
                 <Pressable
@@ -548,7 +548,7 @@ export default function AiChatScreen() {
             style={aiStyles.input}
             value={inputText}
             onChangeText={setInputText}
-            placeholder="Ask about volunteer events..."
+            placeholder={t("aiChat.inputPlaceholder")}
             placeholderTextColor="#8B93A7"
             multiline
             returnKeyType="send"
@@ -586,21 +586,19 @@ export default function AiChatScreen() {
       <Animated.View
         style={[aiStyles.drawer, { transform: [{ translateX: drawerAnim }] }]}
       >
-        <Text style={aiStyles.drawerTitle}>Conversations</Text>
+        <Text style={aiStyles.drawerTitle}>{t("aiChat.drawerTitle")}</Text>
 
         <Pressable style={aiStyles.newChatBtn} onPress={startNewChat}>
           <FontAwesome name="plus" size={14} color="#FFF" />
-          <Text style={aiStyles.newChatText}>New Chat</Text>
+          <Text style={aiStyles.newChatText}>{t("aiChat.newChat")}</Text>
         </Pressable>
 
-        <Text style={aiStyles.drawerSectionTitle}>History</Text>
+        <Text style={aiStyles.drawerSectionTitle}>{t("aiChat.history")}</Text>
 
         {loadingConversations ? (
           <ActivityIndicator color="#3F5E95" style={aiStyles.drawerLoadingIndicator} />
         ) : conversations.length === 0 ? (
-          <Text style={aiStyles.drawerEmptyText}>
-            No conversations yet.
-          </Text>
+          <Text style={aiStyles.drawerEmptyText}>{t("aiChat.noConversations")}</Text>
         ) : (
           <ScrollView showsVerticalScrollIndicator={false}>
             {conversations.map((conv) => (
@@ -619,7 +617,7 @@ export default function AiChatScreen() {
                         ? conv.title 
                         : conv.summary
                         ? conv.summary.slice(0, 40) + "..."
-                        : (conv.messages[0]?.content.slice(0, 40) ?? "Conversation") + "..."}
+                        : (conv.messages[0]?.content.slice(0, 40) ?? t("aiChat.conversationFallback")) + "..."}
                     </Text>
                     <Text style={aiStyles.conversationItemDate}>
                       {formatDate(conv.createdAt)}
@@ -646,24 +644,22 @@ export default function AiChatScreen() {
       >
         <View style={aiStyles.modalOverlay}>
           <View style={aiStyles.modalContent}>
-            <Text style={aiStyles.modalTitle}>Delete Conversation</Text>
-            <Text style={aiStyles.modalText}>
-              Are you sure you want to delete this conversation? This action cannot be undone.
-            </Text>
+            <Text style={aiStyles.modalTitle}>{t("aiChat.deleteConversationTitle")}</Text>
+            <Text style={aiStyles.modalText}>{t("aiChat.deleteConversationText")}</Text>
 
             <View style={aiStyles.modalActions}>
               <Pressable
                 style={aiStyles.modalCancelBtn}
                 onPress={() => setShowDeleteModal(false)}
               >
-                <Text style={aiStyles.modalCancelBtnText}>Cancel</Text>
+                <Text style={aiStyles.modalCancelBtnText}>{t("common.cancel")}</Text>
               </Pressable>
 
               <Pressable
                 style={aiStyles.modalDeleteBtn}
                 onPress={executeDelete}
               >
-                <Text style={aiStyles.modalDeleteBtnText}>Delete</Text>
+                <Text style={aiStyles.modalDeleteBtnText}>{t("common.delete")}</Text>
               </Pressable>
             </View>
           </View>

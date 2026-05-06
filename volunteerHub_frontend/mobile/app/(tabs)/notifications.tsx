@@ -14,6 +14,7 @@ import {
 import { getNotifications, markAllAsRead, markAsRead } from "@/src/api/notification.api";
 import type { Notification } from "@/src/types/notification";
 import { styles } from "@/src/styles/notification.styles";
+import { t, useLanguage } from "@/src/i18n/index";
 
 function formatTime(dateStr: string): string {
   const date = new Date(dateStr);
@@ -24,11 +25,11 @@ function formatTime(dateStr: string): string {
   const diffHours = Math.floor(diffMins / 60);
   const diffDays = Math.floor(diffHours / 24);
 
-  if (diffMins < 1) return "Just now";
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  if (diffDays === 1) return "Yesterday";
-  if (diffDays < 7) return `${diffDays}d ago`;
+  if (diffMins < 1) return t("notifications.justNow");
+  if (diffMins < 60) return t("notifications.minsAgo", { count: diffMins });
+  if (diffHours < 24) return t("notifications.hoursAgo", { count: diffHours });
+  if (diffDays === 1) return t("notifications.yesterday");
+  if (diffDays < 7) return t("notifications.daysAgo", { count: diffDays });
 
   const dd = String(date.getDate()).padStart(2, "0");
   const mm = String(date.getMonth() + 1).padStart(2, "0");
@@ -38,6 +39,8 @@ function formatTime(dateStr: string): string {
 
 export default function NotificationsScreen() {
   const router = useRouter();
+  useLanguage();
+
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -57,7 +60,7 @@ export default function NotificationsScreen() {
       setNotifications(result.items);
       setHasNextPage(result.hasNextPage);
     } catch {
-      setError("Failed to load notifications. Please try again.");
+      setError(t("notifications.failedToLoad"));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -133,7 +136,7 @@ export default function NotificationsScreen() {
         <Pressable onPress={() => goBack()} hitSlop={10} style={styles.backBtn}>
           <FontAwesome name="arrow-left" size={18} color="#fff" />
         </Pressable>
-        <Text style={styles.headerTitle}>Notifications</Text>
+        <Text style={styles.headerTitle}>{t("notifications.title")}</Text>
         <View style={styles.rightSpacer} />
       </View>
 
@@ -147,7 +150,7 @@ export default function NotificationsScreen() {
             <FontAwesome name="exclamation-circle" size={40} color="#DC2626" style={styles.iconMarginBottom12} />
             <Text style={styles.errorText}>{error}</Text>
             <Pressable onPress={() => load()} style={styles.retryBtn}>
-              <Text style={styles.retryText}>Retry</Text>
+              <Text style={styles.retryText}>{t("common.retry")}</Text>
             </Pressable>
           </View>
         ) : (
@@ -155,11 +158,11 @@ export default function NotificationsScreen() {
             {unreadCount > 0 && (
               <View style={styles.unreadHeaderRow}>
                 <Text style={styles.unreadLabel}>
-                  {unreadCount} unread notification{unreadCount > 1 ? "s" : ""}
+                  {t(unreadCount === 1 ? "notifications.unreadSingular" : "notifications.unreadPlural", { count: unreadCount })}
                 </Text>
                 <Pressable onPress={handleMarkAll} disabled={markingAll} hitSlop={8}>
                   <Text style={[styles.markAllText, markingAll && styles.markAllDisabled]}>
-                    {markingAll ? "Marking..." : "Mark all as read"}
+                    {markingAll ? t("notifications.marking") : t("notifications.markAllRead")}
                   </Text>
                 </Pressable>
               </View>
@@ -217,10 +220,8 @@ export default function NotificationsScreen() {
               ListEmptyComponent={
                 <View style={[styles.center, styles.emptyWrap]}>
                   <FontAwesome name="bell-o" size={48} color="#D1D5E0" style={styles.iconMarginBottom16} />
-                  <Text style={styles.emptyTitle}>No notifications yet</Text>
-                  <Text style={styles.emptySubtitle}>
-                    You'll be notified when your events are reviewed.
-                  </Text>
+                  <Text style={styles.emptyTitle}>{t("notifications.noNotifications")}</Text>
+                  <Text style={styles.emptySubtitle}>{t("notifications.noNotificationsSubtitle")}</Text>
                 </View>
               }
             />

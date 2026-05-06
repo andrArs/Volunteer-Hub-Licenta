@@ -6,7 +6,6 @@ import {
   ActivityIndicator,
   FlatList,
   Modal,
-  Platform,
   Pressable,
   RefreshControl,
   Text,
@@ -16,6 +15,7 @@ import {
 import { getMyCreatedEvents, getMyAttendanceEvents } from "@/src/api/event.api";
 import { EVENT_CATEGORIES, EventCategory, EventStatus, type EventResponse } from "@/src/types/event";
 import { styles } from "@/src/styles/events.list.styles";
+import { t, useLanguage } from "@/src/i18n/index";
 import * as Location from 'expo-location';
 import { calculateDistance, formatDistance } from "@/src/utils/location.utils";
 
@@ -54,20 +54,20 @@ function renderStatusBadge(rawStatus: EventStatus | string | number) {
 
   let bgColor = "#E5E7EB"; 
   let textColor = "#374151";
-  let label = "UNKNOWN";
+  let label = t("myEvents.statusUnknown");
 
   if (status === EventStatus.Pending) {
-    bgColor = "#FEF3C7"; 
-    textColor = "#D97706"; 
-    label = "PENDING";
+    bgColor = "#FEF3C7";
+    textColor = "#D97706";
+    label = t("myEvents.statusPending");
   } else if (status === EventStatus.Approved) {
-    bgColor = "#D1FAE5"; 
-    textColor = "#059669"; 
-    label = "APPROVED";
+    bgColor = "#D1FAE5";
+    textColor = "#059669";
+    label = t("myEvents.statusApproved");
   } else if (status === EventStatus.Rejected) {
-    bgColor = "#FEE2E2"; 
-    textColor = "#DC2626"; 
-    label = "REJECTED";
+    bgColor = "#FEE2E2";
+    textColor = "#DC2626";
+    label = t("myEvents.statusRejected");
   }
 
   return (
@@ -84,6 +84,7 @@ function renderStatusBadge(rawStatus: EventStatus | string | number) {
 
 export default function MyEventsScreen() {
   const router = useRouter();
+  useLanguage();
 
   const [events, setEvents] = useState<EventResponse[]>([]);
   const [loading, setLoading] = useState(true);
@@ -135,7 +136,7 @@ export default function MyEventsScreen() {
 
       setEvents(data ?? []);
     } catch (e: any) {
-      setErr(e?.message ?? "Failed to load events.");
+      setErr(e?.message ?? t("myEvents.failedToLoad"));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -206,17 +207,24 @@ export default function MyEventsScreen() {
       });
   }, [events, query, selectedCategory, selectedDistance, userLocation]);
 
-  const categoryChipText = selectedCategory === "All" ? "Cat: All" : categoryLabel(selectedCategory);
-  const distanceChipText = `Dist: ${selectedDistance.label}`;
+  function getTabLabel(tab: TabType) {
+    const map: Record<TabType, string> = {
+      Interested: t("myEvents.tabInterested"),
+      Going: t("myEvents.tabGoing"),
+      Created: t("myEvents.tabCreated"),
+      History: t("myEvents.tabHistory"),
+    };
+    return map[tab];
+  }
+
+  const distAnyLabel = t("myEvents.distAny");
+  const categoryChipText = selectedCategory === "All"
+    ? `${t("myEvents.catPrefix")}: ${t("myEvents.filterAll")}`
+    : `${t("myEvents.catPrefix")}: ${categoryLabel(selectedCategory)}`;
+  const distanceChipText = `${t("myEvents.distPrefix")}: ${selectedDistance.valueKm === null ? distAnyLabel : selectedDistance.label}`;
 
   function openEvent(ev: EventResponse) {
     router.push(`/event.view?id=${ev.id}`);
-  }
-
-  const getCleanLocationName = (fullName: string) => {
-      if (!fullName) return "";
-      if (fullName.includes(" (")) return fullName.split(" (")[0];
-      return fullName;
   }
 
   return (
@@ -225,7 +233,7 @@ export default function MyEventsScreen() {
         <Pressable onPress={() => goBack()} hitSlop={10} style={styles.backBtn}>
           <FontAwesome name="arrow-left" size={18} color="#fff" />
         </Pressable>
-        <Text style={styles.headerTitle}>My Events</Text>
+        <Text style={styles.headerTitle}>{t("myEvents.title")}</Text>
         <View style={styles.rightSpacer} />
       </View>
 
@@ -237,7 +245,7 @@ export default function MyEventsScreen() {
             onPress={() => setActiveTab(tab)}
           >
             <Text style={[styles.tabText, activeTab === tab && styles.tabTextActive]}>
-              {tab}
+              {getTabLabel(tab)}
             </Text>
           </Pressable>
         ))}
@@ -264,7 +272,7 @@ export default function MyEventsScreen() {
         <TextInput
           value={query}
           onChangeText={setQuery}
-          placeholder="Search event..."
+          placeholder={t("myEvents.searchPlaceholder")}
           placeholderTextColor="#8B93A7"
           style={styles.searchInput}
         />
@@ -279,12 +287,16 @@ export default function MyEventsScreen() {
           <View style={styles.center}>
             <Text style={styles.errorText}>{err}</Text>
             <Pressable onPress={() => load()} style={styles.retryBtn}>
-              <Text style={styles.retryText}>Retry</Text>
+              <Text style={styles.retryText}>{t("common.retry")}</Text>
             </Pressable>
           </View>
         ) : (
           <>
-            <Text style={styles.foundText}>Found {filtered.length} event(s)</Text>
+            <Text style={styles.foundText}>
+              {filtered.length === 1
+                ? t("myEvents.foundSingular")
+                : t("myEvents.foundPlural", { count: filtered.length })}
+            </Text>
 
             <FlatList
               data={filtered}
@@ -339,9 +351,7 @@ export default function MyEventsScreen() {
               )}
               ListEmptyComponent={
                 <View style={[styles.center, styles.centerWithTopMargin]}>
-                  <Text style={styles.emptyText}>
-                    No events found.
-                  </Text>
+                  <Text style={styles.emptyText}>{t("myEvents.noEvents")}</Text>
                 </View>
               }
             />
@@ -353,14 +363,14 @@ export default function MyEventsScreen() {
         <Pressable style={styles.modalOverlay} onPress={() => setShowCategoryModal(false)}>
           <Pressable style={styles.modalSheet} onPress={() => {}}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Category</Text>
+              <Text style={styles.modalTitle}>{t("myEvents.filterCategory")}</Text>
               <Pressable onPress={() => setShowCategoryModal(false)}>
-                <Text style={styles.modalClose}>Close</Text>
+                <Text style={styles.modalClose}>{t("common.close")}</Text>
               </Pressable>
             </View>
 
             <Pressable style={styles.optionRow} onPress={() => { setSelectedCategory("All"); setShowCategoryModal(false); }}>
-              <Text style={styles.optionText}>All</Text>
+              <Text style={styles.optionText}>{t("myEvents.filterAll")}</Text>
             </Pressable>
 
             {EVENT_CATEGORIES.map((c) => (
@@ -376,15 +386,15 @@ export default function MyEventsScreen() {
         <Pressable style={styles.modalOverlay} onPress={() => setShowDistanceModal(false)}>
           <Pressable style={styles.modalSheet} onPress={() => {}}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Distance</Text>
+              <Text style={styles.modalTitle}>{t("myEvents.filterDistance")}</Text>
               <Pressable onPress={() => setShowDistanceModal(false)}>
-                <Text style={styles.modalClose}>Close</Text>
+                <Text style={styles.modalClose}>{t("common.close")}</Text>
               </Pressable>
             </View>
 
             {DISTANCE_OPTIONS.map((d) => (
               <Pressable key={d.label} style={styles.optionRow} onPress={() => { setSelectedDistance(d); setShowDistanceModal(false); }}>
-                <Text style={styles.optionText}>{d.label}</Text>
+                <Text style={styles.optionText}>{d.valueKm === null ? t("myEvents.distAny") : d.label}</Text>
               </Pressable>
             ))}
           </Pressable>
