@@ -155,7 +155,7 @@ export default function UpdateEventScreen() {
         if (Category === undefined || Category === null) e.Category = "Category is required.";
 
         if (!StartDateTime || isNaN(StartDateTime.getTime())) e.StartDateTime = "Start date/time is required.";
-        if(StartDateTime && StartDateTime.getTime() < Date.now()) e.StartDateTime = "Start date/time cannot be in the past.";
+        if(StartDateTime && EndDateTime && StartDateTime >= EndDateTime) e.StartDateTime = "Start date/time must be before end date/time.";
         if (!EndDateTime || isNaN(EndDateTime.getTime())) e.EndDateTime = "End date/time is required.";
         if (StartDateTime && EndDateTime && EndDateTime.getTime() < StartDateTime.getTime()) {
         e.EndDateTime = "End date/time must be after start date/time.";
