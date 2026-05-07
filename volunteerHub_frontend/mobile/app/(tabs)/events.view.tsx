@@ -19,6 +19,7 @@ import { styles } from "@/src/styles/events.list.styles";
 import * as Location from 'expo-location';
 import { calculateDistance, formatDistance } from "@/src/utils/location.utils";
 import { getAuth } from "@/src/store/auth.store";
+import { t, useLanguage } from "@/src/i18n/index";
 
 const PAGE_SIZE = 4;
 
@@ -53,7 +54,7 @@ function renderMyEventBadge() {
   return (
     <View style={styles.badgeMyEvent}>
       <Text style={styles.textBadgeMyEvent}>
-        MY EVENT
+        {t("eventsView.myEvent")}
       </Text>
     </View>
   );
@@ -63,6 +64,7 @@ export default function AllEventsScreen() {
   const router = useRouter();
   const auth = getAuth();
   const myUserId = auth?.userId ?? null;
+  useLanguage();
 
   const [events, setEvents] = useState<EventResponse[]>([]);
   const [loading, setLoading] = useState(true);
@@ -105,7 +107,7 @@ export default function AllEventsScreen() {
       setHasNextPage(result.hasNextPage);
       setTotalCount(result.totalCount);
     } catch (e: any) {
-      setErr(e?.message ?? "Failed to load events.");
+      setErr(e?.message ?? t("eventsView.failedToLoad"));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -163,7 +165,7 @@ export default function AllEventsScreen() {
             if (ev.distance === null) {
                 matchesDistance = false;
             } else if (selectedDistance.valueKm === 999999) {
-                matchesDistance = ev.distance >= 20; 
+                matchesDistance = ev.distance >= 20;
             } else {
                 matchesDistance = ev.distance <= selectedDistance.valueKm;
             }
@@ -178,9 +180,10 @@ export default function AllEventsScreen() {
       });
   }, [events, query, selectedCategory, selectedDistance, userLocation]);
 
-  const categoryChipText =
-    selectedCategory === "All" ? "Category: All" : categoryLabel(selectedCategory);
-  const distanceChipText = `Distance: ${selectedDistance.label}`;
+  const categoryChipText = selectedCategory === "All"
+    ? `${t("eventsView.catPrefix")}: ${t("eventsView.filterAll")}`
+    : `${t("eventsView.catPrefix")}: ${categoryLabel(selectedCategory)}`;
+  const distanceChipText = `${t("eventsView.distPrefix")}: ${selectedDistance.valueKm === null ? t("eventsView.distAny") : selectedDistance.label}`;
 
   function openEvent(ev: EventResponse) {
     router.push(`/event.view?id=${ev.id}`)
@@ -195,9 +198,9 @@ export default function AllEventsScreen() {
                 style={styles.backBtn}>
             <FontAwesome name="arrow-left" size={18} color="#fff" />
             </Pressable>
-        <Text style={styles.headerTitle}>All Events</Text>
+        <Text style={styles.headerTitle}>{t("eventsView.title")}</Text>
         <View style={styles.rightSpacer} />
-    
+
       </View>
 
       <View style={styles.filtersRow}>
@@ -227,7 +230,7 @@ export default function AllEventsScreen() {
         <TextInput
           value={query}
           onChangeText={setQuery}
-          placeholder="Search event..."
+          placeholder={t("eventsView.searchPlaceholder")}
           placeholderTextColor="#8B93A7"
           style={styles.searchInput}
         />
@@ -242,13 +245,13 @@ export default function AllEventsScreen() {
           <View style={styles.center}>
             <Text style={styles.errorText}>{err}</Text>
             <Pressable onPress={() => load()} style={styles.retryBtn}>
-              <Text style={styles.retryText}>Retry</Text>
+              <Text style={styles.retryText}>{t("common.retry")}</Text>
             </Pressable>
           </View>
         ) : (
           <>
             <Text style={styles.foundText}>
-              Showing {filtered.length} of {totalCount} events
+              {t("eventsView.showing", { showing: filtered.length, total: totalCount })}
             </Text>
 
             <FlatList
@@ -272,7 +275,7 @@ export default function AllEventsScreen() {
                       {item.title}
                     </Text>
                     {item.status !== undefined && item.createdById === myUserId && renderMyEventBadge()}
-                    
+
                   </View>
 
                   <View style={styles.metaRow}>
@@ -293,7 +296,7 @@ export default function AllEventsScreen() {
                     <View style={styles.metaItem}>
                       <FontAwesome name="map-marker" size={14} color="#3F5E95" />
                       <Text style={styles.metaText} numberOfLines={1}>
-                        {item.locationName || item.address || "No location"}
+                        {item.locationName || item.address || t("eventsView.noLocation")}
                       </Text>
                     </View>
                   </View>
@@ -322,7 +325,7 @@ export default function AllEventsScreen() {
       >
         <FontAwesome name="map" size={16} color="#fff" />
         <Text style={styles.mapButtonText}>
-          Map View
+          {t("eventsView.mapView")}
         </Text>
       </Pressable>
 
@@ -335,9 +338,9 @@ export default function AllEventsScreen() {
         <Pressable style={styles.modalOverlay} onPress={() => setShowCategoryModal(false)}>
           <Pressable style={styles.modalSheet} onPress={() => {}}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Category</Text>
+              <Text style={styles.modalTitle}>{t("eventsView.catPrefix")}</Text>
               <Pressable onPress={() => setShowCategoryModal(false)}>
-                <Text style={styles.modalClose}>Close</Text>
+                <Text style={styles.modalClose}>{t("common.close")}</Text>
               </Pressable>
             </View>
 
@@ -348,7 +351,7 @@ export default function AllEventsScreen() {
                 setShowCategoryModal(false);
               }}
             >
-              <Text style={styles.optionText}>All</Text>
+              <Text style={styles.optionText}>{t("eventsView.filterAll")}</Text>
             </Pressable>
 
             {EVENT_CATEGORIES.map((c) => (
@@ -376,9 +379,9 @@ export default function AllEventsScreen() {
         <Pressable style={styles.modalOverlay} onPress={() => setShowDistanceModal(false)}>
           <Pressable style={styles.modalSheet} onPress={() => {}}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Distance</Text>
+              <Text style={styles.modalTitle}>{t("eventsView.distPrefix")}</Text>
               <Pressable onPress={() => setShowDistanceModal(false)}>
-                <Text style={styles.modalClose}>Close</Text>
+                <Text style={styles.modalClose}>{t("common.close")}</Text>
               </Pressable>
             </View>
 
@@ -391,7 +394,7 @@ export default function AllEventsScreen() {
                   setShowDistanceModal(false);
                 }}
               >
-                <Text style={styles.optionText}>{d.label}</Text>
+                <Text style={styles.optionText}>{d.valueKm === null ? t("eventsView.distAny") : d.label}</Text>
               </Pressable>
             ))}
           </Pressable>

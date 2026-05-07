@@ -8,10 +8,12 @@ import * as Location from 'expo-location';
 import { FontAwesome } from "@expo/vector-icons";
 import { calculateDistance, formatDistance } from "@/src/utils/location.utils";
 import { styles } from "@/src/styles/event.map";
+import { t, useLanguage } from "@/src/i18n/index";
 
 export default function MapComponent() {
   const router = useRouter();
   const mapRef = useRef<MapView>(null);
+  useLanguage();
 
   const [events, setEvents] = useState<EventResponse[]>([]);
   const [loading, setLoading] = useState(true);
@@ -137,10 +139,10 @@ export default function MapComponent() {
                 <View style={styles.calloutContainer}>
                   <Text style={styles.calloutTitle}>{ev.title}</Text>
                   {distanceText && (
-                    <Text style={styles.calloutDistance}>{distanceText} away</Text>
+                    <Text style={styles.calloutDistance}>{distanceText} {t("eventsMap.away")}</Text>
                   )}
                   <View style={styles.calloutBtn}>
-                    <Text style={styles.calloutBtnText}>Go to Event</Text>
+                    <Text style={styles.calloutBtnText}>{t("eventsMap.goToEvent")}</Text>
                     <FontAwesome name="angle-right" size={16} color="#fff" />
                   </View>
                 </View>

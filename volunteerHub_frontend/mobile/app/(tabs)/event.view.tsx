@@ -14,6 +14,7 @@ import * as Location from 'expo-location';
 import { calculateDistance, formatDistance } from "@/src/utils/location.utils";
 import { addEventToCalendar, removeEventFromCalendar } from "@/src/utils/calendar.utils";
 import { setEventStatus } from "@/src/api/admin.api";
+import { t, useLanguage } from "@/src/i18n/index";
 
 type AttendanceStatus = "none" | "interested" | "going";
 
@@ -31,29 +32,29 @@ function formatStart(dt: string) {
   const hh = String(d.getHours()).padStart(2, "0");
   const mi = String(d.getMinutes()).padStart(2, "0");
 
-  return `${dd}-${mm}-${yyyy} at ${hh}:${mi}`;
+  return `${dd}-${mm}-${yyyy} ${t("eventView.formatAt")} ${hh}:${mi}`;
 }
 
 function renderStatusBadge(rawStatus: EventStatus | string | number | undefined) {
   if (rawStatus === undefined || rawStatus === null) return null;
   const status = Number(rawStatus);
 
-  let bgColor = "#E5E7EB"; 
+  let bgColor = "#E5E7EB";
   let textColor = "#374151";
-  let label = "UNKNOWN";
+  let label = t("myEvents.statusUnknown");
 
   if (status === EventStatus.Pending) {
-    bgColor = "#FEF3C7"; 
-    textColor = "#D97706"; 
-    label = "PENDING";
+    bgColor = "#FEF3C7";
+    textColor = "#D97706";
+    label = t("myEvents.statusPending");
   } else if (status === EventStatus.Approved) {
-    bgColor = "#D1FAE5"; 
-    textColor = "#059669"; 
-    label = "APPROVED";
+    bgColor = "#D1FAE5";
+    textColor = "#059669";
+    label = t("myEvents.statusApproved");
   } else if (status === EventStatus.Rejected) {
-    bgColor = "#FEE2E2"; 
-    textColor = "#DC2626"; 
-    label = "REJECTED";
+    bgColor = "#FEE2E2";
+    textColor = "#DC2626";
+    label = t("myEvents.statusRejected");
   }
 
   return (
@@ -74,6 +75,7 @@ function renderStatusBadge(rawStatus: EventStatus | string | number | undefined)
 export default function EventDetailsScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
+  useLanguage();
 
   const auth = getAuth();
   const myUserId = auth?.userId ?? null;
@@ -129,7 +131,7 @@ export default function EventDetailsScreen() {
     setRefreshing(true);
     load(true);
   }, [load]);
-  
+
 
   useFocusEffect(
     useCallback(() => {
@@ -162,18 +164,10 @@ export default function EventDetailsScreen() {
     return Number(participantsCount) >= Number(capacity);
   }, [participantsCount, capacity]);
 
-  const participantText = useMemo(() => {
-    if (participantsCount == null && capacity == null) return null;
-    if (participantsCount != null && capacity != null) return `${participantsCount}/${capacity} people going`;
-    if (participantsCount != null) return `${participantsCount} people going`;
-    if (capacity != null) return `0/${capacity} people going`;
-    return null;
-  }, [participantsCount, capacity]);
-
   const displayLocationName = useMemo(() => {
     if (!event?.locationName) return "..";
     if (event.locationName.includes(" (")) {
-      return event.locationName.split(" (")[0]; 
+      return event.locationName.split(" (")[0];
     }
     return event.locationName;
   }, [event?.locationName]);
@@ -181,9 +175,9 @@ export default function EventDetailsScreen() {
   const distanceText = useMemo(() => {
     if (!userLocation || !event?.latitude || !event?.longitude) return null;
     const dist = calculateDistance(
-      userLocation.latitude, 
-      userLocation.longitude, 
-      event.latitude, 
+      userLocation.latitude,
+      userLocation.longitude,
+      event.latitude,
       event.longitude
     );
     return formatDistance(dist);
@@ -206,10 +200,10 @@ export default function EventDetailsScreen() {
     try {
       setBusyStatusUpdate(true);
       await setEventStatus(event.id, EventStatus.Approved, "");
-      Alert.alert("Success", "Event approved successfully!");
-      goBack("/events.view"); 
+      Alert.alert(t("common.success"), t("eventView.approvedSuccess"));
+      goBack("/events.view");
     } catch (error) {
-      Alert.alert("Error", "Could not approve event.");
+      Alert.alert(t("common.error"), t("eventView.approveError"));
     } finally {
       setBusyStatusUpdate(false);
     }
@@ -217,17 +211,17 @@ export default function EventDetailsScreen() {
 
   async function handleReject() {
     if (!event || !rejectReason.trim()) {
-      Alert.alert("Required", "Please provide a reason for rejection.");
+      Alert.alert(t("eventView.required"), t("eventView.rejectRequired"));
       return;
     }
     try {
       setBusyStatusUpdate(true);
       await setEventStatus(event.id, EventStatus.Rejected, rejectReason.trim());
       setShowRejectModal(false);
-      Alert.alert("Success", "Event has been rejected.");
+      Alert.alert(t("common.success"), t("eventView.rejectSuccess"));
       goBack("/events.view");
     } catch (error) {
-      Alert.alert("Error", "Could not reject event.");
+      Alert.alert(t("common.error"), t("eventView.rejectError"));
     } finally {
       setBusyStatusUpdate(false);
     }
@@ -241,7 +235,7 @@ export default function EventDetailsScreen() {
     }
     const previousStatus = status;
     const next: AttendanceStatus = status === "interested" ? "none" : "interested";
-    
+
     if (previousStatus === "going") {
       setParticipantsCount(prev => Math.max(0, (prev ?? 0) - 1));
     }
@@ -260,7 +254,7 @@ export default function EventDetailsScreen() {
         setParticipantsCount(prev =>(prev ?? 0) + 1);
       }
 
-      Alert.alert("Error", "Could not save preference.");
+      Alert.alert(t("common.error"), t("eventView.saveError"));
     }
   }
 
@@ -273,10 +267,10 @@ export default function EventDetailsScreen() {
     }
     const previousStatus = status;
     const next: AttendanceStatus = status === "going" ? "none" : "going";
-    
+
     if (next === "going" && previousStatus !== "going") {
       setParticipantsCount(prev => (prev ?? 0) + 1);
-    } 
+    }
     else if (previousStatus === "going" && next === "none") {
       setParticipantsCount(prev => Math.max(0, (prev ?? 0) - 1));
     }
@@ -300,7 +294,7 @@ export default function EventDetailsScreen() {
         setParticipantsCount(prev => (prev ?? 0) + 1);
       }
 
-      Alert.alert("Error", "Could not save preference.");
+      Alert.alert(t("common.error"), t("eventView.saveError"));
     }
   }
 
@@ -319,11 +313,11 @@ export default function EventDetailsScreen() {
     try {
       setBusyDelete(true);
       await deleteEvent(event.id);
-      
+
       setShowDeleteModal(false);
       router.replace("/my.events");
     } catch (error) {
-      alert("You don't have permission to delete this event or an error occurred.");
+      Alert.alert(t("common.error"), t("eventView.deleteError"));
     } finally {
       setBusyDelete(false);
     }
@@ -332,7 +326,7 @@ export default function EventDetailsScreen() {
   async function submitReview() {
     if (!event) return;
     if (reviewRating === 0) {
-      Alert.alert("Rating required", "Please select a star rating before submitting.");
+      Alert.alert(t("common.error"), t("eventView.ratingRequired"));
       return;
     }
     try {
@@ -345,10 +339,10 @@ export default function EventDetailsScreen() {
       setShowReviewModal(false);
       setReviewRating(0);
       setReviewComment("");
-      Alert.alert("Thank you!", "Your review has been submitted.");
+      Alert.alert(t("eventView.reviewThankYou"), t("eventView.reviewSuccess"));
     } catch (error: any) {
-      const msg = error?.response?.data?.message ?? "Could not submit review. Please try again.";
-      Alert.alert("Error", msg);
+      const msg = error?.response?.data?.message ?? t("eventView.reviewError");
+      Alert.alert(t("common.error"), msg);
     } finally {
       setBusyReview(false);
     }
@@ -365,9 +359,9 @@ export default function EventDetailsScreen() {
   if (!event) {
     return (
       <View style={styles.center}>
-        <Text style={styles.errorText}>Event not found.</Text>
+        <Text style={styles.errorText}>{t("eventView.notFound")}</Text>
         <Pressable onPress={() => goBack("/events.view")} style={styles.backBtn}>
-          <Text style={styles.backBtnText}>Go back</Text>
+          <Text style={styles.backBtnText}>{t("common.goBack")}</Text>
         </Pressable>
       </View>
     );
@@ -384,7 +378,7 @@ export default function EventDetailsScreen() {
         <FontAwesome name="arrow-left" size={18} color="#fff" />
       </Pressable>
 
-      <Text style={styles.headerTitle}>Event Details</Text>
+      <Text style={styles.headerTitle}>{t("eventView.title")}</Text>
       <View style={styles.rightSpacer} />
     </View>
 
@@ -409,7 +403,7 @@ export default function EventDetailsScreen() {
           <FontAwesome name="exclamation-circle" size={18} color="#DC2626" />
           <View style={styles.adminNoteContent}>
             <Text style={styles.adminNoteTitle}>
-              Admin Note (Action Required)
+              {t("eventView.adminNoteTitle")}
             </Text>
             <Text style={styles.adminNoteText}>
               {event.adminNotes}
@@ -418,7 +412,7 @@ export default function EventDetailsScreen() {
         </View>
       )}
 
-      <Text style={styles.sectionTitle}>Description</Text>
+      <Text style={styles.sectionTitle}>{t("eventView.sectionDescription")}</Text>
       <Text style={styles.description}>
         {event.description?.trim() ? event.description : "-"}
       </Text>
@@ -427,7 +421,7 @@ export default function EventDetailsScreen() {
         <View style={styles.infoRow}>
           <FontAwesome name="calendar" size={16} color="#3F5E95" />
           <View style={styles.infoTextWrap}>
-            <Text style={styles.infoLabel}>Date & Time</Text>
+            <Text style={styles.infoLabel}>{t("eventView.labelDateTime")}</Text>
             <Text style={styles.infoValue}>{formatStart(event.startDateTime)}</Text>
           </View>
         </View>
@@ -435,7 +429,7 @@ export default function EventDetailsScreen() {
         <View style={styles.infoRow}>
           <FontAwesome name="map-marker" size={16} color="#3F5E95" />
           <View style={styles.infoTextWrap}>
-            <Text style={styles.infoLabel}>Location</Text>
+            <Text style={styles.infoLabel}>{t("eventView.labelLocation")}</Text>
             <Text style={styles.infoValue}>{displayLocationName}</Text>
             {!!event.address && (
               <Text style={styles.infoSubValue}>{event.address}</Text>
@@ -450,10 +444,16 @@ export default function EventDetailsScreen() {
           <View style={styles.infoRow}>
             <FontAwesome name="user" size={16} color="#3F5E95" />
             <View style={styles.infoTextWrap}>
-              <Text style={styles.infoLabel}>Participants</Text>
-              <Text style={styles.infoValue}>{participantText}</Text>
+              <Text style={styles.infoLabel}>{t("eventView.labelParticipants")}</Text>
+              <Text style={styles.infoValue}>
+                {participantsCount != null && capacity != null
+                  ? t("eventView.peopleGoingOf", { count: participantsCount, capacity })
+                  : participantsCount != null
+                  ? t("eventView.peopleGoing", { count: participantsCount })
+                  : t("eventView.peopleGoingOf", { count: 0, capacity })}
+              </Text>
               {isFull ? (
-                <Text style={styles.fullText}>Event is full</Text>
+                <Text style={styles.fullText}>{t("eventView.eventFull")}</Text>
               ) : null}
             </View>
           </View>
@@ -462,7 +462,7 @@ export default function EventDetailsScreen() {
 
       {!isMine && event.createdById && (
         <>
-          <Text style={styles.sectionTitle}>Organizer</Text>
+          <Text style={styles.sectionTitle}>{t("eventView.sectionOrganizer")}</Text>
           <Pressable
             style={styles.organizerCard}
             onPress={() => router.push({ pathname: '/organizer.profile', params: { organizerId: event.createdById } })}
@@ -472,10 +472,10 @@ export default function EventDetailsScreen() {
             </View>
             <View style={styles.adminNoteContent}>
               <Text style={styles.organizerCardName}>
-                {event.creatorName ?? 'View organizer profile'}
+                {event.creatorName ?? t("eventView.viewOrganizerFallback")}
               </Text>
               <Text style={styles.organizerCardSubText}>
-                Tap to see reviews
+                {t("eventView.tapToSeeReviews")}
               </Text>
             </View>
             <FontAwesome name="chevron-right" size={12} color="#8B93A7" />
@@ -485,7 +485,7 @@ export default function EventDetailsScreen() {
 
        {isAdmin && event.status === EventStatus.Pending && (
          <>
-         <Text style={styles.sectionTitle}>Moderation Controls</Text>
+         <Text style={styles.sectionTitle}>{t("eventView.sectionModerationControls")}</Text>
          <View style={styles.actionsRow}>
            <Pressable
              style={[styles.primaryBtn, styles.approveBtnBg]}
@@ -493,16 +493,16 @@ export default function EventDetailsScreen() {
              disabled={busyStatusUpdate}
            >
              <FontAwesome name="check" size={14} color="#FFFFFF" />
-             <Text style={styles.primaryBtnText}>{busyStatusUpdate ? "Working..." : "Approve"}</Text>
+             <Text style={styles.primaryBtnText}>{busyStatusUpdate ? t("eventView.working") : t("eventView.approve")}</Text>
            </Pressable>
 
            <Pressable
-             style={styles.dangerBtn} 
+             style={styles.dangerBtn}
              onPress={() => setShowRejectModal(true)}
              disabled={busyStatusUpdate}
            >
              <FontAwesome name="times" size={14} color="#8E1B1B" />
-             <Text style={styles.dangerBtnText}>Reject</Text>
+             <Text style={styles.dangerBtnText}>{t("eventView.reject")}</Text>
            </Pressable>
          </View>
        </>
@@ -511,22 +511,22 @@ export default function EventDetailsScreen() {
       {(!isAdmin || event.status !== EventStatus.Pending) && (
         isMine ? (
         <>
-          <Text style={styles.sectionTitle}>Admin Controls</Text>
+          <Text style={styles.sectionTitle}>{t("eventView.sectionAdminControls")}</Text>
 
           <View style={styles.actionsRow}>
             <Pressable style={styles.secondaryBtn} onPress={onEdit}>
               <FontAwesome name="pencil" size={14} color="#3F5E95" />
-              <Text style={styles.secondaryBtnText}>Edit Event</Text>
+              <Text style={styles.secondaryBtnText}>{t("eventView.editEvent")}</Text>
             </Pressable>
 
             <Pressable
               style={[styles.dangerBtn]}
               onPress={onDeleteClick}
-            
+
             >
               <FontAwesome name="trash" size={14} color="#8E1B1B" />
               <Text style={styles.dangerBtnText}>
-                {busyDelete ? "Deleting..." : "Delete"}
+                {busyDelete ? t("eventView.deleting") : t("common.delete")}
               </Text>
             </Pressable>
           </View>
@@ -534,7 +534,7 @@ export default function EventDetailsScreen() {
       ) : isPastEvent ? (
           <View style={styles.pastEventWrap}>
             <Text style={styles.pastEventText}>
-              This event has already taken place.
+              {t("eventView.pastEvent")}
             </Text>
             {canReview && !hasReviewed && (
               <Pressable
@@ -542,13 +542,13 @@ export default function EventDetailsScreen() {
                 onPress={() => setShowReviewModal(true)}
               >
                 <FontAwesome name="star" size={14} color="#FFFFFF" />
-                <Text style={styles.primaryBtnText}>Leave a Review</Text>
+                <Text style={styles.primaryBtnText}>{t("eventView.leaveReview")}</Text>
               </Pressable>
             )}
             {canReview && hasReviewed && (
               <View style={styles.reviewedRow}>
                 <FontAwesome name="check-circle" size={16} color="#059669" />
-                <Text style={styles.reviewedText}>You reviewed this event</Text>
+                <Text style={styles.reviewedText}>{t("eventView.reviewedEvent")}</Text>
               </View>
             )}
           </View>
@@ -572,7 +572,7 @@ export default function EventDetailsScreen() {
                 status === "interested" && styles.secondaryBtnTextActive,
               ]}
             >
-              Interested
+              {t("eventView.interested")}
             </Text>
           </Pressable>
 
@@ -587,7 +587,7 @@ export default function EventDetailsScreen() {
           >
             <FontAwesome name={status === "going" ? "check" : "plus"} size={14} color="#FFFFFF" />
             <Text style={styles.primaryBtnText}>
-              {isFull ? "Full" : status === "going" ? "Going" : "Attend"}
+              {isFull ? t("eventView.full") : status === "going" ? t("eventView.going") : t("eventView.attend")}
             </Text>
           </Pressable>
         </View>
@@ -598,13 +598,13 @@ export default function EventDetailsScreen() {
         visible={showDeleteModal}
         transparent={true}
         animationType="fade"
-        onRequestClose={() => setShowDeleteModal(false)} 
+        onRequestClose={() => setShowDeleteModal(false)}
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Delete Event</Text>
+            <Text style={styles.modalTitle}>{t("eventView.deleteModalTitle")}</Text>
             <Text style={styles.modalText}>
-              Are you sure you want to delete this event? This action cannot be undone.
+              {t("eventView.deleteModalText")}
             </Text>
 
             <View style={styles.modalActions}>
@@ -613,7 +613,7 @@ export default function EventDetailsScreen() {
                 onPress={() => setShowDeleteModal(false)}
                 disabled={busyDelete}
               >
-                <Text style={styles.secondaryBtnText}>Cancel</Text>
+                <Text style={styles.secondaryBtnText}>{t("common.cancel")}</Text>
               </Pressable>
 
               <Pressable
@@ -623,7 +623,7 @@ export default function EventDetailsScreen() {
               >
               <FontAwesome name="trash" size={14} color="#8E1B1B" />
               <Text style={styles.dangerBtnText}>
-                {busyDelete ? "Deleting..." : "Delete"}
+                {busyDelete ? t("eventView.deleting") : t("common.delete")}
               </Text>
               </Pressable>
             </View>
@@ -635,18 +635,18 @@ export default function EventDetailsScreen() {
         visible={showRejectModal}
         transparent={true}
         animationType="slide"
-        onRequestClose={() => setShowRejectModal(false)} 
+        onRequestClose={() => setShowRejectModal(false)}
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Reject Event</Text>
+            <Text style={styles.modalTitle}>{t("eventView.rejectModalTitle")}</Text>
             <Text style={styles.modalText}>
-              Please provide a reason. The creator will see this note.
+              {t("eventView.rejectModalText")}
             </Text>
 
             <TextInput
               style={styles.rejectInput}
-              placeholder="e.g. Please provide a more detailed address."
+              placeholder={t("eventView.rejectPlaceholder")}
               multiline
               value={rejectReason}
               onChangeText={setRejectReason}
@@ -658,7 +658,7 @@ export default function EventDetailsScreen() {
                 onPress={() => setShowRejectModal(false)}
                 disabled={busyStatusUpdate}
               >
-                <Text style={styles.secondaryBtnText}>Cancel</Text>
+                <Text style={styles.secondaryBtnText}>{t("common.cancel")}</Text>
               </Pressable>
 
               <Pressable
@@ -668,7 +668,7 @@ export default function EventDetailsScreen() {
               >
               <FontAwesome name="times" size={14} color="#8E1B1B" />
               <Text style={styles.dangerBtnText}>
-                {busyStatusUpdate ? "Rejecting..." : "Confirm Reject"}
+                {busyStatusUpdate ? t("eventView.rejecting") : t("eventView.confirmReject")}
               </Text>
               </Pressable>
             </View>
@@ -687,9 +687,9 @@ export default function EventDetailsScreen() {
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
           <View style={[styles.modalContent, styles.reviewModalContent]}>
-            <Text style={styles.modalTitle}>Leave a Review</Text>
+            <Text style={styles.modalTitle}>{t("eventView.reviewModalTitle")}</Text>
             <Text style={[styles.modalText, styles.reviewModalText]}>
-              How was your experience at this event?
+              {t("eventView.reviewModalText")}
             </Text>
 
             <View style={styles.reviewStarRow}>
@@ -706,7 +706,7 @@ export default function EventDetailsScreen() {
 
             <TextInput
               style={styles.reviewCommentInput}
-              placeholder="Share your experience (optional)"
+              placeholder={t("eventView.reviewPlaceholder")}
               multiline
               value={reviewComment}
               onChangeText={setReviewComment}
@@ -723,7 +723,7 @@ export default function EventDetailsScreen() {
                 }}
                 disabled={busyReview}
               >
-                <Text style={styles.secondaryBtnText}>Cancel</Text>
+                <Text style={styles.secondaryBtnText}>{t("common.cancel")}</Text>
               </Pressable>
 
               <Pressable
@@ -732,7 +732,7 @@ export default function EventDetailsScreen() {
                 disabled={busyReview}
               >
                 <FontAwesome name="check" size={14} color="#FFFFFF" />
-                <Text style={styles.primaryBtnText}>{busyReview ? "Submitting..." : "Submit"}</Text>
+                <Text style={styles.primaryBtnText}>{busyReview ? t("common.submitting") : t("common.submit")}</Text>
               </Pressable>
             </View>
           </View>

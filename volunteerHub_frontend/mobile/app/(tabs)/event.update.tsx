@@ -1,7 +1,7 @@
 import { FontAwesome } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { goBack } from "@/src/utils/navigation";
-import { ActivityIndicator, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { useMemo, useRef, useState } from "react";
 import { styles } from "@/src/styles/event.style";
 import { toAppError } from "@/src/api/errors";
@@ -14,6 +14,7 @@ import DateTimePicker, {
 import { useFocusEffect } from "expo-router";
 import { useCallback } from "react";
 import { getPlacesSuggestions, getLatLongFromPlaceId } from "@/src/utils/location.utils";
+import { t, useLanguage } from "@/src/i18n/index";
 
 type FieldErrors = Partial<{
   Title: string;
@@ -49,16 +50,17 @@ function parseWebInputToDate(v: string) {
 export default function UpdateEventScreen() {
     const router= useRouter();
     const { id } = useLocalSearchParams<{ id: string }>();
+    useLanguage();
 
     const [Title, setTitle] = useState("");
     const [Description, setDescription] = useState("");
     const [Category, setCategory] = useState<EventCategory>(EVENT_CATEGORIES[0].value);
-    
+
     const [StartDateTime, setStartDateTime] = useState<Date>(new Date());
     const [EndDateTime, setEndDateTime] = useState<Date>(new Date(60 * 60 * 1000 + Date.now()));
 
     const [MaxVolunteers, setMaxVolunteers] = useState("");
-    const [status, setStatus] = useState(""); 
+    const [status, setStatus] = useState("");
     const [Location, setLocation] = useState("");
     const [Address, setAddress] = useState("");
     const [Longitude, setLongitude] = useState("");
@@ -80,7 +82,7 @@ export default function UpdateEventScreen() {
     const [submitting, setSubmitting] = useState(false);
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
     const [errors, setErrors] = useState<FieldErrors>({});
-  
+
 
     function clearError(k: keyof FieldErrors) {
      setErrors((p) => ({ ...p, [k]: undefined, general: undefined }));
@@ -90,7 +92,7 @@ export default function UpdateEventScreen() {
         const found = EVENT_CATEGORIES.find((c) => c.value === Category);
         return found?.label ?? "";
     }, [Category]);
-      
+
     useFocusEffect(
         useCallback(() => {
         setErrors({});
@@ -108,7 +110,7 @@ export default function UpdateEventScreen() {
         try {
             const ev = await getEventById(String(id));
             if (!mounted) return;
-            setTitle(ev.title ?? ""); 
+            setTitle(ev.title ?? "");
             setDescription(ev.description ?? "");
             setCategory(ev.category);
 
@@ -128,7 +130,7 @@ export default function UpdateEventScreen() {
                     : ""
                 );
         } catch (e) {
-            setErrorMsg("Failed to load event.");
+            setErrorMsg(t("eventUpdate.failedToLoad"));
         }
         })();
 
@@ -141,36 +143,36 @@ export default function UpdateEventScreen() {
     function validate(): FieldErrors {
         const e: FieldErrors = {};
 
-        const t = Title.trim();
+        const titleVal = Title.trim();
         const d = Description.trim();
         const ln = Location.trim();
         const a = Address.trim();
 
-        if (!t) e.Title = "Title is required.";
-        else if (t.length > 200) e.Title = "Title must be max 200 characters.";
+        if (!titleVal) e.Title = t("eventCreate.errors.titleRequired");
+        else if (titleVal.length > 200) e.Title = t("eventCreate.errors.titleTooLong");
 
-        if (!d) e.Description = "Description is required.";
-        else if (d.length > 2000) e.Description = "Description must be max 2000 characters.";
+        if (!d) e.Description = t("eventCreate.errors.descriptionRequired");
+        else if (d.length > 2000) e.Description = t("eventCreate.errors.descriptionTooLong");
 
-        if (Category === undefined || Category === null) e.Category = "Category is required.";
+        if (Category === undefined || Category === null) e.Category = t("eventCreate.errors.categoryRequired");
 
-        if (!StartDateTime || isNaN(StartDateTime.getTime())) e.StartDateTime = "Start date/time is required.";
-        if(StartDateTime && EndDateTime && StartDateTime >= EndDateTime) e.StartDateTime = "Start date/time must be before end date/time.";
-        if (!EndDateTime || isNaN(EndDateTime.getTime())) e.EndDateTime = "End date/time is required.";
+        if (!StartDateTime || isNaN(StartDateTime.getTime())) e.StartDateTime = t("eventCreate.errors.startRequired");
+        if(StartDateTime && EndDateTime && StartDateTime >= EndDateTime) e.StartDateTime = t("eventUpdate.errors.startBeforeEnd");
+        if (!EndDateTime || isNaN(EndDateTime.getTime())) e.EndDateTime = t("eventCreate.errors.endRequired");
         if (StartDateTime && EndDateTime && EndDateTime.getTime() < StartDateTime.getTime()) {
-        e.EndDateTime = "End date/time must be after start date/time.";
+          e.EndDateTime = t("eventCreate.errors.endBeforeStart");
         }
 
-        if (!ln) e.LocationName = "Location is required.";
-        else if (ln.length > 300) e.LocationName = "Location must be max 300 characters.";
+        if (!ln) e.LocationName = t("eventCreate.errors.locationRequired");
+        else if (ln.length > 300) e.LocationName = t("eventCreate.errors.locationTooLong");
 
         if (!Latitude || !Longitude) {
-            e.LocationName = "Please search and select a valid location from the list.";
+            e.LocationName = t("eventCreate.errors.locationInvalid");
         }
         if (MaxVolunteers.trim()) {
-        const mv = Number(MaxVolunteers);
-        if (Number.isNaN(mv) || !Number.isInteger(mv)) e.MaxVolunteers = "Max volunteers must be an integer.";
-        else if (mv <= 0) e.MaxVolunteers = "Max volunteers must be > 0.";
+          const mv = Number(MaxVolunteers);
+          if (Number.isNaN(mv) || !Number.isInteger(mv)) e.MaxVolunteers = t("eventCreate.errors.maxVolunteersInteger");
+          else if (mv <= 0) e.MaxVolunteers = t("eventCreate.errors.maxVolunteersPositive");
         }
 
         return e;
@@ -296,7 +298,7 @@ export default function UpdateEventScreen() {
         }
 
         setSubmitting(true);
-        
+
         const mvRaw = MaxVolunteers.trim();
         const mv = mvRaw === "" ? null : parseInt(mvRaw, 10);
 
@@ -323,7 +325,7 @@ export default function UpdateEventScreen() {
             setSubmitting(false);
         }
     }
-    
+
     return(
         <View style={styles.page}>
            <View style={styles.header}>
@@ -335,7 +337,7 @@ export default function UpdateEventScreen() {
                     <FontAwesome name="arrow-left" size={18} color="#fff" />
                 </Pressable>
 
-                <Text style={styles.headerTitle}>Update Event</Text>
+                <Text style={styles.headerTitle}>{t("eventUpdate.title")}</Text>
 
                 <View style={styles.rightSpacer} />
             </View>
@@ -347,15 +349,15 @@ export default function UpdateEventScreen() {
 
             <ScrollView keyboardShouldPersistTaps="handled" >
                 <View style={styles.card}>
-                    <Text style={styles.label}>Title</Text>
+                    <Text style={styles.label}>{t("eventCreate.labelTitle")}</Text>
                     <View style={styles.inputWrap}>
-                        <TextInput 
+                        <TextInput
                         value={Title}
-                        onChangeText={(t) =>{
-                            setTitle(t);
+                        onChangeText={(val) =>{
+                            setTitle(val);
                             if(errorMsg) setErrorMsg(null);
                         }}
-                        placeholder="Title"
+                        placeholder={t("eventCreate.placeholderTitle")}
                         autoCapitalize="none"
                         keyboardType="default"
                         placeholderTextColor="#8B93A7"
@@ -364,15 +366,15 @@ export default function UpdateEventScreen() {
                         />
                     </View>
 
-                    <Text style={[styles.label, styles.labelSpaced]}>Description</Text>
+                    <Text style={[styles.label, styles.labelSpaced]}>{t("eventCreate.labelDescription")}</Text>
                     <View style={styles.inputWrap}>
-                        <TextInput 
+                        <TextInput
                         value={Description}
-                        onChangeText={(t) =>{
-                            setDescription(t);
+                        onChangeText={(val) =>{
+                            setDescription(val);
                             if(errorMsg) setErrorMsg(null);
                         }}
-                        placeholder="Description"
+                        placeholder={t("eventCreate.placeholderDescription")}
                         autoCapitalize="none"
                         keyboardType="default"
                         placeholderTextColor="#8B93A7"
@@ -381,7 +383,7 @@ export default function UpdateEventScreen() {
                         />
                     </View>
 
-                    <Text style={[styles.label, styles.labelSpaced]}>Category</Text>
+                    <Text style={[styles.label, styles.labelSpaced]}>{t("eventCreate.labelCategory")}</Text>
                     <View style={styles.inputWrap}>
                     <Pressable
                         style={styles.pressableInput}
@@ -389,7 +391,7 @@ export default function UpdateEventScreen() {
                         disabled={submitting}
                     >
                         <Text style={categoryLabel ? styles.valueText : styles.placeholderText}>
-                        {categoryLabel || "Category"}
+                        {categoryLabel || t("eventCreate.labelCategory")}
                         </Text>
                     </Pressable>
                     </View>
@@ -400,9 +402,9 @@ export default function UpdateEventScreen() {
                         <Pressable style={styles.modalSheet} onPress={() => {}}>
                             <View style={styles.modalHeader}>
                             <Pressable onPress={() => setShowCategoryModal(false)}>
-                                <Text style={styles.modalBtn}>Close</Text>
+                                <Text style={styles.modalBtn}>{t("common.close")}</Text>
                             </Pressable>
-                            <Text style={styles.modalHeaderTitle}>Category</Text>
+                            <Text style={styles.modalHeaderTitle}>{t("eventCreate.labelCategory")}</Text>
                             <View style={styles.modalHeaderSpacer} />
                             </View>
 
@@ -411,7 +413,7 @@ export default function UpdateEventScreen() {
                                 key={c.value}
                                 style={styles.optionRow}
                                 onPress={() => {
-                                setCategory(c.value); 
+                                setCategory(c.value);
                                 setShowCategoryModal(false);
                                 if (errorMsg) setErrorMsg(null);
                                 }}
@@ -424,7 +426,7 @@ export default function UpdateEventScreen() {
                     </Modal>
                     ) : null}
 
-                    <Text style={[styles.label, styles.labelSpaced]}>Start Date and Time</Text>
+                    <Text style={[styles.label, styles.labelSpaced]}>{t("eventCreate.labelStartDateTime")}</Text>
                     <View style={styles.inputWrap}>
                     {Platform.OS === "web" ? (
                         <input
@@ -453,13 +455,13 @@ export default function UpdateEventScreen() {
                     ) : (
                         <Pressable style={styles.pressableInput} onPress={openStartPicker} disabled={submitting}>
                         <Text style={StartDateTime ? styles.valueText : styles.placeholderText}>
-                            {StartDateTime ? StartDateTime.toLocaleString() : "Start Date and Time"}
+                            {StartDateTime ? StartDateTime.toLocaleString() : t("eventCreate.placeholderStartDateTime")}
                         </Text>
                         </Pressable>
                     )}
                     </View>
 
-                    <Text style={[styles.label, styles.labelSpaced]}>End Date and Time</Text>
+                    <Text style={[styles.label, styles.labelSpaced]}>{t("eventCreate.labelEndDateTime")}</Text>
                     <View style={styles.inputWrap}>
                     {Platform.OS === "web" ? (
                         <input
@@ -488,20 +490,20 @@ export default function UpdateEventScreen() {
                     ) : (
                         <Pressable style={styles.pressableInput} onPress={openEndPicker} disabled={submitting}>
                         <Text style={EndDateTime ? styles.valueText : styles.placeholderText}>
-                            {EndDateTime ? EndDateTime.toLocaleString() : "End Date and Time"}
+                            {EndDateTime ? EndDateTime.toLocaleString() : t("eventCreate.placeholderEndDateTime")}
                         </Text>
                         </Pressable>
                     )}
                     </View>
 
-                    <Text style={[styles.label, styles.labelSpaced]}>Location</Text>
+                    <Text style={[styles.label, styles.labelSpaced]}>{t("eventCreate.labelLocation")}</Text>
                      <View style={styles.autocompleteWrapper}>
                             {showLocationMenu && locationSuggestions.length > 0 && (
                                 <View style={styles.autocompleteList}>
                                     <ScrollView keyboardShouldPersistTaps="handled" nestedScrollEnabled={true}>
                                         {locationSuggestions.map((item, index) => (
-                                            <Pressable 
-                                                key={item.placeId} 
+                                            <Pressable
+                                                key={item.placeId}
                                                 style={[
                                                     styles.suggestionItem,
                                                     index === locationSuggestions.length - 1 && styles.suggestionItemLast
@@ -521,10 +523,10 @@ export default function UpdateEventScreen() {
                             )}
 
                             <View style={[styles.inputWrap, styles.locationInputWrap]}>
-                                <TextInput 
+                                <TextInput
                                     value={Location}
                                     onChangeText={handleLocationChange}
-                                    placeholder="Search for a place..."
+                                    placeholder={t("eventCreate.placeholderLocation")}
                                     autoCapitalize="none"
                                     style={[styles.input, styles.locationInput]}
                                     editable={!submitting}
@@ -537,21 +539,21 @@ export default function UpdateEventScreen() {
                             </View>
                         </View>
 
-                    <Text style={[styles.label, styles.labelSpaced]}>Max Volunteers</Text>
+                    <Text style={[styles.label, styles.labelSpaced]}>{t("eventUpdate.labelMaxVolunteers")}</Text>
                     <View style={styles.inputWrap}>
-                        <TextInput 
+                        <TextInput
                         value={MaxVolunteers}
-                        onChangeText={(t) =>{
-                            setMaxVolunteers(t);
+                        onChangeText={(val) =>{
+                            setMaxVolunteers(val);
                             if(errorMsg) setErrorMsg(null);
                         }}
-                        placeholder="Unlimited if left empty"
+                        placeholder={t("eventUpdate.placeholderMaxVolunteers")}
                         autoCapitalize="none"
                         keyboardType="numeric"
                         placeholderTextColor="#8B93A7"
                         style={styles.input}
                         editable={!submitting}
-                        />  
+                        />
                     </View>
 
                 </View>
@@ -581,7 +583,7 @@ export default function UpdateEventScreen() {
                     onPress={onUpdateEvent}
                 >
                     <Text style={styles.primaryBtnText}>
-                        {submitting ? "Updating Event..." : "Update Event"}
+                        {submitting ? t("eventUpdate.updating") : t("eventUpdate.updateBtn")}
                     </Text>
                 </Pressable>
 
@@ -595,7 +597,7 @@ export default function UpdateEventScreen() {
                 <Pressable style={styles.modalSheet} onPress={() => {}}>
                     <View style={styles.modalHeader}>
                     <Pressable onPress={() => setShowStartPickerIOS(false)}>
-                        <Text style={styles.modalBtn}>Done</Text>
+                        <Text style={styles.modalBtn}>{t("common.done")}</Text>
                     </Pressable>
                     </View>
 
@@ -616,7 +618,7 @@ export default function UpdateEventScreen() {
                 <Pressable style={styles.modalSheet} onPress={() => {}}>
                     <View style={styles.modalHeader}>
                     <Pressable onPress={() => setShowEndPickerIOS(false)}>
-                        <Text style={styles.modalBtn}>Done</Text>
+                        <Text style={styles.modalBtn}>{t("common.done")}</Text>
                     </Pressable>
                     </View>
 
