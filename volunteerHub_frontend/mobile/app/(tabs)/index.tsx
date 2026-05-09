@@ -33,6 +33,7 @@ export default function HomeScreen() {
     }, [fetchCount])
   );
 
+  
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await fetchCount();
