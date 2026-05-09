@@ -5,7 +5,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
-  StyleSheet,
   Text,
   TextInput,
   View,
@@ -16,10 +15,12 @@ import { toAppError } from "@/src/api/errors";
 import { setAuth } from "@/src/store/auth.store";
 import { getToken } from "@/src/platform/storage";
 
-import { styles } from "../../src/styles/auth.styles";
+import { styles, langStyles } from "../../src/styles/auth.styles";
+import { t, useLanguage } from "@/src/i18n/index";
 
 export default function LoginScreen() {
   const router = useRouter();
+  const { locale, setLocale } = useLanguage();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -35,8 +36,7 @@ export default function LoginScreen() {
         if (token) {
           router.replace("/(tabs)");
         }
-      } catch (e) {
-        console.error("Auth check failed:", e);
+      } catch {
       }
     }
 
@@ -70,19 +70,34 @@ export default function LoginScreen() {
       style={styles.page}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
+      <View style={langStyles.langRow}>
+        <Pressable
+          onPress={() => setLocale("en")}
+          style={[langStyles.langBtn, locale === "en" && langStyles.langBtnActive]}
+        >
+          <Text style={[langStyles.langText, locale === "en" && langStyles.langTextActive]}>EN</Text>
+        </Pressable>
+        <Pressable
+          onPress={() => setLocale("ro")}
+          style={[langStyles.langBtn, locale === "ro" && langStyles.langBtnActive]}
+        >
+          <Text style={[langStyles.langText, locale === "ro" && langStyles.langTextActive]}>RO</Text>
+        </Pressable>
+      </View>
+
       <View style={styles.container}>
-        <Text style={styles.title}>Volunteer Hub</Text>
+        <Text style={styles.title}>{t("login.appName")}</Text>
 
         <View style={styles.card}>
           <View style={styles.inputWrap}>
             <FontAwesome name="envelope" size={16} style={styles.leftIcon} />
             <TextInput
               value={email}
-              onChangeText={(t) => {
-                setEmail(t);
+              onChangeText={(val) => {
+                setEmail(val);
                 if (errorMsg) setErrorMsg(null);
               }}
-              placeholder="Email"
+              placeholder={t("login.email")}
               autoCapitalize="none"
               keyboardType="email-address"
               textContentType="emailAddress"
@@ -96,11 +111,11 @@ export default function LoginScreen() {
             <FontAwesome name="lock" size={18} style={styles.leftIcon} />
             <TextInput
               value={password}
-              onChangeText={(t) => {
-                setPassword(t);
+              onChangeText={(val) => {
+                setPassword(val);
                 if (errorMsg) setErrorMsg(null);
               }}
-              placeholder="Password"
+              placeholder={t("login.password")}
               secureTextEntry={hidePassword}
               textContentType="password"
               style={[styles.input, { paddingRight: 44 }]}
@@ -131,7 +146,7 @@ export default function LoginScreen() {
           onPress={onSignIn}
         >
           <Text style={styles.primaryBtnText}>
-            {submitting ? "Signing In..." : "Sign In"}
+            {submitting ? t("login.signingIn") : t("login.signIn")}
           </Text>
         </Pressable>
 
@@ -140,16 +155,16 @@ export default function LoginScreen() {
           disabled={submitting}
           style={{ alignSelf: "center", marginTop: 8 }}
         >
-          <Text style={styles.footerLink}>Forgot password?</Text>
+          <Text style={styles.footerLink}>{t("login.forgotPassword")}</Text>
         </Pressable>
 
         <View style={styles.footerRow}>
-          <Text style={styles.footerText}>Don't have an account?</Text>
+          <Text style={styles.footerText}>{t("login.noAccount")}</Text>
           <Pressable
             onPress={() => router.push("/(auth)/register")}
             disabled={submitting}
           >
-            <Text style={styles.footerLink}> Register now!</Text>
+            <Text style={styles.footerLink}>{t("login.registerNow")}</Text>
           </Pressable>
         </View>
       </View>

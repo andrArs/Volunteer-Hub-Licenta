@@ -120,4 +120,31 @@ export const styles = StyleSheet.create({
   logoutText: { color: "#3F5E95", fontWeight: "900", fontSize: 14.5 },
 
   aiSendBtnDisabled: { opacity: 0.5 },
+
+  langRow: {
+    position: "absolute",
+    top: 56,
+    left: 22,
+    flexDirection: "row",
+  },
+  langBtn: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 6,
+    marginRight: 6,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.6)",
+  },
+  langBtnActive: {
+    backgroundColor: "#FFFFFF",
+    borderColor: "#FFFFFF",
+  },
+  langText: {
+    fontSize: 13,
+    color: "rgba(255,255,255,0.7)",
+    fontWeight: "600",
+  },
+  langTextActive: {
+    color: "#3F5E95",
+  },
 });

@@ -6,7 +6,8 @@ public record UserProfileResponse(
     string LastName,
     string Email,
     DateOnly? DateOfBirth,
-    List<string>? Roles = null
+    List<string>? Roles = null,
+    string? ProfilePictureUrl = null
 );
 
 public record UpdateUserRequest(

@@ -13,6 +13,7 @@ import "react-native-reanimated";
 import { useColorScheme } from "@/components/useColorScheme";
 import { getToken } from "@/src/platform/storage";
 import { useCallback } from "react";
+import { LanguageProvider } from "@/src/i18n/index";
 
 export {
   ErrorBoundary
@@ -38,8 +39,7 @@ export default function RootLayout() {
       try {
         const token = await getToken();
         setIsLoggedIn(!!token);
-      } catch (e) {
-        console.error("Failed to restore auth state:", e);
+      } catch {
         setIsLoggedIn(false);
       } finally {
         setAuthReady(true);
@@ -68,7 +68,11 @@ export default function RootLayout() {
     return null;
   }
 
-  return <RootLayoutNav isLoggedIn={isLoggedIn} />;
+  return (
+    <LanguageProvider>
+      <RootLayoutNav isLoggedIn={isLoggedIn} />
+    </LanguageProvider>
+  );
 }
 
 function RootLayoutNav({ isLoggedIn }: { isLoggedIn: boolean }) {

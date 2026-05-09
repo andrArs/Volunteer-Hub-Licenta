@@ -1,10 +1,12 @@
 import { FontAwesome } from "@expo/vector-icons";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { goBack } from "@/src/utils/navigation";
 import React, { useCallback, useState } from "react";
-import { ActivityIndicator, FlatList, Pressable, Text, View } from "react-native";
+import { ActivityIndicator, FlatList, Pressable, RefreshControl, Text, View } from "react-native";
 import { getOrganizerReviews } from "@/src/api/review.api";
 import type { OrganizerReviewsResponse, ReviewResponse } from "@/src/types/review";
 import { styles } from "@/src/styles/organizer.profile.styles";
+import { t, useLanguage } from "@/src/i18n/index";
 
 function StarRating({ rating, size = 14 }: { rating: number; size?: number }) {
   return (
@@ -49,15 +51,17 @@ function ReviewCard({ item }: { item: ReviewResponse }) {
 export default function OrganizerProfileScreen() {
   const router = useRouter();
   const { organizerId } = useLocalSearchParams<{ organizerId: string }>();
+  useLanguage();
 
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [data, setData] = useState<OrganizerReviewsResponse | null>(null);
   const [notFound, setNotFound] = useState(false);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (isRefresh = false) => {
     if (!organizerId) return;
     try {
-      setLoading(true);
+      if (!isRefresh) setLoading(true);
       setNotFound(false);
       const result = await getOrganizerReviews(String(organizerId));
       setData(result);
@@ -65,8 +69,14 @@ export default function OrganizerProfileScreen() {
       if (err?.response?.status === 404) setNotFound(true);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   }, [organizerId]);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    load(true);
+  }, [load]);
 
   useFocusEffect(
     useCallback(() => {
@@ -77,10 +87,10 @@ export default function OrganizerProfileScreen() {
   return (
     <View style={styles.page}>
       <View style={styles.header}>
-        <Pressable onPress={() => router.back()} hitSlop={10} style={styles.backBtn}>
+        <Pressable onPress={() => goBack()} hitSlop={10} style={styles.backBtn}>
           <FontAwesome name="arrow-left" size={18} color="#fff" />
         </Pressable>
-        <Text style={styles.headerTitle}>Organizer Profile</Text>
+        <Text style={styles.headerTitle}>{t("organizerProfile.title")}</Text>
         <View style={styles.rightSpacer} />
       </View>
 
@@ -90,9 +100,9 @@ export default function OrganizerProfileScreen() {
         </View>
       ) : notFound || !data ? (
         <View style={styles.center}>
-          <Text style={styles.errorText}>Organizer not found.</Text>
-          <Pressable onPress={() => router.back()} style={styles.backTextBtn}>
-            <Text style={styles.backTextBtnText}>Go back</Text>
+          <Text style={styles.errorText}>{t("organizerProfile.notFound")}</Text>
+          <Pressable onPress={() => goBack()} style={styles.backTextBtn}>
+            <Text style={styles.backTextBtnText}>{t("common.goBack")}</Text>
           </Pressable>
         </View>
       ) : (
@@ -102,6 +112,7 @@ export default function OrganizerProfileScreen() {
           renderItem={({ item }) => <ReviewCard item={item} />}
           contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#3F5E95"]} tintColor="#3F5E95" />}
           ListHeaderComponent={
             <View>
               <View style={styles.profileCard}>
@@ -116,20 +127,22 @@ export default function OrganizerProfileScreen() {
                 </View>
                 <Text style={styles.totalReviews}>
                   {data.totalReviews === 0
-                    ? "No reviews yet"
-                    : `${data.totalReviews} review${data.totalReviews > 1 ? "s" : ""}`}
+                    ? t("organizerProfile.noReviews")
+                    : data.totalReviews === 1
+                    ? t("organizerProfile.reviewSingular")
+                    : t("organizerProfile.reviewPlural", { count: data.totalReviews })}
                 </Text>
               </View>
 
               {data.reviews.length > 0 && (
-                <Text style={styles.sectionTitle}>Reviews</Text>
+                <Text style={styles.sectionTitle}>{t("organizerProfile.reviewsSection")}</Text>
               )}
             </View>
           }
           ListEmptyComponent={
             <View style={styles.emptyWrap}>
               <FontAwesome name="comments-o" size={40} color="#D1D5DB" />
-              <Text style={styles.emptyText}>No reviews yet.</Text>
+              <Text style={styles.emptyText}>{t("organizerProfile.emptyReviews")}</Text>
             </View>
           }
         />

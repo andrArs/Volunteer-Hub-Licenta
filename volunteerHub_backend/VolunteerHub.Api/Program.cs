@@ -61,6 +61,7 @@ builder.Services.AddHttpClient();
 builder.Services.AddScoped<IAiService, AiService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
+builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
 builder.Services.AddHostedService<ReminderBackgroundService>();
 
 builder.Services.AddCors(options =>

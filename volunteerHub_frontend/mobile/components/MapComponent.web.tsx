@@ -1,14 +1,16 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { FontAwesome } from "@expo/vector-icons";
+import { t, useLanguage } from "@/src/i18n/index";
 
 export default function MapComponent() {
+  useLanguage();
   return (
     <View style={styles.container}>
       <FontAwesome name="map-o" size={60} color="#8B93A7" style={{ marginBottom: 20 }} />
-      <Text style={styles.title}>Map View is Mobile-Only</Text>
+      <Text style={styles.title}>{t("eventsMap.webTitle")}</Text>
       <Text style={styles.subtitle}>
-        Please open the VolunteerHub app on an Android or iOS device to explore the interactive heatmap.
+        {t("eventsMap.webSubtitle")}
       </Text>
     </View>
   );

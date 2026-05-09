@@ -14,13 +14,13 @@ import {
     Modal,
     Platform,
     Pressable,
-    StyleSheet,
     Text,
     TextInput,
     View,
 } from "react-native";
 
-import { styles } from "../../src/styles/auth.styles";
+import { styles, langStyles } from "../../src/styles/auth.styles";
+import { t, useLanguage } from "@/src/i18n/index";
 
 type FieldErrors = Partial<{
   firstName: string;
@@ -33,16 +33,16 @@ type FieldErrors = Partial<{
 
 export default function RegisterScreen() {
   const router = useRouter();
+  const { locale, setLocale } = useLanguage();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
 
-  
-  const [dateOfBirth, setDateOfBirth] = useState(""); 
+  const [dateOfBirth, setDateOfBirth] = useState("");
   const [dobDate, setDobDate] = useState<Date | null>(null);
-  const [showDobPicker, setShowDobPicker] = useState(false); // iOS modal only
+  const [showDobPicker, setShowDobPicker] = useState(false);
 
   const [hidePassword, setHidePassword] = useState(true);
 
@@ -56,8 +56,7 @@ export default function RegisterScreen() {
         if (token) {
           router.replace("/(tabs)");
         }
-      } catch (e) {
-        console.error("Auth check failed:", e);
+      } catch {
       }
     }
 
@@ -86,11 +85,10 @@ export default function RegisterScreen() {
     const dd = String(d.getDate()).padStart(2, "0");
     const mm = String(d.getMonth() + 1).padStart(2, "0");
     const yyyy = d.getFullYear();
-    return `${yyyy}-${mm}-${dd}`; 
+    return `${yyyy}-${mm}-${dd}`;
   }
 
   function parseISODate(s: string) {
-   
     const [y, m, d] = s.split("-").map(Number);
     if (!y || !m || !d) return null;
     return new Date(y, m - 1, d);
@@ -98,7 +96,7 @@ export default function RegisterScreen() {
 
   function onDobSelected(d: Date) {
     setDobDate(d);
-    setDateOfBirth(formatDob(d)); 
+    setDateOfBirth(formatDob(d));
     setErrors((p) => ({ ...p, dateOfBirth: undefined, general: undefined }));
   }
 
@@ -129,28 +127,25 @@ export default function RegisterScreen() {
   }
 
   function splitServerErrors(msg: string): string[] {
-  return msg
-    .split(";")
-    .map((s) => s.trim())
-    .filter(Boolean);
-}
+    return msg.split(";").map((s) => s.trim()).filter(Boolean);
+  }
 
   function validate(): FieldErrors {
     const e: FieldErrors = {};
 
-    if (!firstName.trim()) e.firstName = "First name is required.";
-    if (!lastName.trim()) e.lastName = "Last name is required.";
-    if (!dateOfBirth.trim()) e.dateOfBirth = "Date of birth is required.";
+    if (!firstName.trim()) e.firstName = t("register.errors.firstNameRequired");
+    if (!lastName.trim()) e.lastName = t("register.errors.lastNameRequired");
+    if (!dateOfBirth.trim()) e.dateOfBirth = t("register.errors.dateOfBirthRequired");
 
     const emailClean = email.trim();
-    if (!emailClean) e.email = "Email is required.";
+    if (!emailClean) e.email = t("register.errors.emailRequired");
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailClean)) {
-      e.email = "Email format is invalid.";
+      e.email = t("register.errors.emailInvalid");
     }
 
-    if (!password) e.password = "Password is required.";
+    if (!password) e.password = t("register.errors.passwordRequired");
     else if (password.length < 6)
-      e.password = "Password must be at least 6 characters.";
+      e.password = t("register.errors.passwordTooShort");
 
     return e;
   }
@@ -168,12 +163,12 @@ export default function RegisterScreen() {
     try {
       const [d, m, y] = dateOfBirth.trim().split("-").map(Number);
       const dobDate = new Date(y, m - 1, d);
-      const dobISO = formatDobISO(dobDate); 
+      const dobISO = formatDobISO(dobDate);
 
       const response = await register({
         FirstName: firstName.trim(),
         LastName: lastName.trim(),
-        DateOfBirth: dobISO, 
+        DateOfBirth: dobISO,
         Email: email.trim(),
         Password: password,
       });
@@ -196,14 +191,14 @@ export default function RegisterScreen() {
           const parts = splitServerErrors(serverMsg);
           setErrors((p) => ({
             ...p,
-            password: parts.join("\n"), 
+            password: parts.join("\n"),
             general: undefined,
           }));
         } else {
           setErrors((p) => ({ ...p, general: serverMsg }));
         }
       } else {
-        setErrors((p) => ({ ...p, general: "Registration failed." }));
+        setErrors((p) => ({ ...p, general: t("register.errors.registrationFailed") }));
       }
     } finally {
       setSubmitting(false);
@@ -215,8 +210,23 @@ export default function RegisterScreen() {
       style={styles.page}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
+      <View style={langStyles.langRow}>
+        <Pressable
+          onPress={() => setLocale("en")}
+          style={[langStyles.langBtn, locale === "en" && langStyles.langBtnActive]}
+        >
+          <Text style={[langStyles.langText, locale === "en" && langStyles.langTextActive]}>EN</Text>
+        </Pressable>
+        <Pressable
+          onPress={() => setLocale("ro")}
+          style={[langStyles.langBtn, locale === "ro" && langStyles.langBtnActive]}
+        >
+          <Text style={[langStyles.langText, locale === "ro" && langStyles.langTextActive]}>RO</Text>
+        </Pressable>
+      </View>
+
       <View style={styles.container}>
-        <Text style={styles.title}>Volunteer Hub</Text>
+        <Text style={styles.title}>{t("register.appName")}</Text>
 
         <View style={styles.card}>
           {/* First Name */}
@@ -224,15 +234,11 @@ export default function RegisterScreen() {
             <FontAwesome name="user" size={16} style={styles.leftIcon} />
             <TextInput
               value={firstName}
-              onChangeText={(t) => {
-                setFirstName(t);
-                setErrors((p) => ({
-                  ...p,
-                  firstName: undefined,
-                  general: undefined,
-                }));
+              onChangeText={(val) => {
+                setFirstName(val);
+                setErrors((p) => ({ ...p, firstName: undefined, general: undefined }));
               }}
-              placeholder="First Name"
+              placeholder={t("register.firstName")}
               autoCapitalize="words"
               keyboardType="default"
               textContentType="givenName"
@@ -250,15 +256,11 @@ export default function RegisterScreen() {
             <FontAwesome name="user" size={16} style={styles.leftIcon} />
             <TextInput
               value={lastName}
-              onChangeText={(t) => {
-                setLastName(t);
-                setErrors((p) => ({
-                  ...p,
-                  lastName: undefined,
-                  general: undefined,
-                }));
+              onChangeText={(val) => {
+                setLastName(val);
+                setErrors((p) => ({ ...p, lastName: undefined, general: undefined }));
               }}
-              placeholder="Last Name"
+              placeholder={t("register.lastName")}
               autoCapitalize="words"
               keyboardType="default"
               textContentType="familyName"
@@ -275,22 +277,18 @@ export default function RegisterScreen() {
           {Platform.OS === "web" ? (
             <>
               <View style={[styles.inputWrap, { marginTop: 12 }]}>
-                <FontAwesome
-                  name="calendar"
-                  size={16}
-                  style={styles.leftIcon}
-                />
+                <FontAwesome name="calendar" size={16} style={styles.leftIcon} />
                 <input
                   type="date"
                   value={dobDate ? formatDobISO(dobDate) : ""}
                   onChange={(e: any) => {
-                    const t = e.target.value;
-                    const d = parseISODate(t);
+                    const val = e.target.value;
+                    const d = parseISODate(val);
                     if (d) onDobSelected(d);
                     else
                       setErrors((p) => ({
                         ...p,
-                        dateOfBirth: "Please choose a valid date.",
+                        dateOfBirth: t("register.errors.invalidDate"),
                       }));
                   }}
                   disabled={submitting}
@@ -317,11 +315,7 @@ export default function RegisterScreen() {
           ) : (
             <>
               <View style={[styles.inputWrap, { marginTop: 12 }]}>
-                <FontAwesome
-                  name="calendar"
-                  size={16}
-                  style={styles.leftIcon}
-                />
+                <FontAwesome name="calendar" size={16} style={styles.leftIcon} />
                 <Pressable
                   onPress={openDobPicker}
                   disabled={submitting}
@@ -333,7 +327,7 @@ export default function RegisterScreen() {
                       { color: dateOfBirth ? "#1E2A3B" : "#8B93A7" },
                     ]}
                   >
-                    {dateOfBirth ? dateOfBirth : "Date of Birth"}
+                    {dateOfBirth ? dateOfBirth : t("register.dateOfBirth")}
                   </Text>
                 </Pressable>
               </View>
@@ -351,10 +345,10 @@ export default function RegisterScreen() {
                     <Pressable style={styles.modalSheet} onPress={() => {}}>
                       <View style={styles.modalHeader}>
                         <Pressable onPress={() => setShowDobPicker(false)}>
-                          <Text style={styles.modalBtn}>Cancel</Text>
+                          <Text style={styles.modalBtn}>{t("common.cancel")}</Text>
                         </Pressable>
                         <Pressable onPress={() => setShowDobPicker(false)}>
-                          <Text style={styles.modalBtn}>Done</Text>
+                          <Text style={styles.modalBtn}>{t("common.done")}</Text>
                         </Pressable>
                       </View>
 
@@ -377,15 +371,11 @@ export default function RegisterScreen() {
             <FontAwesome name="envelope" size={16} style={styles.leftIcon} />
             <TextInput
               value={email}
-              onChangeText={(t) => {
-                setEmail(t);
-                setErrors((p) => ({
-                  ...p,
-                  email: undefined,
-                  general: undefined,
-                }));
+              onChangeText={(val) => {
+                setEmail(val);
+                setErrors((p) => ({ ...p, email: undefined, general: undefined }));
               }}
-              placeholder="Email"
+              placeholder={t("register.email")}
               autoCapitalize="none"
               keyboardType="email-address"
               textContentType="emailAddress"
@@ -403,15 +393,11 @@ export default function RegisterScreen() {
             <FontAwesome name="lock" size={18} style={styles.leftIcon} />
             <TextInput
               value={password}
-              onChangeText={(t) => {
-                setPassword(t);
-                setErrors((p) => ({
-                  ...p,
-                  password: undefined,
-                  general: undefined,
-                }));
+              onChangeText={(val) => {
+                setPassword(val);
+                setErrors((p) => ({ ...p, password: undefined, general: undefined }));
               }}
-              placeholder="Password"
+              placeholder={t("register.password")}
               secureTextEntry={hidePassword}
               textContentType="password"
               style={[styles.input, { paddingRight: 44 }]}
@@ -447,21 +433,20 @@ export default function RegisterScreen() {
           onPress={onRegister}
         >
           <Text style={styles.primaryBtnText}>
-            {submitting ? "Signing Up..." : "Sign up"}
+            {submitting ? t("register.signingUp") : t("register.signUp")}
           </Text>
         </Pressable>
 
         <View style={styles.footerRow}>
-          <Text style={styles.footerText}>Already have an account?</Text>
+          <Text style={styles.footerText}>{t("register.alreadyHaveAccount")}</Text>
           <Pressable
             onPress={() => router.push("/(auth)/login")}
             disabled={submitting}
           >
-            <Text style={styles.footerLink}> Sign in now!</Text>
+            <Text style={styles.footerLink}>{t("register.signInNow")}</Text>
           </Pressable>
         </View>
       </View>
     </KeyboardAvoidingView>
   );
 }
-

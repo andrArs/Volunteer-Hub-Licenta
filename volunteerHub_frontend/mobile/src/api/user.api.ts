@@ -1,3 +1,4 @@
+import { Platform } from "react-native";
 import { api } from "./client";
 import { UserProfile } from "../types/user";
 import { PagedResult } from "../types/event";
@@ -29,6 +30,33 @@ export async function updateUser(id: string, data: Partial<UserProfile>): Promis
 
 export async function updateMyProfile(data: { firstName: string; lastName: string; dateOfBirth?: string }): Promise<void> {
   await api.put("/api/users/me", data);
+}
+
+export async function uploadProfilePicture(uri: string, mimeType?: string): Promise<string> {
+  const formData = new FormData();
+
+  if (Platform.OS === "web") {
+    const response = await fetch(uri);
+    const blob = await response.blob();
+    const file = new File([blob], "profile.jpg", { type: blob.type || "image/jpeg" });
+    formData.append("file", file);
+  } else {
+    formData.append("file", {
+      uri,
+      name: "profile.jpg",
+      type: mimeType || "image/jpeg",
+    } as any);
+  }
+
+  const res = await api.post<{ url: string }>("/api/users/me/profile-picture", formData, {
+    headers: Platform.OS === "web" ? {} : { "Content-Type": "multipart/form-data" },
+  });
+
+  return res.data.url;
+}
+
+export async function removeProfilePicture(): Promise<void> {
+  await api.delete("/api/users/me/profile-picture");
 }
 
 export async function assignRole(id: string, roleName: string): Promise<void> {

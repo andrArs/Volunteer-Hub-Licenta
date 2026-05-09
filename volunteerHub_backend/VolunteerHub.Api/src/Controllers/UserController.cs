@@ -6,6 +6,7 @@ using System.Security.Claims;
 using VolunteerHub.Api.src.DTO.Events;
 using VolunteerHub.Api.src.DTO.Users;
 using VolunteerHub.Api.src.Entities;
+using VolunteerHub.Api.src.Services;
 
 namespace VolunteerHub.Api.src.Controllers;
 
@@ -14,10 +15,12 @@ namespace VolunteerHub.Api.src.Controllers;
 public class UsersController : ControllerBase
 {
     private readonly UserManager<User> _userManager;
+    private readonly IBlobStorageService _blobStorageService;
 
-    public UsersController(UserManager<User> userManager)
+    public UsersController(UserManager<User> userManager, IBlobStorageService blobStorageService)
     {
         _userManager = userManager;
+        _blobStorageService = blobStorageService;
     }
 
     [Authorize]
@@ -34,12 +37,53 @@ public class UsersController : ControllerBase
 
         return Ok(new UserProfileResponse(
             user.Id,
-            user.FirstName, 
+            user.FirstName,
             user.LastName,
             user.Email ?? "",
             user.DateOfBirth,
-            roles.ToList()
+            roles.ToList(),
+            user.ProfilePicture
         ));
+    }
+
+    [Authorize]
+    [HttpPost("me/profile-picture")]
+    public async Task<ActionResult> UploadProfilePicture(IFormFile file)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(userId)) return Unauthorized();
+
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user == null) return NotFound(new { message = "User not found." });
+
+        if (file == null || file.Length == 0)
+            return BadRequest(new { message = "No file provided." });
+
+        var url = await _blobStorageService.UploadProfilePictureAsync(file);
+        user.ProfilePicture = url;
+        await _userManager.UpdateAsync(user);
+
+        return Ok(new { url });
+    }
+
+    [Authorize]
+    [HttpDelete("me/profile-picture")]
+    public async Task<ActionResult> DeleteProfilePicture()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(userId)) return Unauthorized();
+
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user == null) return NotFound(new { message = "User not found." });
+
+        if (!string.IsNullOrEmpty(user.ProfilePicture))
+        {
+            await _blobStorageService.DeleteProfilePictureAsync(user.ProfilePicture);
+            user.ProfilePicture = null;
+            await _userManager.UpdateAsync(user);
+        }
+
+        return NoContent();
     }
 
     [Authorize]
@@ -66,7 +110,7 @@ public class UsersController : ControllerBase
         {
             var roles = await _userManager.GetRolesAsync(user);
             items.Add(new UserProfileResponse(
-                user.Id, user.FirstName, user.LastName, user.Email ?? "", user.DateOfBirth, roles.ToList()
+                user.Id, user.FirstName, user.LastName, user.Email ?? "", user.DateOfBirth, roles.ToList(), user.ProfilePicture
             ));
         }
 
@@ -116,13 +160,13 @@ public class UsersController : ControllerBase
             user.LastName,
             user.Email ?? "",
             user.DateOfBirth,
-            roles.ToList()
+            roles.ToList(),
+            user.ProfilePicture
         ));
     }
 
     [Authorize(Roles = "Admin")]
     [HttpPut("{id}")]
-
     public async Task<ActionResult> UpdateUserProfile(string id, [FromBody] UpdateUserRequest updatedProfile)
     {
         var user = await _userManager.FindByIdAsync(id);
@@ -139,7 +183,7 @@ public class UsersController : ControllerBase
         return NoContent();
     }
 
-    [Authorize (Roles = "Admin")]
+    [Authorize(Roles = "Admin")]
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteUser(string id)
     {
@@ -165,7 +209,7 @@ public class UsersController : ControllerBase
         var result = await _userManager.AddToRoleAsync(user, req.RoleName);
         if (!result.Succeeded) return BadRequest(result.Errors);
 
-        return NoContent(); 
+        return NoContent();
     }
 
     [Authorize(Roles = "Admin")]
@@ -181,6 +225,6 @@ public class UsersController : ControllerBase
         var result = await _userManager.RemoveFromRoleAsync(user, roleName);
         if (!result.Succeeded) return BadRequest(result.Errors);
 
-        return NoContent(); 
+        return NoContent();
     }
 }

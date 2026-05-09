@@ -1,5 +1,6 @@
 import { FontAwesome } from "@expo/vector-icons";
 import { useFocusEffect, useRouter } from "expo-router";
+import { goBack } from "@/src/utils/navigation";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -7,6 +8,7 @@ import {
   Modal,
   Platform,
   Pressable,
+  RefreshControl,
   Text,
   TextInput,
   View,
@@ -17,6 +19,7 @@ import { styles } from "@/src/styles/events.list.styles";
 import * as Location from 'expo-location';
 import { calculateDistance, formatDistance } from "@/src/utils/location.utils";
 import { getAuth } from "@/src/store/auth.store";
+import { t, useLanguage } from "@/src/i18n/index";
 
 const PAGE_SIZE = 4;
 
@@ -51,7 +54,7 @@ function renderMyEventBadge() {
   return (
     <View style={styles.badgeMyEvent}>
       <Text style={styles.textBadgeMyEvent}>
-        MY EVENT
+        {t("eventsView.myEvent")}
       </Text>
     </View>
   );
@@ -61,6 +64,7 @@ export default function AllEventsScreen() {
   const router = useRouter();
   const auth = getAuth();
   const myUserId = auth?.userId ?? null;
+  useLanguage();
 
   const [events, setEvents] = useState<EventResponse[]>([]);
   const [loading, setLoading] = useState(true);
@@ -68,6 +72,7 @@ export default function AllEventsScreen() {
   const [err, setErr] = useState<string | null>(null);
   const [hasNextPage, setHasNextPage] = useState(false);
   const [totalCount, setTotalCount] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
   const pageRef = useRef(1);
 
   const [query, setQuery] = useState("");
@@ -83,34 +88,36 @@ export default function AllEventsScreen() {
     (async () => {
       try {
         let { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== 'granted') {
-          console.log('Permission to access location was denied');
-          return;
-        }
+        if (status !== 'granted') return;
 
         let location = await Location.getCurrentPositionAsync({});
         setUserLocation(location.coords);
-      } catch (error) {
-        console.error("Error fetching location:", error);
+      } catch {
       }
     })();
   }, []);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (isRefresh = false) => {
     try {
       setErr(null);
-      setLoading(true);
+      if (!isRefresh) setLoading(true);
       pageRef.current = 1;
       const result = await getAllEvents(1, PAGE_SIZE);
       setEvents(result.items);
       setHasNextPage(result.hasNextPage);
       setTotalCount(result.totalCount);
     } catch (e: any) {
-      setErr(e?.message ?? "Failed to load events.");
+      setErr(e?.message ?? t("eventsView.failedToLoad"));
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   }, []);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    load(true);
+  }, [load]);
 
   const loadMore = useCallback(async () => {
     if (loadingMore || !hasNextPage) return;
@@ -158,7 +165,7 @@ export default function AllEventsScreen() {
             if (ev.distance === null) {
                 matchesDistance = false;
             } else if (selectedDistance.valueKm === 999999) {
-                matchesDistance = ev.distance >= 20; 
+                matchesDistance = ev.distance >= 20;
             } else {
                 matchesDistance = ev.distance <= selectedDistance.valueKm;
             }
@@ -173,9 +180,10 @@ export default function AllEventsScreen() {
       });
   }, [events, query, selectedCategory, selectedDistance, userLocation]);
 
-  const categoryChipText =
-    selectedCategory === "All" ? "Category: All" : categoryLabel(selectedCategory);
-  const distanceChipText = `Distance: ${selectedDistance.label}`;
+  const categoryChipText = selectedCategory === "All"
+    ? `${t("eventsView.catPrefix")}: ${t("eventsView.filterAll")}`
+    : `${t("eventsView.catPrefix")}: ${categoryLabel(selectedCategory)}`;
+  const distanceChipText = `${t("eventsView.distPrefix")}: ${selectedDistance.valueKm === null ? t("eventsView.distAny") : selectedDistance.label}`;
 
   function openEvent(ev: EventResponse) {
     router.push(`/event.view?id=${ev.id}`)
@@ -185,14 +193,14 @@ export default function AllEventsScreen() {
     <View style={styles.page}>
       <View style={styles.header}>
         <Pressable
-                onPress={() => router.back()}
+                onPress={() => goBack()}
                 hitSlop={10}
                 style={styles.backBtn}>
             <FontAwesome name="arrow-left" size={18} color="#fff" />
             </Pressable>
-        <Text style={styles.headerTitle}>All Events</Text>
+        <Text style={styles.headerTitle}>{t("eventsView.title")}</Text>
         <View style={styles.rightSpacer} />
-    
+
       </View>
 
       <View style={styles.filtersRow}>
@@ -222,7 +230,7 @@ export default function AllEventsScreen() {
         <TextInput
           value={query}
           onChangeText={setQuery}
-          placeholder="Search event..."
+          placeholder={t("eventsView.searchPlaceholder")}
           placeholderTextColor="#8B93A7"
           style={styles.searchInput}
         />
@@ -236,14 +244,14 @@ export default function AllEventsScreen() {
         ) : err ? (
           <View style={styles.center}>
             <Text style={styles.errorText}>{err}</Text>
-            <Pressable onPress={load} style={styles.retryBtn}>
-              <Text style={styles.retryText}>Retry</Text>
+            <Pressable onPress={() => load()} style={styles.retryBtn}>
+              <Text style={styles.retryText}>{t("common.retry")}</Text>
             </Pressable>
           </View>
         ) : (
           <>
             <Text style={styles.foundText}>
-              Showing {filtered.length} of {totalCount} events
+              {t("eventsView.showing", { showing: filtered.length, total: totalCount })}
             </Text>
 
             <FlatList
@@ -252,6 +260,7 @@ export default function AllEventsScreen() {
               contentContainerStyle={styles.listContent}
               onEndReached={loadMore}
               onEndReachedThreshold={0.3}
+              refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#3F5E95"]} tintColor="#3F5E95" />}
               ListFooterComponent={
                 loadingMore ? (
                   <View style={styles.listFooter}>
@@ -266,7 +275,7 @@ export default function AllEventsScreen() {
                       {item.title}
                     </Text>
                     {item.status !== undefined && item.createdById === myUserId && renderMyEventBadge()}
-                    
+
                   </View>
 
                   <View style={styles.metaRow}>
@@ -287,7 +296,7 @@ export default function AllEventsScreen() {
                     <View style={styles.metaItem}>
                       <FontAwesome name="map-marker" size={14} color="#3F5E95" />
                       <Text style={styles.metaText} numberOfLines={1}>
-                        {item.locationName || item.address || "No location"}
+                        {item.locationName || item.address || t("eventsView.noLocation")}
                       </Text>
                     </View>
                   </View>
@@ -316,7 +325,7 @@ export default function AllEventsScreen() {
       >
         <FontAwesome name="map" size={16} color="#fff" />
         <Text style={styles.mapButtonText}>
-          Map View
+          {t("eventsView.mapView")}
         </Text>
       </Pressable>
 
@@ -329,9 +338,9 @@ export default function AllEventsScreen() {
         <Pressable style={styles.modalOverlay} onPress={() => setShowCategoryModal(false)}>
           <Pressable style={styles.modalSheet} onPress={() => {}}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Category</Text>
+              <Text style={styles.modalTitle}>{t("eventsView.catPrefix")}</Text>
               <Pressable onPress={() => setShowCategoryModal(false)}>
-                <Text style={styles.modalClose}>Close</Text>
+                <Text style={styles.modalClose}>{t("common.close")}</Text>
               </Pressable>
             </View>
 
@@ -342,7 +351,7 @@ export default function AllEventsScreen() {
                 setShowCategoryModal(false);
               }}
             >
-              <Text style={styles.optionText}>All</Text>
+              <Text style={styles.optionText}>{t("eventsView.filterAll")}</Text>
             </Pressable>
 
             {EVENT_CATEGORIES.map((c) => (
@@ -370,9 +379,9 @@ export default function AllEventsScreen() {
         <Pressable style={styles.modalOverlay} onPress={() => setShowDistanceModal(false)}>
           <Pressable style={styles.modalSheet} onPress={() => {}}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Distance</Text>
+              <Text style={styles.modalTitle}>{t("eventsView.distPrefix")}</Text>
               <Pressable onPress={() => setShowDistanceModal(false)}>
-                <Text style={styles.modalClose}>Close</Text>
+                <Text style={styles.modalClose}>{t("common.close")}</Text>
               </Pressable>
             </View>
 
@@ -385,7 +394,7 @@ export default function AllEventsScreen() {
                   setShowDistanceModal(false);
                 }}
               >
-                <Text style={styles.optionText}>{d.label}</Text>
+                <Text style={styles.optionText}>{d.valueKm === null ? t("eventsView.distAny") : d.label}</Text>
               </Pressable>
             ))}
           </Pressable>

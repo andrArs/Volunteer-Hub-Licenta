@@ -121,3 +121,32 @@ export const styles = StyleSheet.create({
     color: "#3F5E95",
   },
 });
+
+export const langStyles = StyleSheet.create({
+  langRow: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    paddingHorizontal: 24,
+    paddingTop: 50,
+  },
+  langBtn: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 6,
+    marginLeft: 6,
+    borderWidth: 1,
+    borderColor: "#C8CDD8",
+  },
+  langBtnActive: {
+    backgroundColor: "#3F5E95",
+    borderColor: "#3F5E95",
+  },
+  langText: {
+    fontSize: 13,
+    color: "#6F7A93",
+    fontWeight: "600",
+  },
+  langTextActive: {
+    color: "#fff",
+  },
+});

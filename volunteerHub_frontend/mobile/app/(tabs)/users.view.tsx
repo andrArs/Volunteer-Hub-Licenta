@@ -1,12 +1,12 @@
 import { FontAwesome } from "@expo/vector-icons";
 import { useFocusEffect, useRouter } from "expo-router";
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { goBack } from "@/src/utils/navigation";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
-  Modal,
-  Platform,
   Pressable,
+  RefreshControl,
   Text,
   TextInput,
   View,
@@ -15,11 +15,13 @@ import { styles } from "@/src/styles/events.list.styles";
 import { getAuth } from "@/src/store/auth.store";
 import { getAllUsers } from "@/src/api/user.api";
 import { UserProfile } from "@/src/types/user";
+import { t, useLanguage } from "@/src/i18n/index";
 
 
 export default function AllUsersScreen() {
   const router = useRouter();
   const auth = getAuth();
+  useLanguage();
 
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
@@ -27,25 +29,32 @@ export default function AllUsersScreen() {
   const [err, setErr] = useState<string | null>(null);
   const [hasNextPage, setHasNextPage] = useState(false);
   const [totalCount, setTotalCount] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
   const pageRef = useRef(1);
 
   const [query, setQuery] = useState("");
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (isRefresh = false) => {
     try {
       setErr(null);
-      setLoading(true);
+      if (!isRefresh) setLoading(true);
       pageRef.current = 1;
       const result = await getAllUsers(1, 10);
       setUsers(result.items);
       setHasNextPage(result.hasNextPage);
       setTotalCount(result.totalCount);
     } catch (e: any) {
-      setErr(e?.message ?? "Failed to load users.");
+      setErr(e?.message ?? t("usersView.failedToLoad"));
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   }, []);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    load(true);
+  }, [load]);
 
   const loadMore = useCallback(async () => {
     if (loadingMore || !hasNextPage) return;
@@ -88,12 +97,12 @@ export default function AllUsersScreen() {
     <View style={styles.page}>
       <View style={styles.header}>
         <Pressable
-                onPress={() => router.back()}
+                onPress={() => goBack()}
                 hitSlop={10}
                 style={styles.backBtn}>
             <FontAwesome name="arrow-left" size={18} color="#fff" />
             </Pressable>
-        <Text style={styles.headerTitle}>All Users</Text>
+        <Text style={styles.headerTitle}>{t("usersView.title")}</Text>
         <View style={styles.rightSpacer} />
     
       </View>
@@ -103,7 +112,7 @@ export default function AllUsersScreen() {
         <TextInput
           value={query}
           onChangeText={setQuery}
-          placeholder="Search users..."
+          placeholder={t("usersView.searchPlaceholder")}
           placeholderTextColor="#8B93A7"
           style={styles.searchInput}
         />
@@ -117,19 +126,20 @@ export default function AllUsersScreen() {
         ) : err ? (
           <View style={styles.center}>
             <Text style={styles.errorText}>{err}</Text>
-            <Pressable onPress={load} style={styles.retryBtn}>
-              <Text style={styles.retryText}>Retry</Text>
+            <Pressable onPress={() => load()} style={styles.retryBtn}>
+              <Text style={styles.retryText}>{t("common.retry")}</Text>
             </Pressable>
           </View>
         ) : (
           <>
-          <Text style={styles.foundText}>Showing {filteredUsers.length} of {totalCount} users</Text>
+          <Text style={styles.foundText}>{t("usersView.showing", { showing: filteredUsers.length, total: totalCount })}</Text>
             <FlatList
               data={filteredUsers}
               keyExtractor={(item) => item.id}
               contentContainerStyle={styles.listContent}
               onEndReached={loadMore}
               onEndReachedThreshold={0.3}
+              refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#3F5E95"]} tintColor="#3F5E95" />}
               ListFooterComponent={
                 loadingMore ? (
                   <View style={styles.listFooter}>
@@ -155,7 +165,7 @@ export default function AllUsersScreen() {
 
                 {item.roles && item.roles.length > 0 && (
                   <View style={styles.rolesRow}>
-                    <Text style={styles.rolesLabel}>Roles:</Text>
+                    <Text style={styles.rolesLabel}>{t("usersView.roles")}</Text>
                     {item.roles.map(role => (
                       <View
                         key={role}

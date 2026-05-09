@@ -1,5 +1,6 @@
 import { FontAwesome } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { goBack } from "@/src/utils/navigation";
 import { useState } from "react";
 import {
   KeyboardAvoidingView,
@@ -13,9 +14,11 @@ import {
 import { resetPassword } from "@/src/api/auth.api";
 import { toAppError } from "@/src/api/errors";
 import { styles } from "@/src/styles/auth.styles";
+import { t, useLanguage } from "@/src/i18n/index";
 
 export default function ResetPasswordScreen() {
   const router = useRouter();
+  const { locale } = useLanguage();
   const { email } = useLocalSearchParams<{ email: string }>();
 
   const [code, setCode] = useState("");
@@ -47,10 +50,10 @@ export default function ResetPasswordScreen() {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <View style={styles.container}>
-        <Text style={styles.title}>Volunteer Hub</Text>
+        <Text style={styles.title}>{t("forgotPassword.appName")}</Text>
 
         <Text style={{ textAlign: "center", color: "#7E879C", fontSize: 14, marginBottom: 20 }}>
-          Enter the 6-digit code sent to{"\n"}
+          {t("resetPassword.instruction")}{"\n"}
           <Text style={{ color: "#3F5E95", fontWeight: "700" }}>{email}</Text>
         </Text>
 
@@ -59,8 +62,8 @@ export default function ResetPasswordScreen() {
             <FontAwesome name="key" size={15} style={styles.leftIcon} />
             <TextInput
               value={code}
-              onChangeText={(t) => { setCode(t.replace(/\D/g, "").slice(0, 6)); if (errorMsg) setErrorMsg(null); }}
-              placeholder="6-digit code"
+              onChangeText={(val) => { setCode(val.replace(/\D/g, "").slice(0, 6)); if (errorMsg) setErrorMsg(null); }}
+              placeholder={t("resetPassword.code")}
               keyboardType="number-pad"
               style={styles.input}
               placeholderTextColor="#8B93A7"
@@ -72,8 +75,8 @@ export default function ResetPasswordScreen() {
             <FontAwesome name="lock" size={18} style={styles.leftIcon} />
             <TextInput
               value={newPassword}
-              onChangeText={(t) => { setNewPassword(t); if (errorMsg) setErrorMsg(null); }}
-              placeholder="New password"
+              onChangeText={(val) => { setNewPassword(val); if (errorMsg) setErrorMsg(null); }}
+              placeholder={t("resetPassword.newPassword")}
               secureTextEntry={hidePassword}
               style={[styles.input, { paddingRight: 44 }]}
               placeholderTextColor="#8B93A7"
@@ -88,8 +91,8 @@ export default function ResetPasswordScreen() {
             <FontAwesome name="lock" size={18} style={styles.leftIcon} />
             <TextInput
               value={confirmPassword}
-              onChangeText={(t) => { setConfirmPassword(t); if (errorMsg) setErrorMsg(null); }}
-              placeholder="Confirm new password"
+              onChangeText={(val) => { setConfirmPassword(val); if (errorMsg) setErrorMsg(null); }}
+              placeholder={t("resetPassword.confirmPassword")}
               secureTextEntry={hidePassword}
               style={styles.input}
               placeholderTextColor="#8B93A7"
@@ -98,7 +101,7 @@ export default function ResetPasswordScreen() {
           </View>
 
           {confirmPassword.length > 0 && newPassword !== confirmPassword && (
-            <Text style={styles.fieldError}>Passwords do not match.</Text>
+            <Text style={styles.fieldError}>{t("resetPassword.passwordsMismatch")}</Text>
           )}
           {errorMsg ? <Text style={styles.errorText}>{errorMsg}</Text> : null}
         </View>
@@ -109,13 +112,13 @@ export default function ResetPasswordScreen() {
           onPress={onSubmit}
         >
           <Text style={styles.primaryBtnText}>
-            {submitting ? "Resetting..." : "Reset Password"}
+            {submitting ? t("resetPassword.resetting") : t("resetPassword.resetBtn")}
           </Text>
         </Pressable>
 
         <View style={styles.footerRow}>
-          <Pressable onPress={() => router.back()} disabled={submitting}>
-            <Text style={styles.footerLink}>Back</Text>
+          <Pressable onPress={() => goBack("/(auth)/login")} disabled={submitting}>
+            <Text style={styles.footerLink}>{t("common.back")}</Text>
           </Pressable>
         </View>
       </View>

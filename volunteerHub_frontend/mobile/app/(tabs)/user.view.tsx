@@ -1,37 +1,46 @@
 import { FontAwesome } from "@expo/vector-icons";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { goBack } from "@/src/utils/navigation";
 import React, { useCallback, useState } from "react";
-import { ActivityIndicator, Alert, Modal, Pressable, ScrollView, Switch, Text, View } from "react-native";
+import { ActivityIndicator, Alert, Image, Modal, Pressable, RefreshControl, ScrollView, Switch, Text, View } from "react-native";
 import { getAuth } from "@/src/store/auth.store"; 
 import { styles } from "@/src/styles/user.styles";
 import { UserProfile } from "@/src/types/user";
 import { assignRole, deleteUser, getUserById, removeRole } from "@/src/api/user.api";
+import { t, useLanguage } from "@/src/i18n/index";
 
 export default function UserDetailsScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
+  useLanguage();
 
   const auth = getAuth();
   const myUserId = auth?.userId ?? null;
   const isAdmin = auth?.roles?.includes("Admin") ?? auth?.roles?.includes("Admin") ?? false;
 
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [user, setUser] = useState<UserProfile | null>(null);
 
   const [busyDelete, setBusyDelete] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (isRefresh = false) => {
     if (!id) return;
     try {
-      setLoading(true);
-      const [data] = await Promise.all([
-        getUserById(String(id))]);
+      if (!isRefresh) setLoading(true);
+      const [data] = await Promise.all([getUserById(String(id))]);
       setUser(data);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   }, [id]);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    load(true);
+  }, [load]);
   
 
   useFocusEffect(
@@ -59,7 +68,7 @@ export default function UserDetailsScreen() {
       setShowDeleteModal(false);
       router.replace("/users.view");
     } catch (error) {
-      alert("You don't have permission to delete this user or an error occurred.");
+      alert(t("userView.deleteError"));
     } finally {
       setBusyDelete(false);
     }
@@ -75,9 +84,8 @@ export default function UserDetailsScreen() {
         await assignRole(user.id, role);
         setUser({ ...user, roles: [...(user.roles || []), role] });
       }
-    } catch (e) {
-      console.error(e);
-      Alert.alert("Error", "Could not update role.");
+    } catch {
+      Alert.alert(t("common.error"), t("userView.roleUpdateError"));
     }
   }
 
@@ -92,9 +100,9 @@ export default function UserDetailsScreen() {
   if (!user) {
     return (
       <View style={styles.center}>
-        <Text style={styles.errorText}>User not found.</Text>
-        <Pressable onPress={() => router.back()} style={styles.backBtn}>
-          <Text style={styles.backBtnText}>Go back</Text>
+        <Text style={styles.errorText}>{t("userView.notFound")}</Text>
+        <Pressable onPress={() => goBack("/users.view")} style={styles.backBtn}>
+          <Text style={styles.backBtnText}>{t("common.goBack")}</Text>
         </Pressable>
       </View>
     );
@@ -104,14 +112,14 @@ export default function UserDetailsScreen() {
   <View style={styles.page}>
     <View style={styles.header}>
       <Pressable
-        onPress={() => router.back()}
+        onPress={() => goBack("/users.view")}
         hitSlop={10}
         style={styles.backBtn}
       >
         <FontAwesome name="arrow-left" size={18} color="#fff" />
       </Pressable>
 
-      <Text style={styles.headerTitle}>User Details</Text>
+      <Text style={styles.headerTitle}>{t("userView.title")}</Text>
       <View style={styles.rightSpacer} />
     </View>
 
@@ -119,12 +127,17 @@ export default function UserDetailsScreen() {
       style={styles.page}
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#3F5E95"]} tintColor="#3F5E95" />}
     >
       <View style={styles.userCard}>
         <View style={styles.avatarContainer}>
-          <View style={styles.avatarCircle}>
-            <FontAwesome name="user" size={32} color="#3F5E95" />
-          </View>
+          {user.profilePictureUrl ? (
+            <Image source={{ uri: user.profilePictureUrl }} style={styles.avatarCircleImage} />
+          ) : (
+            <View style={styles.avatarCircle}>
+              <FontAwesome name="user" size={32} color="#3F5E95" />
+            </View>
+          )}
           <Text style={styles.avatarName}>
             {user.firstName} {user.lastName}
           </Text>
@@ -135,24 +148,24 @@ export default function UserDetailsScreen() {
 
         <View style={styles.userDetailsBox}>
           <View style={styles.userDetailRow}>
-            <Text style={styles.userDetailLabel}>First Name</Text>
+            <Text style={styles.userDetailLabel}>{t("userView.firstName")}</Text>
             <Text style={styles.userDetailValue}>{user.firstName || "."}</Text>
           </View>
           <View style={styles.userDetailRow}>
-            <Text style={styles.userDetailLabel}>Last Name</Text>
+            <Text style={styles.userDetailLabel}>{t("userView.lastName")}</Text>
             <Text style={styles.userDetailValue}>{user.lastName || "."}</Text>
           </View>
           <View style={styles.userDetailRowLast}>
-            <Text style={styles.userDetailLabel}>Email</Text>
+            <Text style={styles.userDetailLabel}>{t("userView.email")}</Text>
             <Text style={styles.userDetailValue}>{user.email || "."}</Text>
           </View>
         </View>
       </View>
 
-      <Text style={styles.sectionTitle}>Manage Roles</Text>
+      <Text style={styles.sectionTitle}>{t("userView.manageRoles")}</Text>
       <View style={styles.rolesCard}>
         <View style={styles.roleRow}>
-          <Text style={styles.roleLabel}>Admin Access</Text>
+          <Text style={styles.roleLabel}>{t("userView.adminAccess")}</Text>
           <Switch
             value={user.roles?.includes('Admin')}
             onValueChange={() => handleToggleRole('Admin', user.roles?.includes('Admin') ?? false)}
@@ -161,7 +174,7 @@ export default function UserDetailsScreen() {
         </View>
 
         <View style={styles.roleRowBordered}>
-          <Text style={styles.roleLabel}>Creator Access</Text>
+          <Text style={styles.roleLabel}>{t("userView.creatorAccess")}</Text>
           <Switch
             value={user.roles?.includes('Creator')}
             onValueChange={() => handleToggleRole('Creator', user.roles?.includes('Creator') ?? false)}
@@ -173,7 +186,7 @@ export default function UserDetailsScreen() {
       <View style={styles.actionsRow}>
         <Pressable style={styles.secondaryBtn} onPress={onEdit}>
           <FontAwesome name="pencil" size={14} color="#3F5E95" />
-          <Text style={styles.secondaryBtnText}>Edit User</Text>
+          <Text style={styles.secondaryBtnText}>{t("userView.editUser")}</Text>
         </Pressable>
 
         <Pressable
@@ -182,7 +195,7 @@ export default function UserDetailsScreen() {
         >
           <FontAwesome name="trash" size={14} color="#8E1B1B" />
           <Text style={styles.dangerBtnText}>
-            {busyDelete ? "Deleting..." : "Delete"}
+            {busyDelete ? t("userView.deleting") : t("common.delete")}
           </Text>
         </Pressable>
       </View>
@@ -196,10 +209,8 @@ export default function UserDetailsScreen() {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Delete User</Text>
-            <Text style={styles.modalText}>
-              Are you sure you want to delete this user? This action cannot be undone.
-            </Text>
+            <Text style={styles.modalTitle}>{t("userView.deleteConfirmTitle")}</Text>
+            <Text style={styles.modalText}>{t("userView.deleteConfirmText")}</Text>
 
             <View style={styles.modalActions}>
               <Pressable
@@ -207,7 +218,7 @@ export default function UserDetailsScreen() {
                 onPress={() => setShowDeleteModal(false)}
                 disabled={busyDelete}
               >
-                <Text style={styles.secondaryBtnText}>Cancel</Text>
+                <Text style={styles.secondaryBtnText}>{t("common.cancel")}</Text>
               </Pressable>
 
               <Pressable
@@ -217,7 +228,7 @@ export default function UserDetailsScreen() {
               >
               <FontAwesome name="trash" size={14} color="#8E1B1B" />
               <Text style={styles.dangerBtnText}>
-                {busyDelete ? "Deleting..." : "Delete"}
+                {busyDelete ? t("userView.deleting") : t("common.delete")}
               </Text>
               </Pressable>
             </View>

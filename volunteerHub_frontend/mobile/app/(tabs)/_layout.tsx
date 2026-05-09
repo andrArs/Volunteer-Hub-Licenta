@@ -34,8 +34,7 @@ export default function TabLayout() {
         } else {
           router.replace("/(auth)/login");
         }
-      } catch (e) {
-        console.error("Auth check failed:", e);
+      } catch {
         router.replace("/(auth)/login");
       } finally {
         setLoading(false);
@@ -68,7 +67,6 @@ export default function TabLayout() {
       <Stack.Screen name="event.update" />
       <Stack.Screen name="profile" />
       <Stack.Screen name="notifications" />
-      <Stack.Screen name="two" />
       <Stack.Screen name="admin.pending.events" />
       <Stack.Screen name="users.view" />
       <Stack.Screen name="user.view" />

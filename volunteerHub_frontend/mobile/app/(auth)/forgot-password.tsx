@@ -1,5 +1,6 @@
 import { FontAwesome } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { goBack } from "@/src/utils/navigation";
 import { useState } from "react";
 import {
   KeyboardAvoidingView,
@@ -13,11 +14,14 @@ import {
 import { forgotPassword } from "@/src/api/auth.api";
 import { toAppError } from "@/src/api/errors";
 import { styles } from "@/src/styles/auth.styles";
+import { t, useLanguage } from "@/src/i18n/index";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function ForgotPasswordScreen() {
   const router = useRouter();
+  const { locale } = useLanguage();
+
   const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -29,7 +33,7 @@ export default function ForgotPasswordScreen() {
     if (!canSubmit) return;
 
     if (!emailValid) {
-      setErrorMsg("Please enter a valid email address.");
+      setErrorMsg(t("forgotPassword.invalidEmail"));
       return;
     }
 
@@ -52,10 +56,10 @@ export default function ForgotPasswordScreen() {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <View style={styles.container}>
-        <Text style={styles.title}>Volunteer Hub</Text>
+        <Text style={styles.title}>{t("forgotPassword.appName")}</Text>
 
         <Text style={{ textAlign: "center", color: "#7E879C", fontSize: 14, marginBottom: 20 }}>
-          Enter your email and we'll send you a reset code.
+          {t("forgotPassword.instruction")}
         </Text>
 
         <View style={styles.card}>
@@ -63,8 +67,8 @@ export default function ForgotPasswordScreen() {
             <FontAwesome name="envelope" size={16} style={styles.leftIcon} />
             <TextInput
               value={email}
-              onChangeText={(t) => { setEmail(t); if (errorMsg) setErrorMsg(null); }}
-              placeholder="Email"
+              onChangeText={(val) => { setEmail(val); if (errorMsg) setErrorMsg(null); }}
+              placeholder={t("forgotPassword.email")}
               autoCapitalize="none"
               keyboardType="email-address"
               textContentType="emailAddress"
@@ -74,7 +78,7 @@ export default function ForgotPasswordScreen() {
             />
           </View>
           {email.length > 0 && !emailValid && (
-            <Text style={styles.fieldError}>Please enter a valid email address.</Text>
+            <Text style={styles.fieldError}>{t("forgotPassword.invalidEmail")}</Text>
           )}
           {errorMsg ? <Text style={styles.errorText}>{errorMsg}</Text> : null}
         </View>
@@ -85,13 +89,13 @@ export default function ForgotPasswordScreen() {
           onPress={onSubmit}
         >
           <Text style={styles.primaryBtnText}>
-            {submitting ? "Sending..." : "Send Reset Code"}
+            {submitting ? t("forgotPassword.sending") : t("forgotPassword.sendCode")}
           </Text>
         </Pressable>
 
         <View style={styles.footerRow}>
-          <Pressable onPress={() => router.back()} disabled={submitting}>
-            <Text style={styles.footerLink}>Back to Login</Text>
+          <Pressable onPress={() => goBack("/(auth)/login")} disabled={submitting}>
+            <Text style={styles.footerLink}>{t("forgotPassword.backToLogin")}</Text>
           </Pressable>
         </View>
       </View>
