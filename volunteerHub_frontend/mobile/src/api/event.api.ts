@@ -97,3 +97,17 @@ export async function removeEventImage(eventId: string): Promise<void> {
 export async function checkIn(token: string): Promise<void> {
   await api.post("/api/events/check-in", { Token: token });
 }
+
+export type EventStatsResponse = {
+  goingCount: number;
+  attendedCount: number;
+  maxVolunteers?: number | null;
+  minAge?: number | null;
+  maxAge?: number | null;
+  averageAge?: number | null;
+};
+
+export async function getEventStats(eventId: string): Promise<EventStatsResponse> {
+  const res = await api.get<EventStatsResponse>(`/api/events/${eventId}/stats`);
+  return res.data;
+}

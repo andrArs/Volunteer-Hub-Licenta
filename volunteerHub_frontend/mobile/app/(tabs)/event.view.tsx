@@ -520,8 +520,7 @@ export default function EventDetailsScreen() {
        </>
       )}
 
-      {(!isAdmin || event.status !== EventStatus.Pending) && (
-        isMine ? (
+      {isMine && (
         <>
           <Text style={styles.sectionTitle}>{t("eventView.sectionAdminControls")}</Text>
 
@@ -531,10 +530,7 @@ export default function EventDetailsScreen() {
               <Text style={styles.secondaryBtnText}>{t("eventView.editEvent")}</Text>
             </Pressable>
 
-            <Pressable
-              style={[styles.dangerBtn]}
-              onPress={onDeleteClick}
-            >
+            <Pressable style={[styles.dangerBtn]} onPress={onDeleteClick}>
               <FontAwesome name="trash" size={14} color="#8E1B1B" />
               <Text style={styles.dangerBtnText}>
                 {busyDelete ? t("eventView.deleting") : t("common.delete")}
@@ -542,19 +538,28 @@ export default function EventDetailsScreen() {
             </Pressable>
           </View>
 
-          {event.checkInToken ? (
-            <Pressable
-              style={[styles.actionsRow, { marginTop: 8 }]}
-              onPress={() => setShowQRModal(true)}
-            >
-              <View style={[styles.secondaryBtn, { flex: 1 }]}>
+          <View style={[styles.actionsRow, { marginTop: 8 }]}>
+            {event.checkInToken ? (
+              <Pressable style={[styles.secondaryBtn, { flex: 1 }]} onPress={() => setShowQRModal(true)}>
                 <FontAwesome name="qrcode" size={14} color="#3F5E95" />
                 <Text style={styles.secondaryBtnText}>{t("eventView.showQR")}</Text>
-              </View>
-            </Pressable>
-          ) : null}
+              </Pressable>
+            ) : null}
+            {isEventEnded && event.status === EventStatus.Approved && (
+              <Pressable
+                style={[styles.secondaryBtn, { flex: 1 }]}
+                onPress={() => router.push({ pathname: "/event.stats", params: { id: event.id } })}
+              >
+                <FontAwesome name="bar-chart" size={14} color="#3F5E95" />
+                <Text style={styles.secondaryBtnText}>{t("eventView.viewStats")}</Text>
+              </Pressable>
+            )}
+          </View>
         </>
-      ) : isPastEvent ? (
+      )}
+
+      {(!isAdmin || event.status !== EventStatus.Pending) && !isMine && (
+        isPastEvent ? (
           <View style={styles.pastEventWrap}>
             <Text style={styles.pastEventText}>
               {t("eventView.pastEvent")}

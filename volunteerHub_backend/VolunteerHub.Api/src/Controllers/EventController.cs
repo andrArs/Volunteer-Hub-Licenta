@@ -210,6 +210,25 @@ public class EventsController : ControllerBase
         return Ok(events);
     }
 
+    [Authorize]
+    [HttpGet("{id:guid}/stats")]
+    public async Task<ActionResult<EventStatsResponse>> GetEventStats(Guid id)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(userId)) return Unauthorized();
+
+        var isAdmin = User.IsInRole("Admin");
+        try
+        {
+            var stats = await _events.GetEventStatsAsync(id, userId, isAdmin);
+            return Ok(stats);
+        }
+        catch (ApiException ex)
+        {
+            return StatusCode(ex.StatusCode, new { code = ex.Code, message = ex.Message });
+        }
+    }
+
     public record CheckInDto(string Token);
 
     [Authorize]

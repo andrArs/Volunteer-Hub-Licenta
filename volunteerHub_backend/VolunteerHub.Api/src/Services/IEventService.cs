@@ -19,4 +19,5 @@ public interface IEventService
     Task <bool> SetStatusAsync(Guid eventId, bool isAdmin, EventStatus status, string message);
     Task SetEventImageAsync(Guid eventId, string? imageUrl);
     Task<bool> CheckInAsync(string token, string userId);
+    Task<EventStatsResponse> GetEventStatsAsync(Guid eventId, string requesterId, bool isAdmin);
 }

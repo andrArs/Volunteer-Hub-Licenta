@@ -394,6 +394,53 @@ public class EventService : IEventService
         await _db.SaveChangesAsync();
     }
 
+    public async Task<EventStatsResponse> GetEventStatsAsync(Guid eventId, string requesterId, bool isAdmin)
+    {
+        var ev = await _db.Events.AsNoTracking().FirstOrDefaultAsync(e => e.Id == eventId)
+            ?? throw new ApiException(404, "event_not_found", "Event not found.");
+
+        if (!isAdmin && ev.CreatedById != requesterId)
+            throw new ApiException(403, "forbidden", "Only the organizer can view stats.");
+
+        var userEvents = await _db.UserEvents
+            .Include(ue => ue.User)
+            .Where(ue => ue.EventId == eventId)
+            .ToListAsync();
+
+        var goingCount = userEvents.Count(ue =>
+            ue.Status == UserEventStatus.Going || ue.Status == UserEventStatus.Attended);
+        var attendedUsers = userEvents.Where(ue => ue.Status == UserEventStatus.Attended).ToList();
+        var attendedCount = attendedUsers.Count;
+
+        int? minAge = null, maxAge = null;
+        double? averageAge = null;
+
+        if (attendedUsers.Any())
+        {
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+            var ages = attendedUsers.Select(ue =>
+            {
+                var dob = ue.User.DateOfBirth;
+                var age = today.Year - dob.Year;
+                if (dob > today.AddYears(-age)) age--;
+                return age;
+            }).ToList();
+
+            minAge = ages.Min();
+            maxAge = ages.Max();
+            averageAge = Math.Round(ages.Average(), 1);
+        }
+
+        return new EventStatsResponse(
+            goingCount,
+            attendedCount,
+            ev.MaxVolunteers == 0 ? null : ev.MaxVolunteers,
+            minAge,
+            maxAge,
+            averageAge
+        );
+    }
+
     public async Task<bool> CheckInAsync(string token, string userId)
     {
         var ev = await _db.Events.FirstOrDefaultAsync(e => e.CheckInToken != null && e.CheckInToken == token);
