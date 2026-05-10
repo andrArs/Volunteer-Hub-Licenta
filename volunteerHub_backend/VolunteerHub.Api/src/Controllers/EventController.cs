@@ -15,11 +15,13 @@ public class EventsController : ControllerBase
 {
     private readonly IEventService _events;
     private readonly UserManager<User> _userManager;
+    private readonly IBlobStorageService _blobStorage;
 
-    public EventsController(IEventService events, UserManager<User> userManager)
+    public EventsController(IEventService events, UserManager<User> userManager, IBlobStorageService blobStorage)
     {
         _events = events;
         _userManager = userManager;
+        _blobStorage = blobStorage;
     }
 
     [HttpGet]
@@ -78,6 +80,50 @@ public class EventsController : ControllerBase
         {
             return StatusCode(ex.StatusCode, new { code = ex.Code, message = ex.Message });
         }
+    }
+
+    [Authorize]
+    [HttpPost("{id:guid}/image")]
+    public async Task<ActionResult> UploadEventImage(Guid id, IFormFile file)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(userId)) return Unauthorized();
+
+        var ev = await _events.GetEventByIdAsync(id);
+        if (ev is null) return NotFound();
+
+        var isAdmin = User.IsInRole("Admin");
+        if (!isAdmin && ev.CreatedById != userId) return Forbid();
+
+        if (file == null || file.Length == 0)
+            return BadRequest(new { message = "No file provided." });
+
+        var url = await _blobStorage.UploadEventImageAsync(file);
+        await _events.SetEventImageAsync(id, url);
+
+        return Ok(new { url });
+    }
+
+    [Authorize]
+    [HttpDelete("{id:guid}/image")]
+    public async Task<IActionResult> DeleteEventImage(Guid id)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(userId)) return Unauthorized();
+
+        var ev = await _events.GetEventByIdAsync(id);
+        if (ev is null) return NotFound();
+
+        var isAdmin = User.IsInRole("Admin");
+        if (!isAdmin && ev.CreatedById != userId) return Forbid();
+
+        if (!string.IsNullOrEmpty(ev.ImageUrl))
+        {
+            await _blobStorage.DeleteEventImageAsync(ev.ImageUrl);
+            await _events.SetEventImageAsync(id, null);
+        }
+
+        return NoContent();
     }
 
     [Authorize]

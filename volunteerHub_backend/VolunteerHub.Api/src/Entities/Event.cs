@@ -39,5 +39,6 @@ public class Event
 
     public ICollection<UserEvent> UserEvents { get; set; } = new List<UserEvent>();
     public string? AdminNotes { get; set; }
+    public string? ImageUrl { get; set; }
 
 }

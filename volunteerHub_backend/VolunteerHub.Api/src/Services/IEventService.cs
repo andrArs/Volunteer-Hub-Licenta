@@ -17,4 +17,5 @@ public interface IEventService
     Task<List<EventResponse>> GetMyAttendanceEventsAsync(string userId, string status);
     Task<List<EventResponse>> GetPendingEventsAsync();
     Task <bool> SetStatusAsync(Guid eventId, bool isAdmin, EventStatus status, string message);
+    Task SetEventImageAsync(Guid eventId, string? imageUrl);
 }

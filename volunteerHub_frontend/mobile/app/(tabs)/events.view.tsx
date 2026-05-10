@@ -5,6 +5,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import {
   ActivityIndicator,
   FlatList,
+  Image,
   Modal,
   Platform,
   Pressable,
@@ -270,6 +271,9 @@ export default function AllEventsScreen() {
               }
               renderItem={({ item }) => (
                 <Pressable style={styles.card} onPress={() => openEvent(item)}>
+                  {item.imageUrl ? (
+                    <Image source={{ uri: item.imageUrl }} style={{ width: "100%", height: 140, borderRadius: 8, marginBottom: 8 }} resizeMode="cover" />
+                  ) : null}
                   <View style={styles.cardHeaderRow}>
                     <Text style={[styles.cardTitle, styles.cardTitleInRow]} numberOfLines={1}>
                       {item.title}

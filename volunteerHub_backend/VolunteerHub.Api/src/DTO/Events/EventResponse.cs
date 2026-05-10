@@ -20,5 +20,6 @@ public record EventResponse
     string CreatedById,
     string? AdminNotes,
     string? CreatorName = null,
-    string? CreatorEmail = null
+    string? CreatorEmail = null,
+    string? ImageUrl = null
 );

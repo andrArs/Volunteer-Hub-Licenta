@@ -323,6 +323,10 @@ export default {
     placeholderMaxVolunteers: "Unlimited if empty",
     placeholderStartDateTime: "Start Date and Time",
     placeholderEndDateTime: "End Date and Time",
+    labelImage: "Event Image (Optional)",
+    addImage: "Add Image",
+    changeImage: "Change Image",
+    removeImage: "Remove Image",
     creating: "Creating Event...",
     createBtn: "Create Event",
     errors: {

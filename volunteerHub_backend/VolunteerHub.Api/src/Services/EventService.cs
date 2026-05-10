@@ -72,7 +72,8 @@ public class EventService : IEventService
             ev.Status,
             ev.CreatedAt,
             ev.CreatedById,
-            ev.AdminNotes
+            ev.AdminNotes,
+            ImageUrl: ev.ImageUrl
         );
     }
 
@@ -94,7 +95,8 @@ public class EventService : IEventService
             ev.Status,
             ev.CreatedAt,
             ev.CreatedById,
-            ev.AdminNotes
+            ev.AdminNotes,
+            ImageUrl: ev.ImageUrl
         );
     }
 
@@ -131,7 +133,8 @@ public class EventService : IEventService
                 e.CreatedById,
                 e.AdminNotes,
                 e.CreatedBy.FirstName + " " + e.CreatedBy.LastName,
-                e.CreatedBy.Email
+                e.CreatedBy.Email,
+                e.ImageUrl
             ))
             .ToListAsync();
 
@@ -192,7 +195,8 @@ public class EventService : IEventService
             ev.Status,
             ev.CreatedAt,
             ev.CreatedById,
-            ev.AdminNotes
+            ev.AdminNotes,
+            ImageUrl: ev.ImageUrl
         );
     }
 
@@ -299,7 +303,8 @@ public class EventService : IEventService
                 e.CreatedById,
                 e.AdminNotes,
                 e.CreatedBy.FirstName + " " + e.CreatedBy.LastName,
-                e.CreatedBy.Email
+                e.CreatedBy.Email,
+                e.ImageUrl
             ))
             .ToListAsync();
 
@@ -337,7 +342,8 @@ public class EventService : IEventService
                 e.EndDateTime, e.LocationName, e.Address, e.Latitude,
                 e.Longitude, e.MaxVolunteers, e.Status, e.CreatedAt, e.CreatedById, e.AdminNotes,
                 e.CreatedBy.FirstName + " " + e.CreatedBy.LastName,
-                e.CreatedBy.Email
+                e.CreatedBy.Email,
+                e.ImageUrl
             ))
             .ToListAsync();
     }
@@ -364,11 +370,20 @@ public class EventService : IEventService
                 e.CreatedById,
                 e.AdminNotes,
                 e.CreatedBy.FirstName + " " + e.CreatedBy.LastName,
-                e.CreatedBy.Email
+                e.CreatedBy.Email,
+                e.ImageUrl
             ))
             .ToListAsync();
 
             return list;
+    }
+
+    public async Task SetEventImageAsync(Guid eventId, string? imageUrl)
+    {
+        var ev = await _db.Events.FirstOrDefaultAsync(e => e.Id == eventId);
+        if (ev is null) return;
+        ev.ImageUrl = imageUrl;
+        await _db.SaveChangesAsync();
     }
 
     public async Task<bool> SetStatusAsync(Guid eventId, bool isAdmin, EventStatus status, string message)

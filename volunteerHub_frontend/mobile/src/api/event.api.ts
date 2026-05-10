@@ -1,3 +1,4 @@
+import { Platform } from "react-native";
 import { api } from "./client";
 import type { EventRequest, EventResponse, PagedResult } from "../types/event";
 
@@ -71,4 +72,24 @@ export async function getMyCreatedEvents(): Promise<EventResponse[]> {
 export async function getMyAttendanceEvents(status: "interested" | "going" | "history"): Promise<EventResponse[]> {
   const res = await api.get<EventResponse[]>(`/api/events/my/attendance?status=${status}`);
   return res.data;
+}
+
+export async function uploadEventImage(eventId: string, uri: string, mimeType?: string): Promise<string> {
+  const formData = new FormData();
+  if (Platform.OS === "web") {
+    const response = await fetch(uri);
+    const blob = await response.blob();
+    const file = new File([blob], "event.jpg", { type: blob.type || "image/jpeg" });
+    formData.append("file", file);
+  } else {
+    formData.append("file", { uri, name: "event.jpg", type: mimeType || "image/jpeg" } as any);
+  }
+  const res = await api.post<{ url: string }>(`/api/events/${eventId}/image`, formData, {
+    headers: Platform.OS === "web" ? {} : { "Content-Type": "multipart/form-data" },
+  });
+  return res.data.url;
+}
+
+export async function removeEventImage(eventId: string): Promise<void> {
+  await api.delete(`/api/events/${eventId}/image`);
 }

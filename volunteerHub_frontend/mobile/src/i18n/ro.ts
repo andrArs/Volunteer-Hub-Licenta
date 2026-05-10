@@ -323,6 +323,10 @@ export default {
     placeholderMaxVolunteers: "Nelimitat dacă e gol",
     placeholderStartDateTime: "Data și Ora de Început",
     placeholderEndDateTime: "Data și Ora de Sfârșit",
+    labelImage: "Imagine Eveniment (Opțional)",
+    addImage: "Adaugă Imagine",
+    changeImage: "Schimbă Imaginea",
+    removeImage: "Elimină Imaginea",
     creating: "Se creează...",
     createBtn: "Creează Eveniment",
     errors: {

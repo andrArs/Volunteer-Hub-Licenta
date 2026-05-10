@@ -1,11 +1,12 @@
 import { FontAwesome } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { goBack } from "@/src/utils/navigation";
-import { ActivityIndicator, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Alert, Image, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { useMemo, useRef, useState } from "react";
 import { styles } from "@/src/styles/event.style";
 import { toAppError } from "@/src/api/errors";
-import { getEventById, updateEvent } from "@/src/api/event.api";
+import { getEventById, updateEvent, uploadEventImage, removeEventImage } from "@/src/api/event.api";
+import * as ImagePicker from "expo-image-picker";
 import { EVENT_CATEGORIES, EventCategory } from "@/src/types/event";
 import DateTimePicker, {
   DateTimePickerAndroid,
@@ -83,6 +84,9 @@ export default function UpdateEventScreen() {
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
     const [errors, setErrors] = useState<FieldErrors>({});
 
+    const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
+    const [uploadingImage, setUploadingImage] = useState(false);
+
 
     function clearError(k: keyof FieldErrors) {
      setErrors((p) => ({ ...p, [k]: undefined, general: undefined }));
@@ -129,6 +133,7 @@ export default function UpdateEventScreen() {
                     ? String(ev.maxVolunteers)
                     : ""
                 );
+            setExistingImageUrl(ev.imageUrl ?? null);
         } catch (e) {
             setErrorMsg(t("eventUpdate.failedToLoad"));
         }
@@ -284,6 +289,39 @@ export default function UpdateEventScreen() {
 
         if (Platform.OS === "ios") setShowEndPickerIOS(true);
 }
+
+    async function pickAndUploadImage() {
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ["images"],
+            allowsEditing: true,
+            aspect: [16, 9],
+            quality: 0.8,
+        });
+        if (result.canceled || !id) return;
+        const asset = result.assets[0];
+        try {
+            setUploadingImage(true);
+            const url = await uploadEventImage(String(id), asset.uri, asset.mimeType ?? undefined);
+            setExistingImageUrl(url);
+        } catch {
+            Alert.alert("Error", "Could not upload image.");
+        } finally {
+            setUploadingImage(false);
+        }
+    }
+
+    async function handleRemoveImage() {
+        if (!id) return;
+        try {
+            setUploadingImage(true);
+            await removeEventImage(String(id));
+            setExistingImageUrl(null);
+        } catch {
+            Alert.alert("Error", "Could not remove image.");
+        } finally {
+            setUploadingImage(false);
+        }
+    }
 
     async function onUpdateEvent() {
         if (submitting) return;
@@ -555,6 +593,28 @@ export default function UpdateEventScreen() {
                         editable={!submitting}
                         />
                     </View>
+
+                    <Text style={[styles.label, styles.labelSpaced]}>{t("eventCreate.labelImage")}</Text>
+                    {uploadingImage ? (
+                        <ActivityIndicator size="small" color="#3F5E95" style={{ marginVertical: 12 }} />
+                    ) : existingImageUrl ? (
+                        <View>
+                            <Image source={{ uri: existingImageUrl }} style={{ width: "100%", height: 180, borderRadius: 8, marginBottom: 8 }} resizeMode="cover" />
+                            <View style={{ flexDirection: "row", gap: 8, justifyContent: "flex-end" }}>
+                                <Pressable onPress={pickAndUploadImage} disabled={submitting || uploadingImage} style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 6, backgroundColor: "#3F5E95" }}>
+                                    <Text style={{ color: "#fff", fontSize: 12, fontWeight: "600" }}>{t("eventCreate.changeImage")}</Text>
+                                </Pressable>
+                                <Pressable onPress={handleRemoveImage} disabled={submitting || uploadingImage} style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 6, backgroundColor: "#E53E3E" }}>
+                                    <Text style={{ color: "#fff", fontSize: 12, fontWeight: "600" }}>{t("eventCreate.removeImage")}</Text>
+                                </Pressable>
+                            </View>
+                        </View>
+                    ) : (
+                        <Pressable onPress={pickAndUploadImage} disabled={submitting || uploadingImage} style={{ borderWidth: 1.5, borderColor: "#3F5E95", borderStyle: "dashed", borderRadius: 10, paddingVertical: 18, alignItems: "center", justifyContent: "center", gap: 6 }}>
+                            <FontAwesome name="image" size={22} color="#3F5E95" />
+                            <Text style={{ color: "#3F5E95", fontSize: 14, fontWeight: "600" }}>{t("eventCreate.addImage")}</Text>
+                        </Pressable>
+                    )}
 
                 </View>
 

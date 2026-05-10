@@ -2,7 +2,7 @@ import { FontAwesome } from "@expo/vector-icons";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { goBack } from "@/src/utils/navigation";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Alert, KeyboardAvoidingView, Modal, Platform, Pressable, RefreshControl, ScrollView, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Alert, Image, KeyboardAvoidingView, Modal, Platform, Pressable, RefreshControl, ScrollView, Text, TextInput, View } from "react-native";
 
 import { getEventById, deleteEvent, updateEventAttendance, getEventParticipantsCount, getUserEventStatus } from "@/src/api/event.api";
 import { getMyReviewStatus, createReview } from "@/src/api/review.api";
@@ -388,6 +388,10 @@ export default function EventDetailsScreen() {
       showsVerticalScrollIndicator={false}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#3F5E95"]} tintColor="#3F5E95" />}
     >
+      {event.imageUrl ? (
+        <Image source={{ uri: event.imageUrl }} style={{ height: 220, marginHorizontal: -16, marginBottom: 16, marginTop: -4 }} resizeMode="cover" />
+      ) : null}
+
       {(isMine) && (
         <View style={styles.statusBadgeWrap}>
           {renderStatusBadge(event.status)}
