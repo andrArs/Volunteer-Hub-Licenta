@@ -210,6 +210,26 @@ public class EventsController : ControllerBase
         return Ok(events);
     }
 
+    public record CheckInDto(string Token);
+
+    [Authorize]
+    [HttpPost("check-in")]
+    public async Task<IActionResult> CheckIn([FromBody] CheckInDto dto)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(userId)) return Unauthorized();
+
+        try
+        {
+            await _events.CheckInAsync(dto.Token, userId);
+            return NoContent();
+        }
+        catch (ApiException ex)
+        {
+            return StatusCode(ex.StatusCode, new { code = ex.Code, message = ex.Message });
+        }
+    }
+
     public record ChangeStatusDto(string Status, string Message);
 
     [Authorize(Roles = "Admin")]

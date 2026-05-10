@@ -93,3 +93,7 @@ export async function uploadEventImage(eventId: string, uri: string, mimeType?: 
 export async function removeEventImage(eventId: string): Promise<void> {
   await api.delete(`/api/events/${eventId}/image`);
 }
+
+export async function checkIn(token: string): Promise<void> {
+  await api.post("/api/events/check-in", { Token: token });
+}

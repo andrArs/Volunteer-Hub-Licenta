@@ -51,7 +51,8 @@ public class EventService : IEventService
             MaxVolunteers = request.MaxVolunteers ?? 0,
             Status = EventStatus.Pending,
             CreatedAt = DateTime.UtcNow,
-            CreatedById = creatorUserId
+            CreatedById = creatorUserId,
+            CheckInToken = Guid.NewGuid().ToString("N")
         };
 
         _db.Events.Add(ev);
@@ -73,7 +74,8 @@ public class EventService : IEventService
             ev.CreatedAt,
             ev.CreatedById,
             ev.AdminNotes,
-            ImageUrl: ev.ImageUrl
+            ImageUrl: ev.ImageUrl,
+            CheckInToken: ev.CheckInToken
         );
     }
 
@@ -96,7 +98,8 @@ public class EventService : IEventService
             ev.CreatedAt,
             ev.CreatedById,
             ev.AdminNotes,
-            ImageUrl: ev.ImageUrl
+            ImageUrl: ev.ImageUrl,
+            CheckInToken: ev.CheckInToken
         );
     }
 
@@ -108,7 +111,7 @@ public class EventService : IEventService
 
         var now = DateTime.UtcNow;
         var query = _db.Events.AsNoTracking()
-            .Where(e => e.Status == EventStatus.Approved && e.StartDateTime >= now)
+            .Where(e => e.Status == EventStatus.Approved && e.EndDateTime >= now)
             .OrderBy(e => e.StartDateTime);
 
         var totalCount = await query.CountAsync();
@@ -134,7 +137,8 @@ public class EventService : IEventService
                 e.AdminNotes,
                 e.CreatedBy.FirstName + " " + e.CreatedBy.LastName,
                 e.CreatedBy.Email,
-                e.ImageUrl
+                e.ImageUrl,
+                e.CheckInToken
             ))
             .ToListAsync();
 
@@ -196,7 +200,8 @@ public class EventService : IEventService
             ev.CreatedAt,
             ev.CreatedById,
             ev.AdminNotes,
-            ImageUrl: ev.ImageUrl
+            ImageUrl: ev.ImageUrl,
+            CheckInToken: ev.CheckInToken
         );
     }
 
@@ -304,7 +309,8 @@ public class EventService : IEventService
                 e.AdminNotes,
                 e.CreatedBy.FirstName + " " + e.CreatedBy.LastName,
                 e.CreatedBy.Email,
-                e.ImageUrl
+                e.ImageUrl,
+                e.CheckInToken
             ))
             .ToListAsync();
 
@@ -326,7 +332,7 @@ public class EventService : IEventService
         }
         else if (status == "history")
         {
-            query = query.Where(ue => ue.Status == UserEventStatus.Going && ue.Event.EndDateTime < now);
+            query = query.Where(ue => (ue.Status == UserEventStatus.Going || ue.Status == UserEventStatus.Attended) && ue.Event.EndDateTime < now);
         }
         else 
         {
@@ -343,7 +349,8 @@ public class EventService : IEventService
                 e.Longitude, e.MaxVolunteers, e.Status, e.CreatedAt, e.CreatedById, e.AdminNotes,
                 e.CreatedBy.FirstName + " " + e.CreatedBy.LastName,
                 e.CreatedBy.Email,
-                e.ImageUrl
+                e.ImageUrl,
+                e.CheckInToken
             ))
             .ToListAsync();
     }
@@ -371,7 +378,8 @@ public class EventService : IEventService
                 e.AdminNotes,
                 e.CreatedBy.FirstName + " " + e.CreatedBy.LastName,
                 e.CreatedBy.Email,
-                e.ImageUrl
+                e.ImageUrl,
+                e.CheckInToken
             ))
             .ToListAsync();
 
@@ -384,6 +392,25 @@ public class EventService : IEventService
         if (ev is null) return;
         ev.ImageUrl = imageUrl;
         await _db.SaveChangesAsync();
+    }
+
+    public async Task<bool> CheckInAsync(string token, string userId)
+    {
+        var ev = await _db.Events.FirstOrDefaultAsync(e => e.CheckInToken != null && e.CheckInToken == token);
+        if (ev is null)
+            throw new ApiException(404, "invalid_token", "Invalid check-in token.");
+
+        var now = DateTime.UtcNow;
+        if (now < ev.StartDateTime || now > ev.EndDateTime)
+            throw new ApiException(400, "event_not_active", "Check-in is only available while the event is active.");
+
+        var userEvent = await _db.UserEvents.FirstOrDefaultAsync(ue => ue.EventId == ev.Id && ue.UserId == userId);
+        if (userEvent is null || userEvent.Status != UserEventStatus.Going)
+            throw new ApiException(400, "not_registered", "You must be registered as Going to check in.");
+
+        userEvent.Status = UserEventStatus.Attended;
+        await _db.SaveChangesAsync();
+        return true;
     }
 
     public async Task<bool> SetStatusAsync(Guid eventId, bool isAdmin, EventStatus status, string message)

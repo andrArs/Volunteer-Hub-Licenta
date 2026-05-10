@@ -21,5 +21,6 @@ public record EventResponse
     string? AdminNotes,
     string? CreatorName = null,
     string? CreatorEmail = null,
-    string? ImageUrl = null
+    string? ImageUrl = null,
+    string? CheckInToken = null
 );

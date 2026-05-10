@@ -27,7 +27,7 @@ public class ReviewService : IReviewService
         var attended = await _db.UserEvents.AnyAsync(ue =>
             ue.EventId == eventId &&
             ue.UserId == reviewerId &&
-            ue.Status == UserEventStatus.Going);
+            (ue.Status == UserEventStatus.Going || ue.Status == UserEventStatus.Attended));
 
         if (!attended)
             throw new ApiException(403, "not_attended", "You can only review events you attended.");
