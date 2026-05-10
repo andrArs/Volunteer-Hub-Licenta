@@ -19,7 +19,8 @@
       "infoPlist": {
         "NSCalendarsUsageDescription": "Volunteer Hub needs calendar access to add events you're attending.",
         "NSCalendarsFullAccessUsageDescription": "Volunteer Hub needs calendar access to add events you're attending.",
-        "NSPhotoLibraryUsageDescription": "Volunteer Hub needs access to your photo library to set your profile picture."
+        "NSPhotoLibraryUsageDescription": "Volunteer Hub needs access to your photo library to set your profile picture.",
+        "NSCameraUsageDescription": "Volunteer Hub needs access to your camera to take a profile picture."
       }
     },
     "android": {
