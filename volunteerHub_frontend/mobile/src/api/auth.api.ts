@@ -1,6 +1,11 @@
 import { api } from "./client";
 import type { AuthResponse, LoginRequest, RegisterRequest, ResetPasswordRequest } from "../types/auth";
 
+export async function googleAuth(idToken: string): Promise<AuthResponse> {
+  const res = await api.post<AuthResponse>("/api/auth/google", { IdToken: idToken });
+  return res.data;
+}
+
 export async function login(req: LoginRequest): Promise<AuthResponse> {
   const res = await api.post<AuthResponse>("/api/auth/login", {
     Email: req.email,

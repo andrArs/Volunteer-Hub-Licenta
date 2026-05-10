@@ -100,6 +100,7 @@ export default {
     sendCode: "Send Reset Code",
     sending: "Sending...",
     backToLogin: "Back to Login",
+    googleAccount: "This account uses Google Sign-In. Please sign in with Google on the login screen.",
   },
   register: {
     appName: "Volunteer Hub",
@@ -112,6 +113,8 @@ export default {
     signingUp: "Signing Up...",
     alreadyHaveAccount: "Already have an account?",
     signInNow: " Sign in now!",
+    or: "or",
+    continueWithGoogle: "Continue with Google",
     errors: {
       firstNameRequired: "First name is required.",
       lastNameRequired: "Last name is required.",
@@ -247,6 +250,9 @@ export default {
     forgotPassword: "Forgot password?",
     noAccount: "Don't have an account?",
     registerNow: " Register now!",
+    or: "or",
+    continueWithGoogle: "Continue with Google",
+    googleError: "Google Sign-In failed. Please try again.",
   },
   eventView: {
     title: "Event Details",

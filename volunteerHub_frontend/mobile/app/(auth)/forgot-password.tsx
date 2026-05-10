@@ -44,7 +44,11 @@ export default function ForgotPasswordScreen() {
       router.push({ pathname: "/(auth)/reset-password", params: { email: email.trim() } });
     } catch (e) {
       const err = toAppError(e);
-      setErrorMsg(err.message);
+      if (err.message === "google_account") {
+        setErrorMsg(t("forgotPassword.googleAccount"));
+      } else {
+        setErrorMsg(err.message);
+      }
     } finally {
       setSubmitting(false);
     }

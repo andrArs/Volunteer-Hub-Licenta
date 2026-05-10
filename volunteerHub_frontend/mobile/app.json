@@ -15,6 +15,7 @@
     },
     "ios": {
       "supportsTablet": true,
+      "bundleIdentifier": "com.andreea.volunteerhub",
       "infoPlist": {
         "NSCalendarsUsageDescription": "Volunteer Hub needs calendar access to add events you're attending.",
         "NSCalendarsFullAccessUsageDescription": "Volunteer Hub needs calendar access to add events you're attending.",
@@ -22,6 +23,7 @@
       }
     },
     "android": {
+      "package": "com.andreea.volunteerhub",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -44,7 +46,13 @@
       "@react-native-community/datetimepicker",
       "expo-calendar",
       "expo-image-picker",
-      "expo-localization"
+      "expo-localization",
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.452807959101-6fdpis5acp7bjboo12vlq56oc9o8os8k"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

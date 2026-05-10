@@ -100,6 +100,7 @@ export default {
     sendCode: "Trimite cod de resetare",
     sending: "Se trimite...",
     backToLogin: "Înapoi la autentificare",
+    googleAccount: "Acest cont folosește Google Sign-In. Te rugăm să te autentifici cu Google de pe ecranul de login.",
   },
   register: {
     appName: "Volunteer Hub",
@@ -112,6 +113,8 @@ export default {
     signingUp: "Se înregistrează...",
     alreadyHaveAccount: "Ai deja un cont?",
     signInNow: " Autentifică-te!",
+    or: "sau",
+    continueWithGoogle: "Continuă cu Google",
     errors: {
       firstNameRequired: "Prenumele este obligatoriu.",
       lastNameRequired: "Numele este obligatoriu.",
@@ -247,6 +250,9 @@ export default {
     forgotPassword: "Ai uitat parola?",
     noAccount: "Nu ai cont?",
     registerNow: " Înregistrează-te!",
+    or: "sau",
+    continueWithGoogle: "Continuă cu Google",
+    googleError: "Autentificarea cu Google a eșuat. Încearcă din nou.",
   },
   eventView: {
     title: "Detalii Eveniment",

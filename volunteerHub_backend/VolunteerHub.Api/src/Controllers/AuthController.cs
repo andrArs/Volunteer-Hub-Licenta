@@ -5,6 +5,7 @@ using VolunteerHub.Api.src.DTO;
 using VolunteerHub.Api.src.Entities;
 using VolunteerHub.Api.src.Services;
 using Microsoft.AspNetCore.Authorization;
+using Google.Apis.Auth;
 
 
 
@@ -19,19 +20,22 @@ public class AuthController : ControllerBase
     private readonly JwtTokenService _jwt;
     private readonly IEmailService _email;
     private readonly IMemoryCache _cache;
+    private readonly IConfiguration _config;
 
     public AuthController(
         UserManager<User> userManager,
         SignInManager<User> signInManager,
         JwtTokenService jwtTokenService,
         IEmailService emailService,
-        IMemoryCache cache)
+        IMemoryCache cache,
+        IConfiguration config)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _jwt = jwtTokenService;
         _email = emailService;
         _cache = cache;
+        _config = config;
     }
 
     [HttpPost("register")]
@@ -89,6 +93,56 @@ public class AuthController : ControllerBase
         return Ok(new { message = "Logged out" });
     }
 
+    [HttpPost("google")]
+    public async Task<ActionResult<AuthResponse>> GoogleAuth([FromBody] GoogleAuthRequest request)
+    {
+        GoogleJsonWebSignature.Payload payload;
+        try
+        {
+            payload = await GoogleJsonWebSignature.ValidateAsync(request.IdToken, new GoogleJsonWebSignature.ValidationSettings
+            {
+                Audience = new[] { _config["Google:WebClientId"] }
+            });
+        }
+        catch
+        {
+            return Unauthorized(new { error = "Invalid Google token." });
+        }
+
+        var user = await _userManager.FindByEmailAsync(payload.Email);
+
+        if (user != null)
+        {
+            if (user.GoogleId == null)
+            {
+                user.GoogleId = payload.Subject;
+                await _userManager.UpdateAsync(user);
+            }
+        }
+        else
+        {
+            user = new User
+            {
+                Email = payload.Email,
+                UserName = payload.Email,
+                FirstName = payload.GivenName ?? "",
+                LastName = payload.FamilyName ?? "",
+                DateOfBirth = DateOnly.FromDateTime(DateTime.UtcNow),
+                GoogleId = payload.Subject
+            };
+
+            var result = await _userManager.CreateAsync(user);
+            if (!result.Succeeded)
+                return BadRequest(new { error = string.Join("; ", result.Errors.Select(e => e.Description)) });
+
+            await _userManager.AddToRoleAsync(user, "User");
+        }
+
+        var token = await _jwt.CreateTokenAsync(user);
+        var roles = (await _userManager.GetRolesAsync(user)).ToArray();
+        return Ok(new AuthResponse(token, user.Id, user.Email ?? "", roles));
+    }
+
     [HttpPost("forgot-password")]
     public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest req)
     {
@@ -98,6 +152,9 @@ public class AuthController : ControllerBase
         var user = await _userManager.FindByEmailAsync(req.Email.Trim());
         if (user == null)
             return BadRequest(new { error = "No account found with this email address." });
+
+        if (user.PasswordHash == null)
+            return BadRequest(new { error = "google_account" });
 
         var code = Random.Shared.Next(100000, 999999).ToString();
         _cache.Set($"pwd_reset_{req.Email.Trim().ToLower()}", code, TimeSpan.FromMinutes(15));
