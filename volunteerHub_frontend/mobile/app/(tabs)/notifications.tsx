@@ -4,6 +4,7 @@ import { goBack } from "@/src/utils/navigation";
 import { useCallback, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   Pressable,
   RefreshControl,
@@ -82,6 +83,7 @@ export default function NotificationsScreen() {
       setHasNextPage(result.hasNextPage);
       pageRef.current = nextPage;
     } catch {
+      Alert.alert(t("common.error"), t("notifications.failedToLoad"));
     } finally {
       setLoadingMore(false);
     }

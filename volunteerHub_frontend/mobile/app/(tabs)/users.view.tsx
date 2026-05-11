@@ -4,6 +4,7 @@ import { goBack } from "@/src/utils/navigation";
 import React, { useCallback, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   Pressable,
   RefreshControl,
@@ -66,7 +67,7 @@ export default function AllUsersScreen() {
       setHasNextPage(result.hasNextPage);
       pageRef.current = nextPage;
     } catch {
-      
+      Alert.alert(t("common.error"), t("usersView.failedToLoad"));
     } finally {
       setLoadingMore(false);
     }

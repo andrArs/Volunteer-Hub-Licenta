@@ -4,6 +4,7 @@ import { goBack } from "@/src/utils/navigation";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   Image,
   Modal,
@@ -129,7 +130,8 @@ export default function AllEventsScreen() {
       setEvents(prev => [...prev, ...result.items]);
       setHasNextPage(result.hasNextPage);
       pageRef.current = nextPage;
-    } catch (e: any) {
+    } catch {
+      Alert.alert(t("common.error"), t("eventsView.failedToLoad"));
     } finally {
       setLoadingMore(false);
     }
