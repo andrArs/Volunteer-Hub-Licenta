@@ -129,8 +129,12 @@ export default function MyProfileScreen() {
       setUploading(true);
       const url = await uploadProfilePicture(uri, mimeType);
       setProfileInfo((prev) => (prev ? { ...prev, profilePictureUrl: url } : prev));
-    } catch {
-      Alert.alert(t("common.error"), t("profile.couldNotUpload"));
+    } catch (imgErr: any) {
+      const code = imgErr?.response?.data?.code ?? "";
+      const msg = code === "file_too_large" ? t("profile.imageTooLarge")
+                : code === "invalid_file_type" ? t("profile.invalidFileType")
+                : t("profile.couldNotUpload");
+      Alert.alert(t("common.error"), msg);
     } finally {
       setUploading(false);
     }

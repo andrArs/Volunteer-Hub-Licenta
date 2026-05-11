@@ -316,7 +316,13 @@ export default function CreateEventScreen() {
             if (imageUri) {
                 try {
                     await uploadEventImage(createEventResponse.id, imageUri, imageMime);
-                } catch {}
+                } catch (imgErr: any) {
+                    const code = imgErr?.response?.data?.code ?? "";
+                    const msg = code === "file_too_large" ? t("eventCreate.imageTooLarge")
+                              : code === "invalid_file_type" ? t("eventCreate.invalidFileType")
+                              : t("eventCreate.imageUploadFailed");
+                    Alert.alert(t("common.error"), msg);
+                }
             }
             resetForm();
             router.replace(`/event.view?id=${createEventResponse.id}`);

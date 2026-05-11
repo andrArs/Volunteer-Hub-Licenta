@@ -59,6 +59,13 @@ public class UsersController : ControllerBase
         if (file == null || file.Length == 0)
             return BadRequest(new { message = "No file provided." });
 
+        if (file.Length > 10 * 1024 * 1024)
+            return BadRequest(new { code = "file_too_large", message = "File size exceeds the maximum allowed size of 10 MB." });
+
+        string[] allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+        if (!allowedTypes.Contains(file.ContentType.ToLower()))
+            return BadRequest(new { code = "invalid_file_type", message = "Only JPEG, PNG, and WebP images are allowed." });
+
         var url = await _blobStorageService.UploadProfilePictureAsync(file);
         user.ProfilePicture = url;
         await _userManager.UpdateAsync(user);

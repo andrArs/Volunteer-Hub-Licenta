@@ -303,8 +303,12 @@ export default function UpdateEventScreen() {
             setUploadingImage(true);
             const url = await uploadEventImage(String(id), asset.uri, asset.mimeType ?? undefined);
             setExistingImageUrl(url);
-        } catch {
-            Alert.alert("Error", "Could not upload image.");
+        } catch (imgErr: any) {
+            const code = imgErr?.response?.data?.code ?? "";
+            const msg = code === "file_too_large" ? t("eventUpdate.imageTooLarge")
+                      : code === "invalid_file_type" ? t("eventUpdate.invalidFileType")
+                      : t("eventUpdate.imageUploadFailed");
+            Alert.alert(t("common.error"), msg);
         } finally {
             setUploadingImage(false);
         }
@@ -317,7 +321,7 @@ export default function UpdateEventScreen() {
             await removeEventImage(String(id));
             setExistingImageUrl(null);
         } catch {
-            Alert.alert("Error", "Could not remove image.");
+            Alert.alert(t("common.error"), t("eventUpdate.imageRemoveFailed"));
         } finally {
             setUploadingImage(false);
         }
