@@ -5,6 +5,7 @@ import React, { useRef, useState } from "react";
 import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import { checkIn } from "@/src/api/event.api";
 import { t, useLanguage } from "@/src/i18n/index";
+import { styles } from "@/src/styles/checkin.scanner.styles";
 
 export default function CheckInScannerScreen() {
   const router = useRouter();
@@ -50,7 +51,7 @@ export default function CheckInScannerScreen() {
           <View style={styles.rightSpacer} />
         </View>
         <View style={styles.center}>
-          <FontAwesome name="camera" size={48} color="#8B93A7" style={{ marginBottom: 16 }} />
+          <FontAwesome name="camera" size={48} color="#8B93A7" style={styles.cameraIcon} />
           <Text style={styles.permissionText}>{t("checkIn.permissionDenied")}</Text>
           <Pressable style={styles.grantBtn} onPress={requestPermission}>
             <Text style={styles.grantBtnText}>{t("checkIn.grantPermission")}</Text>
@@ -72,7 +73,7 @@ export default function CheckInScannerScreen() {
 
       <View style={styles.cameraWrap}>
         <CameraView
-          style={StyleSheet.absoluteFill}
+          style={StyleSheet.absoluteFillObject}
           facing="back"
           barcodeScannerSettings={{ barcodeTypes: ["qr"] }}
           onBarcodeScanned={done ? undefined : onBarcodeScanned}
@@ -86,45 +87,3 @@ export default function CheckInScannerScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  page: { flex: 1, backgroundColor: "#000" },
-  header: {
-    paddingTop: 60,
-    paddingBottom: 16,
-    paddingHorizontal: 16,
-    backgroundColor: "#3F5E95",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  headerTitle: { color: "#fff", fontSize: 18, fontWeight: "800" },
-  backBtn: { width: 44, height: 44, alignItems: "flex-start", justifyContent: "center" },
-  rightSpacer: { width: 44 },
-
-  center: { flex: 1, alignItems: "center", justifyContent: "center", padding: 24, backgroundColor: "#fff" },
-  permissionText: { fontSize: 15, fontWeight: "600", color: "#374151", textAlign: "center", marginBottom: 20 },
-  grantBtn: { backgroundColor: "#3F5E95", borderRadius: 999, paddingHorizontal: 24, paddingVertical: 12 },
-  grantBtnText: { color: "#fff", fontWeight: "800", fontSize: 14 },
-
-  cameraWrap: { flex: 1, position: "relative" },
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  scanFrame: {
-    width: 240,
-    height: 240,
-    borderWidth: 3,
-    borderColor: "#fff",
-    borderRadius: 16,
-    backgroundColor: "transparent",
-  },
-  instructions: {
-    marginTop: 24,
-    color: "#fff",
-    fontWeight: "700",
-    fontSize: 14,
-    textAlign: "center",
-  },
-});
