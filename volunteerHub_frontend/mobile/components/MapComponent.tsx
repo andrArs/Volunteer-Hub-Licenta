@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo, useRef } from 'react';
-import { View, StyleSheet, ActivityIndicator, Text } from 'react-native';
+import { View, StyleSheet, ActivityIndicator, Text, Platform } from 'react-native';
 import MapView, { Heatmap, PROVIDER_GOOGLE, Marker, Callout } from 'react-native-maps';
 import { useRouter } from 'expo-router';
 import { getAllEvents } from "@/src/api/event.api";
@@ -111,7 +111,7 @@ export default function MapComponent() {
         {heatmapPoints.length > 0 && (
           <Heatmap
             points={heatmapPoints}
-            radius={80} 
+            radius={Platform.OS === "android" ? 50 : 80}
             opacity={0.6}
             gradient={{
               colors: ["transparent", "#00FF00", "#FFFF00", "#FF0000"],
