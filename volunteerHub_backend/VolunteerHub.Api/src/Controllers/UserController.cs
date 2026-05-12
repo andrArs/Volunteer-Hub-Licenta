@@ -142,6 +142,13 @@ public class UsersController : ControllerBase
         var user = await _userManager.FindByIdAsync(userId);
         if (user == null) return NotFound(new { message = "User not found." });
 
+        if (request.DateOfBirth.HasValue)
+        {
+            var minDob = DateOnly.FromDateTime(DateTime.UtcNow).AddYears(-16);
+            if (request.DateOfBirth.Value > minDob)
+                return BadRequest(new { error = "You must be at least 16 years old." });
+        }
+
         user.FirstName = request.FirstName;
         user.LastName = request.LastName;
         user.DateOfBirth = request.DateOfBirth ?? user.DateOfBirth;
@@ -178,6 +185,13 @@ public class UsersController : ControllerBase
     {
         var user = await _userManager.FindByIdAsync(id);
         if (user == null) return NotFound(new { message = "User not found." });
+
+        if (updatedProfile.DateOfBirth.HasValue)
+        {
+            var minDob = DateOnly.FromDateTime(DateTime.UtcNow).AddYears(-16);
+            if (updatedProfile.DateOfBirth.Value > minDob)
+                return BadRequest(new { error = "You must be at least 16 years old." });
+        }
 
         user.FirstName = updatedProfile.FirstName;
         user.LastName = updatedProfile.LastName;

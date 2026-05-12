@@ -43,6 +43,7 @@ export default {
       lastNameTooLong: "Last name must be max 100 characters.",
       dateOfBirthRequired: "Date of birth is required.",
       dateOfBirthFuture: "Date of birth cannot be in the future.",
+      tooYoung: "You must be at least 16 years old.",
     },
   },
   profile: {
@@ -128,6 +129,7 @@ export default {
       passwordRequired: "Password is required.",
       passwordTooShort: "Password must be at least 6 characters.",
       invalidDate: "Please choose a valid date.",
+      tooYoung: "You must be at least 16 years old to register.",
       registrationFailed: "Registration failed.",
     },
   },
@@ -219,6 +221,7 @@ export default {
       emailInvalid: "Email is invalid.",
       dateOfBirthRequired: "Date of birth is required.",
       dateOfBirthFuture: "Date of birth cannot be in the future.",
+      tooYoung: "You must be at least 16 years old.",
     },
   },
   userView: {

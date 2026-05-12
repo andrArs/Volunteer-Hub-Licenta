@@ -46,6 +46,10 @@ public class AuthController : ControllerBase
         {
             return BadRequest(new { error = "Email already in use." });
         }
+
+        var minDob = DateOnly.FromDateTime(DateTime.UtcNow).AddYears(-16);
+        if (request.DateOfBirth > minDob)
+            return BadRequest(new { error = "You must be at least 16 years old to register." });
          var user = new User
          {
             Email = request.Email,

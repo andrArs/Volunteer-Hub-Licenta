@@ -155,7 +155,12 @@ export default function RegisterScreen() {
 
     if (!firstName.trim()) e.firstName = t("register.errors.firstNameRequired");
     if (!lastName.trim()) e.lastName = t("register.errors.lastNameRequired");
-    if (!dateOfBirth.trim()) e.dateOfBirth = t("register.errors.dateOfBirthRequired");
+    if (!dateOfBirth.trim()) {
+      e.dateOfBirth = t("register.errors.dateOfBirthRequired");
+    } else if (dobDate) {
+      const minDate = new Date(dobDate.getFullYear() + 16, dobDate.getMonth(), dobDate.getDate());
+      if (minDate > new Date()) e.dateOfBirth = t("register.errors.tooYoung");
+    }
 
     const emailClean = email.trim();
     if (!emailClean) e.email = t("register.errors.emailRequired");

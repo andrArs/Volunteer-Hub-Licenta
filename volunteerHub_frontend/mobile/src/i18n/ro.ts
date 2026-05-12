@@ -43,6 +43,7 @@ export default {
       lastNameTooLong: "Numele poate avea maxim 100 de caractere.",
       dateOfBirthRequired: "Data nașterii este obligatorie.",
       dateOfBirthFuture: "Data nașterii nu poate fi în viitor.",
+      tooYoung: "Trebuie să ai cel puțin 16 ani.",
     },
   },
   profile: {
@@ -128,6 +129,7 @@ export default {
       passwordRequired: "Parola este obligatorie.",
       passwordTooShort: "Parola trebuie să aibă cel puțin 6 caractere.",
       invalidDate: "Te rugăm să alegi o dată validă.",
+      tooYoung: "Trebuie să ai cel puțin 16 ani pentru a te înregistra.",
       registrationFailed: "Înregistrarea a eșuat.",
     },
   },
@@ -219,6 +221,7 @@ export default {
       emailInvalid: "Emailul este invalid.",
       dateOfBirthRequired: "Data nașterii este obligatorie.",
       dateOfBirthFuture: "Data nașterii nu poate fi în viitor.",
+      tooYoung: "Trebuie să ai cel puțin 16 ani.",
     },
   },
   userView: {
