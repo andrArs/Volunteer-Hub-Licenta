@@ -27,6 +27,13 @@ export default {
     hoursAgo: "%{count}h ago",
     yesterday: "Yesterday",
     daysAgo: "%{count}d ago",
+    deleteOne: "Delete notification",
+    deleteOneText: "Are you sure you want to delete this notification?",
+    clearAll: "Clear all",
+    deleteAll: "Delete all",
+    deleteAllText: "Are you sure you want to delete all notifications? This cannot be undone.",
+    deleting: "Deleting...",
+    deleteError: "Could not delete the notification. Please try again.",
   },
   profileUpdate: {
     title: "Edit Profile",

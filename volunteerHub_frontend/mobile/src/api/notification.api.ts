@@ -14,3 +14,11 @@ export async function markAsRead(id: string): Promise<void> {
 export async function markAllAsRead(): Promise<void> {
   await api.patch("/api/notifications/read-all");
 }
+
+export async function deleteNotification(id: string): Promise<void> {
+  await api.delete(`/api/notifications/${id}`);
+}
+
+export async function deleteAllNotifications(): Promise<void> {
+  await api.delete("/api/notifications");
+}

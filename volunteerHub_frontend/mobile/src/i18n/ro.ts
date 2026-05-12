@@ -27,6 +27,13 @@ export default {
     hoursAgo: "acum %{count}h",
     yesterday: "Ieri",
     daysAgo: "acum %{count}z",
+    deleteOne: "Șterge notificarea",
+    deleteOneText: "Ești sigur că vrei să ștergi această notificare?",
+    clearAll: "Golește tot",
+    deleteAll: "Șterge toate",
+    deleteAllText: "Ești sigur că vrei să ștergi toate notificările? Acțiunea este ireversibilă.",
+    deleting: "Se șterge...",
+    deleteError: "Nu s-a putut șterge notificarea. Încearcă din nou.",
   },
   profileUpdate: {
     title: "Editează Profilul",

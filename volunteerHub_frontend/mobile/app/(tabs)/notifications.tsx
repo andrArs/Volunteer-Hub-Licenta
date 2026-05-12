@@ -6,13 +6,14 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
+  Modal,
   Pressable,
   RefreshControl,
   Text,
   View,
 } from "react-native";
 
-import { getNotifications, markAllAsRead, markAsRead } from "@/src/api/notification.api";
+import { getNotifications, markAllAsRead, markAsRead, deleteNotification, deleteAllNotifications } from "@/src/api/notification.api";
 import type { Notification } from "@/src/types/notification";
 import { styles } from "@/src/styles/notification.styles";
 import { t, useLanguage } from "@/src/i18n/index";
@@ -50,6 +51,9 @@ export default function NotificationsScreen() {
   const [markingId, setMarkingId] = useState<string | null>(null);
   const [markingAll, setMarkingAll] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const pageRef = useRef(1);
 
   const load = useCallback(async (isRefresh = false) => {
@@ -132,6 +136,31 @@ export default function NotificationsScreen() {
     }
   }
 
+  function handleDeletePress(id: string | null) {
+    setDeleteTarget(id);
+    setShowDeleteModal(true);
+  }
+
+  async function executeDelete() {
+    setDeleting(true);
+    try {
+      if (deleteTarget === null) {
+        await deleteAllNotifications();
+        setNotifications([]);
+      } else {
+        await deleteNotification(deleteTarget);
+        setNotifications((prev) => prev.filter((n) => n.id !== deleteTarget));
+      }
+      setShowDeleteModal(false);
+    } catch {
+      setShowDeleteModal(false);
+      Alert.alert(t("common.error"), t("notifications.deleteError"));
+    } finally {
+      setDeleting(false);
+      setDeleteTarget(null);
+    }
+  }
+
   return (
     <View style={styles.page}>
       <View style={styles.header}>
@@ -139,7 +168,13 @@ export default function NotificationsScreen() {
           <FontAwesome name="arrow-left" size={18} color="#fff" />
         </Pressable>
         <Text style={styles.headerTitle}>{t("notifications.title")}</Text>
-        <View style={styles.rightSpacer} />
+        {notifications.length > 0 ? (
+          <Pressable onPress={() => handleDeletePress(null)} hitSlop={10} style={styles.clearAllBtn}>
+            <Text style={styles.clearAllText}>{t("notifications.clearAll")}</Text>
+          </Pressable>
+        ) : (
+          <View style={styles.rightSpacer} />
+        )}
       </View>
 
       <View style={styles.content}>
@@ -214,6 +249,13 @@ export default function NotificationsScreen() {
                         <FontAwesome name="chevron-right" size={12} color="#C9D1E2" />
                       )
                     ) : null}
+                    <Pressable
+                      onPress={() => handleDeletePress(item.id)}
+                      style={styles.trashBtn}
+                      hitSlop={8}
+                    >
+                      <FontAwesome name="trash" size={14} color="#C9D1E2" />
+                    </Pressable>
                   </View>
 
                   {!item.isRead && <View style={styles.unreadDot} />}
@@ -230,6 +272,41 @@ export default function NotificationsScreen() {
           </>
         )}
       </View>
+      <Modal
+        visible={showDeleteModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => !deleting && setShowDeleteModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>
+              {deleteTarget === null ? t("notifications.deleteAll") : t("notifications.deleteOne")}
+            </Text>
+            <Text style={styles.modalText}>
+              {deleteTarget === null ? t("notifications.deleteAllText") : t("notifications.deleteOneText")}
+            </Text>
+            <View style={styles.modalActions}>
+              <Pressable
+                style={styles.modalCancelBtn}
+                onPress={() => setShowDeleteModal(false)}
+                disabled={deleting}
+              >
+                <Text style={styles.modalCancelText}>{t("common.cancel")}</Text>
+              </Pressable>
+              <Pressable
+                style={styles.modalDeleteBtn}
+                onPress={executeDelete}
+                disabled={deleting}
+              >
+                <Text style={styles.modalDeleteText}>
+                  {deleting ? t("notifications.deleting") : t("common.delete")}
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
