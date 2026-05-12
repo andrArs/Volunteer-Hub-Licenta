@@ -13,18 +13,20 @@ public class AiService : IAiService
 {
     private readonly AppDbContext _db;
     private readonly IConfiguration _config;
-    private readonly HttpClient _httpClient;
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly ILogger<AiService> _logger;
 
     private int MaxHistoryMessages => _config.GetValue<int>("AiSettings:MaxHistoryMessages", 10);
     private int SummaryThreshold => _config.GetValue<int>("AiSettings:SummaryThreshold", 20);
     private string GeminiApiKey => _config["AiSettings:GeminiApiKey"] ?? throw new ApiException(500, "missing_api_key", "AI API Key is not configured.");
-    private const string GeminiModel = "gemini-2.0-flash-lite-001";
+    private const string GeminiModel = "gemini-3.1-flash-lite";
 
-    public AiService(AppDbContext db, IConfiguration config, HttpClient httpClient)
+    public AiService(AppDbContext db, IConfiguration config, IHttpClientFactory httpClientFactory, ILogger<AiService> logger)
     {
         _db = db;
         _config = config;
-        _httpClient = httpClient;
+        _httpClientFactory = httpClientFactory;
+        _logger = logger;
     }
 
     public async Task<AiChatResponse> GetChatResponseAsync(string userId, AiChatRequest req)
@@ -160,7 +162,7 @@ public class AiService : IAiService
             .ToListAsync();
 
         var upcomingEventsRaw = await _db.Events.AsNoTracking()
-        .Where(e => e.Status == EventStatus.Approved && e.StartDateTime >= now && e.CreatedById != userId)
+        .Where(e => e.Status == EventStatus.Approved && e.EndDateTime >= now && e.CreatedById != userId)
         .OrderBy(e => e.StartDateTime)
         .Take(20) 
         .Select(e => new { e.Id, e.Title, e.Category, e.LocationName, e.StartDateTime })
@@ -273,7 +275,7 @@ public class AiService : IAiService
 
     private async Task<string> CallGeminiAsync(string systemPrompt, List<object> contents)
     {
-        var geminiUrl = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key={GeminiApiKey}"; 
+        var geminiUrl = $"https://generativelanguage.googleapis.com/v1beta/models/{GeminiModel}:generateContent?key={GeminiApiKey}";
         var payload = new
         {
             system_instruction = new { parts = new[] { new { text = systemPrompt } } },
@@ -286,11 +288,13 @@ public class AiService : IAiService
             "application/json"
         );
 
-        var response = await _httpClient.PostAsync(geminiUrl, httpContent);
+        var httpClient = _httpClientFactory.CreateClient("Gemini");
+        var response = await httpClient.PostAsync(geminiUrl, httpContent);
 
         if (!response.IsSuccessStatusCode)
         {
             var error = await response.Content.ReadAsStringAsync();
+            _logger.LogError("Gemini API error {Status}: {Body}", (int)response.StatusCode, error);
             throw new ApiException(500, "ai_error", $"Gemini API error: {error}");
         }
 
