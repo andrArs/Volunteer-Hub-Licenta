@@ -9,7 +9,7 @@ public class ReminderBackgroundService : BackgroundService
 {
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<ReminderBackgroundService> _logger;
-    private static readonly TimeSpan Interval = TimeSpan.FromMinutes(15);
+    private static readonly TimeSpan Interval = TimeSpan.FromMinutes(5);
 
     public ReminderBackgroundService(
         IServiceScopeFactory scopeFactory,
