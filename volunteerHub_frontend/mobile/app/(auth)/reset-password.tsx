@@ -1,7 +1,8 @@
 import { FontAwesome } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { goBack } from "@/src/utils/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { type TextInput as TextInputType } from "react-native";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -24,6 +25,8 @@ export default function ResetPasswordScreen() {
   const [code, setCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const newPasswordRef = useRef<TextInputType>(null);
+  const confirmPasswordRef = useRef<TextInputType>(null);
   const [hidePassword, setHidePassword] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -68,12 +71,15 @@ export default function ResetPasswordScreen() {
               style={styles.input}
               placeholderTextColor="#8B93A7"
               editable={!submitting}
+              returnKeyType="next"
+              onSubmitEditing={() => newPasswordRef.current?.focus()}
             />
           </View>
 
           <View style={[styles.inputWrap, { marginTop: 12 }]}>
             <FontAwesome name="lock" size={18} style={styles.leftIcon} />
             <TextInput
+              ref={newPasswordRef}
               value={newPassword}
               onChangeText={(val) => { setNewPassword(val); if (errorMsg) setErrorMsg(null); }}
               placeholder={t("resetPassword.newPassword")}
@@ -81,6 +87,8 @@ export default function ResetPasswordScreen() {
               style={[styles.input, { paddingRight: 44 }]}
               placeholderTextColor="#8B93A7"
               editable={!submitting}
+              returnKeyType="next"
+              onSubmitEditing={() => confirmPasswordRef.current?.focus()}
             />
             <Pressable onPress={() => setHidePassword((v) => !v)} style={styles.eyeBtn} hitSlop={10}>
               <FontAwesome name={hidePassword ? "eye" : "eye-slash"} size={18} color="#6F7A93" />
@@ -90,6 +98,7 @@ export default function ResetPasswordScreen() {
           <View style={[styles.inputWrap, { marginTop: 12 }]}>
             <FontAwesome name="lock" size={18} style={styles.leftIcon} />
             <TextInput
+              ref={confirmPasswordRef}
               value={confirmPassword}
               onChangeText={(val) => { setConfirmPassword(val); if (errorMsg) setErrorMsg(null); }}
               placeholder={t("resetPassword.confirmPassword")}
@@ -97,6 +106,8 @@ export default function ResetPasswordScreen() {
               style={styles.input}
               placeholderTextColor="#8B93A7"
               editable={!submitting}
+              returnKeyType="done"
+              onSubmitEditing={onSubmit}
             />
           </View>
 

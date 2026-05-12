@@ -1,6 +1,7 @@
 import { FontAwesome } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useRef, useState, useEffect } from "react";
+import { type TextInput as TextInputType } from "react-native";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -48,6 +49,7 @@ export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [hidePassword, setHidePassword] = useState(true);
+  const passwordRef = useRef<TextInputType>(null);
 
   const [submitting, setSubmitting] = useState(false);
   const [googleSubmitting, setGoogleSubmitting] = useState(false);
@@ -146,12 +148,15 @@ export default function LoginScreen() {
               style={styles.input}
               placeholderTextColor="#8B93A7"
               editable={!busy}
+              returnKeyType="next"
+              onSubmitEditing={() => passwordRef.current?.focus()}
             />
           </View>
 
           <View style={[styles.inputWrap, { marginTop: 12 }]}>
             <FontAwesome name="lock" size={18} style={styles.leftIcon} />
             <TextInput
+              ref={passwordRef}
               value={password}
               onChangeText={(val) => { setPassword(val); if (errorMsg) setErrorMsg(null); }}
               placeholder={t("login.password")}
@@ -160,6 +165,8 @@ export default function LoginScreen() {
               style={[styles.input, { paddingRight: 44 }]}
               placeholderTextColor="#8B93A7"
               editable={!busy}
+              returnKeyType="done"
+              onSubmitEditing={onSignIn}
             />
             <Pressable onPress={() => setHidePassword((v) => !v)} style={styles.eyeBtn} hitSlop={10} disabled={busy}>
               <FontAwesome name={hidePassword ? "eye" : "eye-slash"} size={18} color="#6F7A93" />

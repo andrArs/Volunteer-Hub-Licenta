@@ -79,6 +79,8 @@ export default function ForgotPasswordScreen() {
               style={styles.input}
               placeholderTextColor="#8B93A7"
               editable={!submitting}
+              returnKeyType="done"
+              onSubmitEditing={onSubmit}
             />
           </View>
           {email.length > 0 && !emailValid && (

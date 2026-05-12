@@ -9,7 +9,8 @@ import DateTimePicker, {
     DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
 import { useRouter } from "expo-router";
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useRef, useState, useEffect } from "react";
+import { type TextInput as TextInputType } from "react-native";
 import {
     KeyboardAvoidingView,
     Modal,
@@ -43,6 +44,9 @@ export default function RegisterScreen() {
   const [password, setPassword] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const lastNameRef = useRef<TextInputType>(null);
+  const emailRef = useRef<TextInputType>(null);
+  const passwordRef = useRef<TextInputType>(null);
 
   const [dateOfBirth, setDateOfBirth] = useState("");
   const [dobDate, setDobDate] = useState<Date | null>(null);
@@ -270,6 +274,8 @@ export default function RegisterScreen() {
               style={styles.input}
               placeholderTextColor="#8B93A7"
               editable={!busy}
+              returnKeyType="next"
+              onSubmitEditing={() => lastNameRef.current?.focus()}
             />
           </View>
           {errors.firstName ? (
@@ -280,6 +286,7 @@ export default function RegisterScreen() {
           <View style={[styles.inputWrap, { marginTop: 12 }]}>
             <FontAwesome name="user" size={16} style={styles.leftIcon} />
             <TextInput
+              ref={lastNameRef}
               value={lastName}
               onChangeText={(val) => {
                 setLastName(val);
@@ -292,6 +299,8 @@ export default function RegisterScreen() {
               style={styles.input}
               placeholderTextColor="#8B93A7"
               editable={!busy}
+              returnKeyType="next"
+              onSubmitEditing={() => emailRef.current?.focus()}
             />
           </View>
           {errors.lastName ? (
@@ -395,6 +404,7 @@ export default function RegisterScreen() {
           <View style={[styles.inputWrap, { marginTop: 12 }]}>
             <FontAwesome name="envelope" size={16} style={styles.leftIcon} />
             <TextInput
+              ref={emailRef}
               value={email}
               onChangeText={(val) => {
                 setEmail(val);
@@ -407,6 +417,8 @@ export default function RegisterScreen() {
               style={styles.input}
               placeholderTextColor="#8B93A7"
               editable={!busy}
+              returnKeyType="next"
+              onSubmitEditing={() => passwordRef.current?.focus()}
             />
           </View>
           {errors.email ? (
@@ -417,6 +429,7 @@ export default function RegisterScreen() {
           <View style={[styles.inputWrap, { marginTop: 12 }]}>
             <FontAwesome name="lock" size={18} style={styles.leftIcon} />
             <TextInput
+              ref={passwordRef}
               value={password}
               onChangeText={(val) => {
                 setPassword(val);
@@ -427,6 +440,8 @@ export default function RegisterScreen() {
               textContentType="password"
               style={[styles.input, { paddingRight: 44 }]}
               placeholderTextColor="#8B93A7"
+              returnKeyType="done"
+              onSubmitEditing={onRegister}
               editable={!busy}
             />
 
