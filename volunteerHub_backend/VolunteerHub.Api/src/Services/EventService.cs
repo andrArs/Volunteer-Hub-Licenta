@@ -473,20 +473,28 @@ public class EventService : IEventService
         }
 
         ev.Status = status;
+        ev.AdminNotes = message;
 
-        ev.AdminNotes = message; 
+        var creator = await _db.Users.FindAsync(ev.CreatedById);
+        bool isRo = creator?.Language == "ro";
 
         string notificationMessage = "";
 
         if (status == EventStatus.Rejected)
         {
-            notificationMessage = string.IsNullOrWhiteSpace(message) 
-                ? "Your event has been rejected. Please check the event details for more information." 
-                : $"Your event '{ev.Title}' was rejected. Reason: {message}";
+            notificationMessage = isRo
+                ? (string.IsNullOrWhiteSpace(message)
+                    ? $"Evenimentul tău '{ev.Title}' a fost respins. Verifică detaliile evenimentului."
+                    : $"Evenimentul tău '{ev.Title}' a fost respins. Motiv: {message}")
+                : (string.IsNullOrWhiteSpace(message)
+                    ? $"Your event '{ev.Title}' has been rejected. Please check the event details for more information."
+                    : $"Your event '{ev.Title}' was rejected. Reason: {message}");
         }
         else if (status == EventStatus.Approved)
         {
-            notificationMessage = $"Great news! Your event '{ev.Title}' has been approved and is now public.";
+            notificationMessage = isRo
+                ? $"Veste bună! Evenimentul tău '{ev.Title}' a fost aprobat și este acum public."
+                : $"Great news! Your event '{ev.Title}' has been approved and is now public.";
         }
 
         if (!string.IsNullOrEmpty(notificationMessage))

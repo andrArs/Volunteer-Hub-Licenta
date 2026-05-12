@@ -21,3 +21,5 @@ public record UpdateMyProfileRequest(
     string LastName,
     DateOnly? DateOfBirth
 );
+
+public record UpdateLanguageRequest(string Language);

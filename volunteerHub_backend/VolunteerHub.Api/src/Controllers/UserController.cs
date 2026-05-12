@@ -99,6 +99,25 @@ public class UsersController : ControllerBase
         return NoContent();
     }
 
+    [Authorize]
+    [HttpPatch("me/language")]
+    public async Task<ActionResult> UpdateLanguage([FromBody] UpdateLanguageRequest request)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(userId)) return Unauthorized();
+
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user == null) return NotFound();
+
+        var allowed = new[] { "en", "ro" };
+        if (!allowed.Contains(request.Language))
+            return BadRequest(new { error = "Invalid language. Allowed: en, ro." });
+
+        user.Language = request.Language;
+        await _userManager.UpdateAsync(user);
+        return NoContent();
+    }
+
     [Authorize(Roles = "Admin")]
     [HttpGet]
     public async Task<ActionResult> GetAllUsers(

@@ -3,6 +3,8 @@ import * as Localization from "expo-localization";
 import * as SecureStore from "expo-secure-store";
 import { Platform } from "react-native";
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { getToken } from "../platform/storage";
+import { updateLanguage } from "../api/user.api";
 
 import en from "./en";
 import ro from "./ro";
@@ -54,6 +56,10 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     i18n.locale = lang;
     setLocaleState(lang);
     await saveLang(lang);
+    const token = await getToken();
+    if (token) {
+      updateLanguage(lang).catch(() => {});
+    }
   }
 
   return (
