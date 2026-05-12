@@ -353,13 +353,15 @@ export default function RegisterScreen() {
                 <Pressable
                   onPress={openDobPicker}
                   disabled={busy}
-                  style={{ height: 46, justifyContent: "center" }}
+                  style={{ flex: 1, height: 46, justifyContent: "center" }}
                 >
                   <Text
-                    style={[
-                      styles.input,
-                      { color: dateOfBirth ? "#1E2A3B" : "#8B93A7" },
-                    ]}
+                    style={{
+                      paddingLeft: 38,
+                      paddingRight: 12,
+                      fontSize: 15,
+                      color: dateOfBirth ? "#1E2A3B" : "#8B93A7",
+                    }}
                   >
                     {dateOfBirth ? dateOfBirth : t("register.dateOfBirth")}
                   </Text>
