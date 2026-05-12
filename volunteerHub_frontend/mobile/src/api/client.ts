@@ -3,6 +3,7 @@ import { router } from "expo-router";
 import { API_BASE_URL } from "../config/env";
 import { getToken } from "../platform/storage";
 import { logout } from "../store/auth.store";
+import { i18n } from "../i18n";
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
@@ -11,10 +12,11 @@ export const api = axios.create({
 
 api.interceptors.request.use(async (config) => {
   const token = await getToken();
+  config.headers = config.headers ?? {};
   if (token) {
-    config.headers = config.headers ?? {};
     config.headers.Authorization = `Bearer ${token}`;
   }
+  config.headers["Accept-Language"] = i18n.locale ?? "en";
   return config;
 });
 

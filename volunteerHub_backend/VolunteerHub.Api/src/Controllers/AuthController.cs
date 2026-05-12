@@ -38,18 +38,24 @@ public class AuthController : ControllerBase
         _config = config;
     }
 
+    private bool IsRo() =>
+        (Request.Headers.AcceptLanguage.FirstOrDefault()?.Split(',')[0]?.Trim() ?? "en")
+        .StartsWith("ro", StringComparison.OrdinalIgnoreCase);
+
     [HttpPost("register")]
     public async Task<ActionResult<AuthResponse>> Register([FromBody] RegisterRequest request)
     {
+        bool isRo = IsRo();
+
         var existingUser = await _userManager.FindByEmailAsync(request.Email);
         if (existingUser != null)
-        {
-            return BadRequest(new { error = "Email already in use." });
-        }
+            return BadRequest(new { error = isRo ? "Adresa de email este deja folosită." : "Email already in use." });
 
         var minDob = DateOnly.FromDateTime(DateTime.UtcNow).AddYears(-16);
         if (request.DateOfBirth > minDob)
-            return BadRequest(new { error = "You must be at least 16 years old to register." });
+            return BadRequest(new { error = isRo
+                ? "Trebuie să ai cel puțin 16 ani pentru a te înregistra."
+                : "You must be at least 16 years old to register." });
          var user = new User
          {
             Email = request.Email,
@@ -74,17 +80,15 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<ActionResult<AuthResponse>> Login([FromBody] LoginRequest request)
     {
+        bool isRo = IsRo();
+
         var user = await _userManager.FindByEmailAsync(request.Email);
         if (user == null)
-        {
-            return Unauthorized(new { error = "Invalid credentials" });
-        }
+            return Unauthorized(new { error = isRo ? "Credențiale invalide." : "Invalid credentials." });
 
         var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, false);
         if (!result.Succeeded)
-        {
-            return Unauthorized(new { error = "Invalid credentials" });
-        }
+            return Unauthorized(new { error = isRo ? "Credențiale invalide." : "Invalid credentials." });
         var token = await _jwt.CreateTokenAsync(user);
         var roles= (await _userManager.GetRolesAsync(user)).ToArray();
         return Ok(new AuthResponse(token, user.Id, user.Email ?? "", roles.ToArray()));
@@ -150,12 +154,14 @@ public class AuthController : ControllerBase
     [HttpPost("forgot-password")]
     public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest req)
     {
+        bool isRo = IsRo();
+
         if (string.IsNullOrWhiteSpace(req.Email))
-            return BadRequest(new { error = "Email is required." });
+            return BadRequest(new { error = isRo ? "Emailul este obligatoriu." : "Email is required." });
 
         var user = await _userManager.FindByEmailAsync(req.Email.Trim());
         if (user == null)
-            return BadRequest(new { error = "No account found with this email address." });
+            return BadRequest(new { error = isRo ? "Nu există niciun cont cu această adresă de email." : "No account found with this email address." });
 
         if (user.PasswordHash == null)
             return BadRequest(new { error = "google_account" });
@@ -174,7 +180,7 @@ public class AuthController : ControllerBase
         catch
         {
             _cache.Remove($"pwd_reset_{req.Email.Trim().ToLower()}");
-            return StatusCode(500, new { error = "Failed to send email. Please try again." });
+            return StatusCode(500, new { error = isRo ? "Trimiterea emailului a eșuat. Încearcă din nou." : "Failed to send email. Please try again." });
         }
 
         return Ok(new { message = "Reset code sent." });
@@ -183,13 +189,15 @@ public class AuthController : ControllerBase
     [HttpPost("reset-password")]
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest req)
     {
+        bool isRo = IsRo();
+
         var cacheKey = $"pwd_reset_{req.Email.Trim().ToLower()}";
         if (!_cache.TryGetValue(cacheKey, out string? storedCode) || storedCode != req.Code)
-            return BadRequest(new { error = "Invalid or expired code." });
+            return BadRequest(new { error = isRo ? "Cod invalid sau expirat." : "Invalid or expired code." });
 
         var user = await _userManager.FindByEmailAsync(req.Email);
         if (user == null)
-            return BadRequest(new { error = "Invalid or expired code." });
+            return BadRequest(new { error = isRo ? "Cod invalid sau expirat." : "Invalid or expired code." });
 
         var token = await _userManager.GeneratePasswordResetTokenAsync(user);
         var result = await _userManager.ResetPasswordAsync(user, token, req.NewPassword);

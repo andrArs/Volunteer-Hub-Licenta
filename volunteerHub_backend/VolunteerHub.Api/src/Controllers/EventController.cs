@@ -24,6 +24,27 @@ public class EventsController : ControllerBase
         _blobStorage = blobStorage;
     }
 
+    private bool IsRo() =>
+        (Request.Headers.AcceptLanguage.FirstOrDefault()?.Split(',')[0]?.Trim() ?? "en")
+        .StartsWith("ro", StringComparison.OrdinalIgnoreCase);
+
+    private string TranslateEventError(string code, string fallback, bool isRo) => isRo ? code switch
+    {
+        "title_required"         => "Titlul este obligatoriu.",
+        "description_required"   => "Descrierea este obligatorie.",
+        "location_name_required" => "Numele locației este obligatoriu.",
+        "address_required"       => "Adresa este obligatorie.",
+        "invalid_date_range"     => "Data de sfârșit trebuie să fie după data de început.",
+        "invalid_max_volunteers" => "Numărul maxim de voluntari trebuie să fie cel puțin 1.",
+        "event_not_found"        => "Evenimentul nu a fost găsit.",
+        "forbidden"              => "Nu ai permisiunea pentru această acțiune.",
+        "max_volunteers_reached" => "Ne pare rău, evenimentul a atins capacitatea maximă.",
+        "invalid_token"          => "Token de check-in invalid.",
+        "event_not_active"       => "Check-in-ul este disponibil doar în timpul evenimentului.",
+        "not_registered"         => "Trebuie să fii înregistrat ca Going pentru a face check-in.",
+        _                        => fallback
+    } : fallback;
+
     [HttpGet]
     public async Task<ActionResult<PagedResult<EventResponse>>> GetApprovedEvents(
         [FromQuery] int pageNumber = 1,
@@ -58,7 +79,8 @@ public class EventsController : ControllerBase
         }
         catch(ApiException ex)
         {
-            return StatusCode(ex.StatusCode, new { code = ex.Code, message = ex.Message });
+            bool isRo = IsRo();
+            return StatusCode(ex.StatusCode, new { code = ex.Code, message = TranslateEventError(ex.Code, ex.Message, isRo) });
         }
     }
 
@@ -78,7 +100,8 @@ public class EventsController : ControllerBase
         }
         catch (ApiException ex)
         {
-            return StatusCode(ex.StatusCode, new { code = ex.Code, message = ex.Message });
+            bool isRo = IsRo();
+            return StatusCode(ex.StatusCode, new { code = ex.Code, message = TranslateEventError(ex.Code, ex.Message, isRo) });
         }
     }
 
@@ -95,15 +118,17 @@ public class EventsController : ControllerBase
         var isAdmin = User.IsInRole("Admin");
         if (!isAdmin && ev.CreatedById != userId) return Forbid();
 
+        bool isRo = IsRo();
+
         if (file == null || file.Length == 0)
-            return BadRequest(new { message = "No file provided." });
+            return BadRequest(new { message = isRo ? "Niciun fișier furnizat." : "No file provided." });
 
         if (file.Length > 10 * 1024 * 1024)
-            return BadRequest(new { code = "file_too_large", message = "File size exceeds the maximum allowed size of 10 MB." });
+            return BadRequest(new { code = "file_too_large", message = isRo ? "Fișierul depășește dimensiunea maximă de 10 MB." : "File size exceeds the maximum allowed size of 10 MB." });
 
         string[] allowedTypes = ["image/jpeg", "image/png", "image/webp"];
         if (!allowedTypes.Contains(file.ContentType.ToLower()))
-            return BadRequest(new { code = "invalid_file_type", message = "Only JPEG, PNG, and WebP images are allowed." });
+            return BadRequest(new { code = "invalid_file_type", message = isRo ? "Sunt permise doar imagini JPEG, PNG și WebP." : "Only JPEG, PNG, and WebP images are allowed." });
 
         var url = await _blobStorage.UploadEventImageAsync(file);
         await _events.SetEventImageAsync(id, url);
@@ -232,7 +257,8 @@ public class EventsController : ControllerBase
         }
         catch (ApiException ex)
         {
-            return StatusCode(ex.StatusCode, new { code = ex.Code, message = ex.Message });
+            bool isRo = IsRo();
+            return StatusCode(ex.StatusCode, new { code = ex.Code, message = TranslateEventError(ex.Code, ex.Message, isRo) });
         }
     }
 
@@ -252,7 +278,8 @@ public class EventsController : ControllerBase
         }
         catch (ApiException ex)
         {
-            return StatusCode(ex.StatusCode, new { code = ex.Code, message = ex.Message });
+            bool isRo = IsRo();
+            return StatusCode(ex.StatusCode, new { code = ex.Code, message = TranslateEventError(ex.Code, ex.Message, isRo) });
         }
     }
 

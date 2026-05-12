@@ -18,12 +18,6 @@ public class EventService : IEventService
 
     public async Task<EventResponse> CreateEventAsync(string creatorUserId, EventRequest request)
     {
-        if (request.EndDateTime <= request.StartDateTime)
-            throw new ApiException(400, "INVALID_END_TIME", "End Date must be after Start Date.");
-
-        if(request.MaxVolunteers.HasValue && request.MaxVolunteers < 1)
-            throw new ApiException(400, "INVALID_MAX_VOLUNTEERS", "Max Volunteers must be an integer greater than zero.");
-
         if (string.IsNullOrWhiteSpace(request.Title))
             throw new ApiException(400, "title_required", "Title is required.");
 
@@ -31,10 +25,16 @@ public class EventService : IEventService
             throw new ApiException(400, "description_required", "Description is required.");
 
         if (string.IsNullOrWhiteSpace(request.LocationName))
-            throw new ApiException(400, "location_name_required", "LocationName is required.");
+            throw new ApiException(400, "location_name_required", "Location name is required.");
 
         if (string.IsNullOrWhiteSpace(request.Address))
             throw new ApiException(400, "address_required", "Address is required.");
+
+        if (request.EndDateTime <= request.StartDateTime)
+            throw new ApiException(400, "invalid_date_range", "End date must be after start date.");
+
+        if (request.MaxVolunteers.HasValue && request.MaxVolunteers < 1)
+            throw new ApiException(400, "invalid_max_volunteers", "Max volunteers must be at least 1.");
     
         var ev = new Event
         {
