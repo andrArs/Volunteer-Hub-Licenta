@@ -66,6 +66,8 @@ export type EventResponse = {
     adminNotes?: string;
     creatorName?: string;
     creatorEmail?: string;
+    imageUrl?: string | null;
+    checkInToken?: string | null;
 }
 
 export enum EventStatus {

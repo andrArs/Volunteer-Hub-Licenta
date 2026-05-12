@@ -100,6 +100,38 @@ export const styles = StyleSheet.create({
     fontWeight: "600",
   },
 
+  dividerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 18,
+    gap: 8,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: "#E2E6EF",
+  },
+  dividerText: {
+    color: "#8B93A7",
+    fontSize: 13,
+  },
+  googleBtn: {
+    marginTop: 12,
+    height: 48,
+    borderRadius: 12,
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1.5,
+    borderColor: "#C9D1E2",
+    justifyContent: "center",
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 10,
+  },
+  googleBtnText: {
+    color: "#1E2A3B",
+    fontSize: 15,
+    fontWeight: "600",
+  },
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.35)",

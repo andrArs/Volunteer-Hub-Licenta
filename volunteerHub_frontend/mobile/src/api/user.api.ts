@@ -66,3 +66,7 @@ export async function assignRole(id: string, roleName: string): Promise<void> {
 export async function removeRole(id: string, roleName: string): Promise<void> {
   await api.delete(`/api/users/${id}/roles/${roleName}`);
 }
+
+export async function updateLanguage(language: string): Promise<void> {
+  await api.patch("/api/users/me/language", { language });
+}

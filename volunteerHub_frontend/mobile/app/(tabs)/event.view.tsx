@@ -2,7 +2,8 @@ import { FontAwesome } from "@expo/vector-icons";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { goBack } from "@/src/utils/navigation";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Alert, KeyboardAvoidingView, Modal, Platform, Pressable, RefreshControl, ScrollView, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Alert, Image, KeyboardAvoidingView, Modal, Platform, Pressable, RefreshControl, ScrollView, Text, TextInput, View } from "react-native";
+import QRCode from "react-native-qrcode-svg";
 
 import { getEventById, deleteEvent, updateEventAttendance, getEventParticipantsCount, getUserEventStatus } from "@/src/api/event.api";
 import { getMyReviewStatus, createReview } from "@/src/api/review.api";
@@ -16,7 +17,7 @@ import { addEventToCalendar, removeEventFromCalendar } from "@/src/utils/calenda
 import { setEventStatus } from "@/src/api/admin.api";
 import { t, useLanguage } from "@/src/i18n/index";
 
-type AttendanceStatus = "none" | "interested" | "going";
+type AttendanceStatus = "none" | "interested" | "going" | "attended";
 
 function categoryLabel(cat: number) {
   return EVENT_CATEGORIES.find((c) => c.value === cat)?.label ?? "Unknown";
@@ -103,6 +104,7 @@ export default function EventDetailsScreen() {
   const [participantsCount, setParticipantsCount] = useState<number | null>(null);
 
   const [userLocation, setUserLocation] = useState<Location.LocationObjectCoords | null>(null);
+  const [showQRModal, setShowQRModal] = useState(false);
 
   const load = useCallback(async (isRefresh = false) => {
     if (!id) return;
@@ -184,16 +186,22 @@ export default function EventDetailsScreen() {
   }, [userLocation, event]);
 
   const isPastEvent = useMemo(() => {
-    if (!event?.startDateTime) return false;
-    return new Date(event.startDateTime).getTime() < new Date().getTime();
-  }, [event?.startDateTime]);
+    if (!event?.endDateTime) return false;
+    return new Date(event.endDateTime).getTime() < new Date().getTime();
+  }, [event?.endDateTime]);
+
+  const isEventActive = useMemo(() => {
+    if (!event?.startDateTime || !event?.endDateTime) return false;
+    const now = new Date();
+    return new Date(event.startDateTime) <= now && now <= new Date(event.endDateTime);
+  }, [event?.startDateTime, event?.endDateTime]);
 
   const isEventEnded = useMemo(() => {
     if (!event?.endDateTime) return false;
     return new Date(event.endDateTime).getTime() < new Date().getTime();
   }, [event?.endDateTime]);
 
-  const canReview = isEventEnded && status === "going" && !isMine && !!myUserId;
+  const canReview = isEventEnded && (status === "going" || status === "attended") && !isMine && !!myUserId;
 
   async function handleApprove() {
     if (!event) return;
@@ -388,6 +396,10 @@ export default function EventDetailsScreen() {
       showsVerticalScrollIndicator={false}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#3F5E95"]} tintColor="#3F5E95" />}
     >
+      {event.imageUrl ? (
+        <Image source={{ uri: event.imageUrl }} style={{ height: 220, marginHorizontal: -16, marginBottom: 16, marginTop: -4 }} resizeMode="cover" />
+      ) : null}
+
       {(isMine) && (
         <View style={styles.statusBadgeWrap}>
           {renderStatusBadge(event.status)}
@@ -508,8 +520,7 @@ export default function EventDetailsScreen() {
        </>
       )}
 
-      {(!isAdmin || event.status !== EventStatus.Pending) && (
-        isMine ? (
+      {isMine && (
         <>
           <Text style={styles.sectionTitle}>{t("eventView.sectionAdminControls")}</Text>
 
@@ -519,19 +530,36 @@ export default function EventDetailsScreen() {
               <Text style={styles.secondaryBtnText}>{t("eventView.editEvent")}</Text>
             </Pressable>
 
-            <Pressable
-              style={[styles.dangerBtn]}
-              onPress={onDeleteClick}
-
-            >
+            <Pressable style={[styles.dangerBtn]} onPress={onDeleteClick}>
               <FontAwesome name="trash" size={14} color="#8E1B1B" />
               <Text style={styles.dangerBtnText}>
                 {busyDelete ? t("eventView.deleting") : t("common.delete")}
               </Text>
             </Pressable>
           </View>
+
+          <View style={[styles.actionsRow, { marginTop: 8 }]}>
+            {event.checkInToken ? (
+              <Pressable style={[styles.secondaryBtn, { flex: 1 }]} onPress={() => setShowQRModal(true)}>
+                <FontAwesome name="qrcode" size={14} color="#3F5E95" />
+                <Text style={styles.secondaryBtnText}>{t("eventView.showQR")}</Text>
+              </Pressable>
+            ) : null}
+            {isEventEnded && event.status === EventStatus.Approved && (
+              <Pressable
+                style={[styles.secondaryBtn, { flex: 1 }]}
+                onPress={() => router.push({ pathname: "/event.stats", params: { id: event.id } })}
+              >
+                <FontAwesome name="bar-chart" size={14} color="#3F5E95" />
+                <Text style={styles.secondaryBtnText}>{t("eventView.viewStats")}</Text>
+              </Pressable>
+            )}
+          </View>
         </>
-      ) : isPastEvent ? (
+      )}
+
+      {(!isAdmin || event.status !== EventStatus.Pending) && !isMine && (
+        isPastEvent ? (
           <View style={styles.pastEventWrap}>
             <Text style={styles.pastEventText}>
               {t("eventView.pastEvent")}
@@ -553,44 +581,67 @@ export default function EventDetailsScreen() {
             )}
           </View>
         ):(
-        <View style={styles.actionsRow}>
-          <Pressable
-            style={[
-              styles.secondaryBtn,
-              status === "interested" && styles.secondaryBtnActive,
-            ]}
-            onPress={onInterested}
-          >
-            <FontAwesome
-              name={status === "interested" ? "star" : "star-o"}
-              size={14}
-              color={status === "interested" ? "#FFFFFF" : "#3F5E95"}
-            />
-            <Text
-              style={[
-                styles.secondaryBtnText,
-                status === "interested" && styles.secondaryBtnTextActive,
-              ]}
-            >
-              {t("eventView.interested")}
-            </Text>
-          </Pressable>
+        <>
+          {status === "attended" ? (
+            <View style={styles.reviewedRow}>
+              <FontAwesome name="check-circle" size={18} color="#059669" />
+              <Text style={styles.reviewedText}>{t("eventView.checkedIn")}</Text>
+            </View>
+          ) : (
+            <>
+              <View style={styles.actionsRow}>
+                <Pressable
+                  style={[
+                    styles.secondaryBtn,
+                    status === "interested" && styles.secondaryBtnActive,
+                  ]}
+                  onPress={onInterested}
+                >
+                  <FontAwesome
+                    name={status === "interested" ? "star" : "star-o"}
+                    size={14}
+                    color={status === "interested" ? "#FFFFFF" : "#3F5E95"}
+                  />
+                  <Text
+                    style={[
+                      styles.secondaryBtnText,
+                      status === "interested" && styles.secondaryBtnTextActive,
+                    ]}
+                  >
+                    {t("eventView.interested")}
+                  </Text>
+                </Pressable>
 
-          <Pressable
-            style={[
-              styles.primaryBtn,
-              status === "going" && styles.primaryBtnActive,
-              isFull && styles.primaryBtnDisabled,
-            ]}
-            onPress={onGoing}
-            disabled={isFull}
-          >
-            <FontAwesome name={status === "going" ? "check" : "plus"} size={14} color="#FFFFFF" />
-            <Text style={styles.primaryBtnText}>
-              {isFull ? t("eventView.full") : status === "going" ? t("eventView.going") : t("eventView.attend")}
-            </Text>
-          </Pressable>
-        </View>
+                <Pressable
+                  style={[
+                    styles.primaryBtn,
+                    status === "going" && styles.primaryBtnActive,
+                    isFull && styles.primaryBtnDisabled,
+                  ]}
+                  onPress={onGoing}
+                  disabled={isFull}
+                >
+                  <FontAwesome name={status === "going" ? "check" : "plus"} size={14} color="#FFFFFF" />
+                  <Text style={styles.primaryBtnText}>
+                    {isFull ? t("eventView.full") : status === "going" ? t("eventView.going") : t("eventView.attend")}
+                  </Text>
+                </Pressable>
+              </View>
+
+              {status === "going" && isEventActive && (
+                <Pressable
+                  style={[styles.actionsRow, { marginTop: 8 }]}
+                  onPress={() => router.push("/checkin.scanner")}
+                >
+                  <View style={[styles.primaryBtn, { flex: 1, backgroundColor: "#059669" }]}>
+                    <FontAwesome name="qrcode" size={14} color="#fff" />
+                    <Text style={styles.primaryBtnText}>{t("eventView.checkIn")}</Text>
+                  </View>
+                </Pressable>
+              )}
+            </>
+          )}
+        </>
       ))}
     </ScrollView>
 
@@ -737,6 +788,28 @@ export default function EventDetailsScreen() {
             </View>
           </View>
         </KeyboardAvoidingView>
+      </Modal>
+
+      <Modal
+        visible={showQRModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowQRModal(false)}
+      >
+        <Pressable style={styles.modalOverlay} onPress={() => setShowQRModal(false)}>
+          <Pressable onPress={() => {}}>
+            <View style={[styles.modalContent, { alignItems: "center", paddingVertical: 32 }]}>
+              <Text style={[styles.modalTitle, { textAlign: "center" }]}>{t("eventView.qrModalTitle")}</Text>
+              <Text style={[styles.modalText, { textAlign: "center", marginBottom: 24 }]}>{t("eventView.qrModalSubtitle")}</Text>
+              {event?.checkInToken ? (
+                <QRCode value={event.checkInToken} size={200} />
+              ) : null}
+              <Pressable style={{ marginTop: 24 }} onPress={() => setShowQRModal(false)}>
+                <Text style={{ color: "#3F5E95", fontWeight: "800", fontSize: 14 }}>{t("common.close")}</Text>
+              </Pressable>
+            </View>
+          </Pressable>
+        </Pressable>
       </Modal>
 
   </View>

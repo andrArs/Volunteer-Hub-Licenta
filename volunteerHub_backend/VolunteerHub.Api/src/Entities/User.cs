@@ -8,5 +8,7 @@ namespace VolunteerHub.Api.src.Entities
         public string LastName { get; set; } = string.Empty;
         public DateOnly DateOfBirth { get; set; }
         public string? ProfilePicture { get; set; }
+        public string? GoogleId { get; set; }
+        public string Language { get; set; } = "en";
     }
 }

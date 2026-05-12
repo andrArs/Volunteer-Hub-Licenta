@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using VolunteerHub.Api.src.Data;
@@ -11,9 +12,11 @@ using VolunteerHub.Api.src.Data;
 namespace VolunteerHub.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260509214349_AddGoogleId")]
+    partial class AddGoogleId
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -224,9 +227,6 @@ namespace VolunteerHub.Api.Migrations
                     b.Property<int>("Category")
                         .HasColumnType("integer");
 
-                    b.Property<string>("CheckInToken")
-                        .HasColumnType("text");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -241,9 +241,6 @@ namespace VolunteerHub.Api.Migrations
 
                     b.Property<DateTime>("EndDateTime")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("ImageUrl")
-                        .HasColumnType("text");
 
                     b.Property<double>("Latitude")
                         .HasColumnType("double precision");
@@ -376,10 +373,6 @@ namespace VolunteerHub.Api.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("GoogleId")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Language")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("LastName")

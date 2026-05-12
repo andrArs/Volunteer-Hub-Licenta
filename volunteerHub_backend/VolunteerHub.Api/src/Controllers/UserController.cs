@@ -23,6 +23,10 @@ public class UsersController : ControllerBase
         _blobStorageService = blobStorageService;
     }
 
+    private bool IsRo() =>
+        (Request.Headers.AcceptLanguage.FirstOrDefault()?.Split(',')[0]?.Trim() ?? "en")
+        .StartsWith("ro", StringComparison.OrdinalIgnoreCase);
+
     [Authorize]
     [HttpGet("me")]
     public async Task<ActionResult<UserProfileResponse>> GetMyProfile()
@@ -56,8 +60,17 @@ public class UsersController : ControllerBase
         var user = await _userManager.FindByIdAsync(userId);
         if (user == null) return NotFound(new { message = "User not found." });
 
+        bool isRo = IsRo();
+
         if (file == null || file.Length == 0)
-            return BadRequest(new { message = "No file provided." });
+            return BadRequest(new { message = isRo ? "Niciun fișier furnizat." : "No file provided." });
+
+        if (file.Length > 10 * 1024 * 1024)
+            return BadRequest(new { code = "file_too_large", message = isRo ? "Fișierul depășește dimensiunea maximă de 10 MB." : "File size exceeds the maximum allowed size of 10 MB." });
+
+        string[] allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+        if (!allowedTypes.Contains(file.ContentType.ToLower()))
+            return BadRequest(new { code = "invalid_file_type", message = isRo ? "Sunt permise doar imagini JPEG, PNG și WebP." : "Only JPEG, PNG, and WebP images are allowed." });
 
         var url = await _blobStorageService.UploadProfilePictureAsync(file);
         user.ProfilePicture = url;
@@ -87,6 +100,25 @@ public class UsersController : ControllerBase
     }
 
     [Authorize]
+    [HttpPatch("me/language")]
+    public async Task<ActionResult> UpdateLanguage([FromBody] UpdateLanguageRequest request)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(userId)) return Unauthorized();
+
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user == null) return NotFound();
+
+        var allowed = new[] { "en", "ro" };
+        if (!allowed.Contains(request.Language))
+            return BadRequest(new { error = "Invalid language. Allowed: en, ro." });
+
+        user.Language = request.Language;
+        await _userManager.UpdateAsync(user);
+        return NoContent();
+    }
+
+    [Authorize(Roles = "Admin")]
     [HttpGet]
     public async Task<ActionResult> GetAllUsers(
         [FromQuery] int pageNumber = 1,
@@ -135,6 +167,15 @@ public class UsersController : ControllerBase
         var user = await _userManager.FindByIdAsync(userId);
         if (user == null) return NotFound(new { message = "User not found." });
 
+        bool isRo = IsRo();
+
+        if (request.DateOfBirth.HasValue)
+        {
+            var minDob = DateOnly.FromDateTime(DateTime.UtcNow).AddYears(-16);
+            if (request.DateOfBirth.Value > minDob)
+                return BadRequest(new { error = isRo ? "Trebuie să ai cel puțin 16 ani." : "You must be at least 16 years old." });
+        }
+
         user.FirstName = request.FirstName;
         user.LastName = request.LastName;
         user.DateOfBirth = request.DateOfBirth ?? user.DateOfBirth;
@@ -171,6 +212,15 @@ public class UsersController : ControllerBase
     {
         var user = await _userManager.FindByIdAsync(id);
         if (user == null) return NotFound(new { message = "User not found." });
+
+        bool isRo = IsRo();
+
+        if (updatedProfile.DateOfBirth.HasValue)
+        {
+            var minDob = DateOnly.FromDateTime(DateTime.UtcNow).AddYears(-16);
+            if (updatedProfile.DateOfBirth.Value > minDob)
+                return BadRequest(new { error = isRo ? "Trebuie să ai cel puțin 16 ani." : "You must be at least 16 years old." });
+        }
 
         user.FirstName = updatedProfile.FirstName;
         user.LastName = updatedProfile.LastName;

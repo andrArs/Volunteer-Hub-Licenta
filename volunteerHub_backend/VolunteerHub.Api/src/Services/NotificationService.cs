@@ -70,4 +70,23 @@ public class NotificationService : INotificationService
             .Where(n => n.UserId == userId && !n.IsRead)
             .ExecuteUpdateAsync(s => s.SetProperty(n => n.IsRead, true));
     }
+
+    public async Task<bool> DeleteAsync(Guid notificationId, string userId)
+    {
+        var notification = await _db.Notifications
+            .FirstOrDefaultAsync(n => n.Id == notificationId && n.UserId == userId);
+
+        if (notification is null) return false;
+
+        _db.Notifications.Remove(notification);
+        await _db.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task DeleteAllAsync(string userId)
+    {
+        await _db.Notifications
+            .Where(n => n.UserId == userId)
+            .ExecuteDeleteAsync();
+    }
 }

@@ -124,6 +124,22 @@ export default function MyProfileScreen() {
     router.replace("/(auth)/login");
   }
 
+  async function uploadImage(uri: string, mimeType?: string) {
+    try {
+      setUploading(true);
+      const url = await uploadProfilePicture(uri, mimeType);
+      setProfileInfo((prev) => (prev ? { ...prev, profilePictureUrl: url } : prev));
+    } catch (imgErr: any) {
+      const code = imgErr?.response?.data?.code ?? "";
+      const msg = code === "file_too_large" ? t("profile.imageTooLarge")
+                : code === "invalid_file_type" ? t("profile.invalidFileType")
+                : t("profile.couldNotUpload");
+      Alert.alert(t("common.error"), msg);
+    } finally {
+      setUploading(false);
+    }
+  }
+
   async function openImagePicker() {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images"],
@@ -133,17 +149,26 @@ export default function MyProfileScreen() {
     });
 
     if (result.canceled) return;
-
     const asset = result.assets[0];
-    try {
-      setUploading(true);
-      const url = await uploadProfilePicture(asset.uri, asset.mimeType ?? undefined);
-      setProfileInfo((prev) => (prev ? { ...prev, profilePictureUrl: url } : prev));
-    } catch {
-      Alert.alert(t("common.error"), t("profile.couldNotUpload"));
-    } finally {
-      setUploading(false);
+    await uploadImage(asset.uri, asset.mimeType ?? undefined);
+  }
+
+  async function openCamera() {
+    const { granted } = await ImagePicker.requestCameraPermissionsAsync();
+    if (!granted) {
+      Alert.alert(t("profile.permissionNeeded"), t("profile.cameraPermissionMessage"));
+      return;
     }
+
+    const result = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+
+    if (result.canceled) return;
+    const asset = result.assets[0];
+    await uploadImage(asset.uri, asset.mimeType ?? undefined);
   }
 
   async function handleRemovePhoto() {
@@ -164,13 +189,15 @@ export default function MyProfileScreen() {
     if (Platform.OS === "ios") {
       const hasPhoto = !!profileInfo?.profilePictureUrl;
       const optView = t("profile.viewPhoto");
-      const optChange = t("profile.changePhoto");
+      const optTake = t("profile.takePhoto");
+      const optGallery = t("profile.chooseFromGallery");
       const optRemove = t("profile.removePhoto");
       const optCancel = t("common.cancel");
 
       const options = [
         ...(hasPhoto ? [optView] : []),
-        optChange,
+        optTake,
+        optGallery,
         ...(hasPhoto ? [optRemove] : []),
         optCancel,
       ];
@@ -182,7 +209,9 @@ export default function MyProfileScreen() {
         (index) => {
           if (hasPhoto && index === options.indexOf(optView)) {
             setShowPhotoModal(true);
-          } else if (index === options.indexOf(optChange)) {
+          } else if (index === options.indexOf(optTake)) {
+            openCamera();
+          } else if (index === options.indexOf(optGallery)) {
             openImagePicker();
           } else if (hasPhoto && index === options.indexOf(optRemove)) {
             handleRemovePhoto();
@@ -344,6 +373,20 @@ export default function MyProfileScreen() {
                 <View style={styles.optionsDivider} />
               </>
             )}
+            {Platform.OS !== "web" && (
+              <>
+                <Pressable
+                  style={styles.optionsBtn}
+                  onPress={() => {
+                    setShowOptionsSheet(false);
+                    setTimeout(() => openCamera(), 300);
+                  }}
+                >
+                  <Text style={styles.optionsBtnText}>{t("profile.takePhoto")}</Text>
+                </Pressable>
+                <View style={styles.optionsDivider} />
+              </>
+            )}
             <Pressable
               style={styles.optionsBtn}
               onPress={async () => {
@@ -359,7 +402,7 @@ export default function MyProfileScreen() {
                 setTimeout(() => openImagePicker(), 500);
               }}
             >
-              <Text style={styles.optionsBtnText}>{t("profile.changePhoto")}</Text>
+              <Text style={styles.optionsBtnText}>{t("profile.chooseFromGallery")}</Text>
             </Pressable>
             {profileInfo?.profilePictureUrl && (
               <>

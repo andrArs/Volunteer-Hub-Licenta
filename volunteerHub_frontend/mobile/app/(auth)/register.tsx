@@ -2,13 +2,15 @@ import { register } from "@/src/api/auth.api";
 import { toAppError } from "@/src/api/errors";
 import { setAuth } from "@/src/store/auth.store";
 import { getToken } from "@/src/platform/storage";
+import { GOOGLE_WEB_CLIENT_ID } from "@/src/constants/google";
 import { FontAwesome } from "@expo/vector-icons";
 import DateTimePicker, {
     DateTimePickerAndroid,
     DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
 import { useRouter } from "expo-router";
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useRef, useState, useEffect } from "react";
+import { type TextInput as TextInputType } from "react-native";
 import {
     KeyboardAvoidingView,
     Modal,
@@ -18,9 +20,12 @@ import {
     TextInput,
     View,
 } from "react-native";
+import * as WebBrowser from "expo-web-browser";
 
 import { styles, langStyles } from "../../src/styles/auth.styles";
 import { t, useLanguage } from "@/src/i18n/index";
+
+WebBrowser.maybeCompleteAuthSession();
 
 type FieldErrors = Partial<{
   firstName: string;
@@ -39,6 +44,9 @@ export default function RegisterScreen() {
   const [password, setPassword] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const lastNameRef = useRef<TextInputType>(null);
+  const emailRef = useRef<TextInputType>(null);
+  const passwordRef = useRef<TextInputType>(null);
 
   const [dateOfBirth, setDateOfBirth] = useState("");
   const [dobDate, setDobDate] = useState<Date | null>(null);
@@ -47,6 +55,7 @@ export default function RegisterScreen() {
   const [hidePassword, setHidePassword] = useState(true);
 
   const [submitting, setSubmitting] = useState(false);
+  const [googleSubmitting, setGoogleSubmitting] = useState(false);
   const [errors, setErrors] = useState<FieldErrors>({});
 
   useEffect(() => {
@@ -59,9 +68,24 @@ export default function RegisterScreen() {
       } catch {
       }
     }
-
     checkAuth();
   }, [router]);
+
+  async function onGooglePress() {
+    if (typeof window === "undefined") return;
+    const redirectUri = window.location.origin + "/login";
+    const nonce = Math.random().toString(36).slice(2, 15);
+    const params = new URLSearchParams({
+      client_id: GOOGLE_WEB_CLIENT_ID,
+      redirect_uri: redirectUri,
+      response_type: "id_token",
+      scope: "openid profile email",
+      nonce,
+    });
+    window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${params}`;
+  }
+
+  const busy = submitting || googleSubmitting;
 
   const canSubmit = useMemo(() => {
     return (
@@ -70,9 +94,9 @@ export default function RegisterScreen() {
       firstName.trim().length > 0 &&
       lastName.trim().length > 0 &&
       dateOfBirth.trim().length > 0 &&
-      !submitting
+      !busy
     );
-  }, [firstName, lastName, dateOfBirth, email, password, submitting]);
+  }, [firstName, lastName, dateOfBirth, email, password, busy]);
 
   function formatDob(d: Date) {
     const dd = String(d.getDate()).padStart(2, "0");
@@ -106,7 +130,7 @@ export default function RegisterScreen() {
   }
 
   function openDobPicker() {
-    if (submitting) return;
+    if (busy) return;
 
     const initial = dobDate ?? new Date(2000, 0, 1);
 
@@ -135,7 +159,12 @@ export default function RegisterScreen() {
 
     if (!firstName.trim()) e.firstName = t("register.errors.firstNameRequired");
     if (!lastName.trim()) e.lastName = t("register.errors.lastNameRequired");
-    if (!dateOfBirth.trim()) e.dateOfBirth = t("register.errors.dateOfBirthRequired");
+    if (!dateOfBirth.trim()) {
+      e.dateOfBirth = t("register.errors.dateOfBirthRequired");
+    } else if (dobDate) {
+      const minDate = new Date(dobDate.getFullYear() + 16, dobDate.getMonth(), dobDate.getDate());
+      if (minDate > new Date()) e.dateOfBirth = t("register.errors.tooYoung");
+    }
 
     const emailClean = email.trim();
     if (!emailClean) e.email = t("register.errors.emailRequired");
@@ -151,7 +180,7 @@ export default function RegisterScreen() {
   }
 
   async function onRegister() {
-    if (submitting) return;
+    if (busy) return;
 
     const e = validate();
     setErrors(e);
@@ -244,7 +273,9 @@ export default function RegisterScreen() {
               textContentType="givenName"
               style={styles.input}
               placeholderTextColor="#8B93A7"
-              editable={!submitting}
+              editable={!busy}
+              returnKeyType="next"
+              onSubmitEditing={() => lastNameRef.current?.focus()}
             />
           </View>
           {errors.firstName ? (
@@ -255,6 +286,7 @@ export default function RegisterScreen() {
           <View style={[styles.inputWrap, { marginTop: 12 }]}>
             <FontAwesome name="user" size={16} style={styles.leftIcon} />
             <TextInput
+              ref={lastNameRef}
               value={lastName}
               onChangeText={(val) => {
                 setLastName(val);
@@ -266,7 +298,9 @@ export default function RegisterScreen() {
               textContentType="familyName"
               style={styles.input}
               placeholderTextColor="#8B93A7"
-              editable={!submitting}
+              editable={!busy}
+              returnKeyType="next"
+              onSubmitEditing={() => emailRef.current?.focus()}
             />
           </View>
           {errors.lastName ? (
@@ -291,7 +325,7 @@ export default function RegisterScreen() {
                         dateOfBirth: t("register.errors.invalidDate"),
                       }));
                   }}
-                  disabled={submitting}
+                  disabled={busy}
                   max={formatDobISO(new Date())}
                   style={
                     {
@@ -318,14 +352,16 @@ export default function RegisterScreen() {
                 <FontAwesome name="calendar" size={16} style={styles.leftIcon} />
                 <Pressable
                   onPress={openDobPicker}
-                  disabled={submitting}
-                  style={{ height: 46, justifyContent: "center" }}
+                  disabled={busy}
+                  style={{ flex: 1, height: 46, justifyContent: "center" }}
                 >
                   <Text
-                    style={[
-                      styles.input,
-                      { color: dateOfBirth ? "#1E2A3B" : "#8B93A7" },
-                    ]}
+                    style={{
+                      paddingLeft: 38,
+                      paddingRight: 12,
+                      fontSize: 15,
+                      color: dateOfBirth ? "#1E2A3B" : "#8B93A7",
+                    }}
                   >
                     {dateOfBirth ? dateOfBirth : t("register.dateOfBirth")}
                   </Text>
@@ -370,6 +406,7 @@ export default function RegisterScreen() {
           <View style={[styles.inputWrap, { marginTop: 12 }]}>
             <FontAwesome name="envelope" size={16} style={styles.leftIcon} />
             <TextInput
+              ref={emailRef}
               value={email}
               onChangeText={(val) => {
                 setEmail(val);
@@ -381,7 +418,9 @@ export default function RegisterScreen() {
               textContentType="emailAddress"
               style={styles.input}
               placeholderTextColor="#8B93A7"
-              editable={!submitting}
+              editable={!busy}
+              returnKeyType="next"
+              onSubmitEditing={() => passwordRef.current?.focus()}
             />
           </View>
           {errors.email ? (
@@ -392,6 +431,7 @@ export default function RegisterScreen() {
           <View style={[styles.inputWrap, { marginTop: 12 }]}>
             <FontAwesome name="lock" size={18} style={styles.leftIcon} />
             <TextInput
+              ref={passwordRef}
               value={password}
               onChangeText={(val) => {
                 setPassword(val);
@@ -402,14 +442,16 @@ export default function RegisterScreen() {
               textContentType="password"
               style={[styles.input, { paddingRight: 44 }]}
               placeholderTextColor="#8B93A7"
-              editable={!submitting}
+              returnKeyType="done"
+              onSubmitEditing={onRegister}
+              editable={!busy}
             />
 
             <Pressable
               onPress={() => setHidePassword((v) => !v)}
               style={styles.eyeBtn}
               hitSlop={10}
-              disabled={submitting}
+              disabled={busy}
             >
               <FontAwesome
                 name={hidePassword ? "eye" : "eye-slash"}
@@ -437,11 +479,32 @@ export default function RegisterScreen() {
           </Text>
         </Pressable>
 
+        {Platform.OS === "web" && (
+          <>
+            <View style={styles.dividerRow}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerText}>{t("register.or")}</Text>
+              <View style={styles.dividerLine} />
+            </View>
+
+            <Pressable
+              disabled={busy}
+              style={[styles.googleBtn, busy && styles.primaryBtnDisabled]}
+              onPress={onGooglePress}
+            >
+              <FontAwesome name="google" size={18} color="#DB4437" />
+              <Text style={styles.googleBtnText}>
+                {googleSubmitting ? t("register.signingUp") : t("register.continueWithGoogle")}
+              </Text>
+            </Pressable>
+          </>
+        )}
+
         <View style={styles.footerRow}>
           <Text style={styles.footerText}>{t("register.alreadyHaveAccount")}</Text>
           <Pressable
             onPress={() => router.push("/(auth)/login")}
-            disabled={submitting}
+            disabled={busy}
           >
             <Text style={styles.footerLink}>{t("register.signInNow")}</Text>
           </Pressable>

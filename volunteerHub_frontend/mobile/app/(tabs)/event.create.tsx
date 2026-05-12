@@ -1,11 +1,12 @@
 import { FontAwesome } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { goBack } from "@/src/utils/navigation";
-import { ActivityIndicator, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Alert, Image, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { useMemo, useRef, useState } from "react";
 import { styles } from "@/src/styles/event.style";
 import { toAppError } from "@/src/api/errors";
-import { createEvent } from "@/src/api/event.api";
+import { createEvent, uploadEventImage } from "@/src/api/event.api";
+import * as ImagePicker from "expo-image-picker";
 import { EVENT_CATEGORIES, EventCategory } from "@/src/types/event";
 import DateTimePicker, {
   DateTimePickerAndroid,
@@ -79,6 +80,9 @@ export default function CreateEventScreen() {
     const [submitting, setSubmitting] = useState(false);
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
     const [errors, setErrors] = useState<FieldErrors>({});
+
+    const [imageUri, setImageUri] = useState<string | null>(null);
+    const [imageMime, setImageMime] = useState<string | undefined>(undefined);
 
     function clearError(k: keyof FieldErrors) {
      setErrors((p) => ({ ...p, [k]: undefined, general: undefined }));
@@ -256,6 +260,8 @@ export default function CreateEventScreen() {
         setShowCategoryModal(false);
         setShowStartPickerIOS(false);
         setShowEndPickerIOS(false);
+        setImageUri(null);
+        setImageMime(undefined);
         }, []);
 
        useFocusEffect(
@@ -265,6 +271,19 @@ export default function CreateEventScreen() {
         }, [])
         );
 
+
+    async function pickImage() {
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ["images"],
+            allowsEditing: true,
+            aspect: [16, 9],
+            quality: 0.8,
+        });
+        if (result.canceled) return;
+        const asset = result.assets[0];
+        setImageUri(asset.uri);
+        setImageMime(asset.mimeType ?? undefined);
+    }
 
     async function onCreateEvent() {
         if (submitting) return;
@@ -294,6 +313,17 @@ export default function CreateEventScreen() {
                 maxVolunteers: parseInt(MaxVolunteers),
                 });
 
+            if (imageUri) {
+                try {
+                    await uploadEventImage(createEventResponse.id, imageUri, imageMime);
+                } catch (imgErr: any) {
+                    const code = imgErr?.response?.data?.code ?? "";
+                    const msg = code === "file_too_large" ? t("eventCreate.imageTooLarge")
+                              : code === "invalid_file_type" ? t("eventCreate.invalidFileType")
+                              : t("eventCreate.imageUploadFailed");
+                    Alert.alert(t("common.error"), msg);
+                }
+            }
             resetForm();
             router.replace(`/event.view?id=${createEventResponse.id}`);
         } catch (e) {
@@ -533,6 +563,26 @@ export default function CreateEventScreen() {
                         editable={!submitting}
                         />
                     </View>
+
+                    <Text style={[styles.label, styles.labelSpaced]}>{t("eventCreate.labelImage")}</Text>
+                    {imageUri ? (
+                        <View>
+                            <Image source={{ uri: imageUri }} style={{ width: "100%", height: 180, borderRadius: 8, marginBottom: 8 }} resizeMode="cover" />
+                            <View style={{ flexDirection: "row", gap: 8, justifyContent: "flex-end" }}>
+                                <Pressable onPress={pickImage} disabled={submitting} style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 6, backgroundColor: "#3F5E95" }}>
+                                    <Text style={{ color: "#fff", fontSize: 12, fontWeight: "600" }}>{t("eventCreate.changeImage")}</Text>
+                                </Pressable>
+                                <Pressable onPress={() => { setImageUri(null); setImageMime(undefined); }} disabled={submitting} style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 6, backgroundColor: "#E53E3E" }}>
+                                    <Text style={{ color: "#fff", fontSize: 12, fontWeight: "600" }}>{t("eventCreate.removeImage")}</Text>
+                                </Pressable>
+                            </View>
+                        </View>
+                    ) : (
+                        <Pressable onPress={pickImage} disabled={submitting} style={{ borderWidth: 1.5, borderColor: "#3F5E95", borderStyle: "dashed", borderRadius: 10, paddingVertical: 18, alignItems: "center", justifyContent: "center", gap: 6 }}>
+                            <FontAwesome name="image" size={22} color="#3F5E95" />
+                            <Text style={{ color: "#3F5E95", fontSize: 14, fontWeight: "600" }}>{t("eventCreate.addImage")}</Text>
+                        </Pressable>
+                    )}
 
                 </View>
 

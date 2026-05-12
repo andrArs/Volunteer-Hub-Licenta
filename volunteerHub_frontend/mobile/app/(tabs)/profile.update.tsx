@@ -104,6 +104,10 @@ export default function UpdateMyProfileScreen() {
       u.DateOfBirth = t("profileUpdate.errors.dateOfBirthRequired");
     else if (DateOfBirth.getTime() > Date.now())
       u.DateOfBirth = t("profileUpdate.errors.dateOfBirthFuture");
+    else {
+      const minDate = new Date(DateOfBirth.getFullYear() + 16, DateOfBirth.getMonth(), DateOfBirth.getDate());
+      if (minDate > new Date()) u.DateOfBirth = t("profileUpdate.errors.tooYoung");
+    }
 
     return u;
   }

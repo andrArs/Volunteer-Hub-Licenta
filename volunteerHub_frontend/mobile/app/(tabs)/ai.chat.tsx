@@ -441,7 +441,6 @@ export default function AiChatScreen() {
       setMessages((prev) => [...prev, aiMsg]);
     } catch {
       Alert.alert(t("common.error"), t("aiChat.sendError"));
-      setMessages((prev) => prev.slice(0, -1));
     } finally {
       setIsSending(false);
     }

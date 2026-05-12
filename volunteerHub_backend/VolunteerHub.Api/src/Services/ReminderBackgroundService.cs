@@ -9,7 +9,7 @@ public class ReminderBackgroundService : BackgroundService
 {
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<ReminderBackgroundService> _logger;
-    private static readonly TimeSpan Interval = TimeSpan.FromMinutes(15);
+    private static readonly TimeSpan Interval = TimeSpan.FromMinutes(5);
 
     public ReminderBackgroundService(
         IServiceScopeFactory scopeFactory,
@@ -51,6 +51,7 @@ public class ReminderBackgroundService : BackgroundService
 
         var pending = await db.UserEvents
             .Include(ue => ue.Event)
+            .Include(ue => ue.User)
             .Where(ue =>
                 (ue.Status == UserEventStatus.Interested || ue.Status == UserEventStatus.Going) &&
                 ue.Event.Status == EventStatus.Approved &&
@@ -70,6 +71,8 @@ public class ReminderBackgroundService : BackgroundService
         {
             var ev = ue.Event;
 
+            bool isRo = ue.User?.Language == "ro";
+
             if (!ue.Reminder24hSent &&
                 ev.StartDateTime >= window24hStart &&
                 ev.StartDateTime <= window24hEnd)
@@ -79,7 +82,9 @@ public class ReminderBackgroundService : BackgroundService
                     Id = Guid.NewGuid(),
                     UserId = ue.UserId,
                     EventId = ev.Id,
-                    Message = $"Reminder: \"{ev.Title}\" starts tomorrow. See you there!",
+                    Message = isRo
+                        ? $"Reminder: \"{ev.Title}\" începe mâine. Ne vedem acolo!"
+                        : $"Reminder: \"{ev.Title}\" starts tomorrow. See you there!",
                     CreatedAt = now,
                     IsRead = false
                 });
@@ -95,7 +100,9 @@ public class ReminderBackgroundService : BackgroundService
                     Id = Guid.NewGuid(),
                     UserId = ue.UserId,
                     EventId = ev.Id,
-                    Message = $"\"{ev.Title}\" starts in about 1 hour. Get ready!",
+                    Message = isRo
+                        ? $"\"{ev.Title}\" începe în aproximativ 1 oră. Pregătește-te!"
+                        : $"\"{ev.Title}\" starts in about 1 hour. Get ready!",
                     CreatedAt = now,
                     IsRead = false
                 });

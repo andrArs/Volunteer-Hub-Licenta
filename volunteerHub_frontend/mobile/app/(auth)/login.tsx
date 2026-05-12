@@ -1,6 +1,7 @@
 import { FontAwesome } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useRef, useState, useEffect } from "react";
+import { type TextInput as TextInputType } from "react-native";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -9,14 +10,37 @@ import {
   TextInput,
   View,
 } from "react-native";
+import * as WebBrowser from "expo-web-browser";
 
-import { login } from "@/src/api/auth.api";
+import { login, googleAuth } from "@/src/api/auth.api";
 import { toAppError } from "@/src/api/errors";
 import { setAuth } from "@/src/store/auth.store";
 import { getToken } from "@/src/platform/storage";
+import { GOOGLE_WEB_CLIENT_ID } from "@/src/constants/google";
 
 import { styles, langStyles } from "../../src/styles/auth.styles";
 import { t, useLanguage } from "@/src/i18n/index";
+
+WebBrowser.maybeCompleteAuthSession();
+
+async function processGoogleToken(
+  idToken: string,
+  setGoogleSubmitting: (v: boolean) => void,
+  setErrorMsg: (msg: string | null) => void,
+  onSuccess: () => void
+) {
+  setGoogleSubmitting(true);
+  setErrorMsg(null);
+  try {
+    const auth = await googleAuth(idToken);
+    await setAuth(auth);
+    onSuccess();
+  } catch (e) {
+    setErrorMsg(toAppError(e).message);
+  } finally {
+    setGoogleSubmitting(false);
+  }
+}
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -25,41 +49,64 @@ export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [hidePassword, setHidePassword] = useState(true);
+  const passwordRef = useRef<TextInputType>(null);
 
   const [submitting, setSubmitting] = useState(false);
+  const [googleSubmitting, setGoogleSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
     async function checkAuth() {
       try {
         const token = await getToken();
-        if (token) {
-          router.replace("/(tabs)");
-        }
-      } catch {
-      }
+        if (token) router.replace("/(tabs)");
+      } catch {}
     }
-
     checkAuth();
   }, [router]);
 
-  const canSubmit = useMemo(() => {
-    return email.trim().length > 0 && password.length >= 1 && !submitting;
-  }, [email, password, submitting]);
+  useEffect(() => {
+    if (Platform.OS !== "web" || typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.hash.slice(1));
+    const idToken = params.get("id_token");
+    if (!idToken) return;
+    window.history.replaceState(null, "", window.location.pathname + window.location.search);
+    processGoogleToken(idToken, setGoogleSubmitting, setErrorMsg, () =>
+      router.replace("/(tabs)")
+    );
+  }, [router]);
+
+  async function onGooglePress() {
+    if (typeof window === "undefined") return;
+    const redirectUri = window.location.href.split("#")[0].split("?")[0];
+    const nonce = Math.random().toString(36).slice(2, 15);
+    const params = new URLSearchParams({
+      client_id: GOOGLE_WEB_CLIENT_ID,
+      redirect_uri: redirectUri,
+      response_type: "id_token",
+      scope: "openid profile email",
+      nonce,
+    });
+    window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${params}`;
+  }
+
+  const busy = submitting || googleSubmitting;
+
+  const canSubmit = useMemo(
+    () => email.trim().length > 0 && password.length >= 1 && !busy,
+    [email, password, busy]
+  );
 
   async function onSignIn() {
     if (!canSubmit) return;
-
     setErrorMsg(null);
     setSubmitting(true);
-
     try {
       const auth = await login({ email, password });
       await setAuth(auth);
       router.replace("/(tabs)");
     } catch (e) {
-      const err = toAppError(e);
-      setErrorMsg(err.message);
+      setErrorMsg(toAppError(e).message);
     } finally {
       setSubmitting(false);
     }
@@ -93,47 +140,36 @@ export default function LoginScreen() {
             <FontAwesome name="envelope" size={16} style={styles.leftIcon} />
             <TextInput
               value={email}
-              onChangeText={(val) => {
-                setEmail(val);
-                if (errorMsg) setErrorMsg(null);
-              }}
+              onChangeText={(val) => { setEmail(val); if (errorMsg) setErrorMsg(null); }}
               placeholder={t("login.email")}
               autoCapitalize="none"
               keyboardType="email-address"
               textContentType="emailAddress"
               style={styles.input}
               placeholderTextColor="#8B93A7"
-              editable={!submitting}
+              editable={!busy}
+              returnKeyType="next"
+              onSubmitEditing={() => passwordRef.current?.focus()}
             />
           </View>
 
           <View style={[styles.inputWrap, { marginTop: 12 }]}>
             <FontAwesome name="lock" size={18} style={styles.leftIcon} />
             <TextInput
+              ref={passwordRef}
               value={password}
-              onChangeText={(val) => {
-                setPassword(val);
-                if (errorMsg) setErrorMsg(null);
-              }}
+              onChangeText={(val) => { setPassword(val); if (errorMsg) setErrorMsg(null); }}
               placeholder={t("login.password")}
               secureTextEntry={hidePassword}
               textContentType="password"
               style={[styles.input, { paddingRight: 44 }]}
               placeholderTextColor="#8B93A7"
-              editable={!submitting}
+              editable={!busy}
+              returnKeyType="done"
+              onSubmitEditing={onSignIn}
             />
-
-            <Pressable
-              onPress={() => setHidePassword((v) => !v)}
-              style={styles.eyeBtn}
-              hitSlop={10}
-              disabled={submitting}
-            >
-              <FontAwesome
-                name={hidePassword ? "eye" : "eye-slash"}
-                size={18}
-                color="#6F7A93"
-              />
+            <Pressable onPress={() => setHidePassword((v) => !v)} style={styles.eyeBtn} hitSlop={10} disabled={busy}>
+              <FontAwesome name={hidePassword ? "eye" : "eye-slash"} size={18} color="#6F7A93" />
             </Pressable>
           </View>
 
@@ -150,9 +186,30 @@ export default function LoginScreen() {
           </Text>
         </Pressable>
 
+        {Platform.OS === "web" && (
+          <>
+            <View style={styles.dividerRow}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerText}>{t("login.or")}</Text>
+              <View style={styles.dividerLine} />
+            </View>
+
+            <Pressable
+              disabled={busy}
+              style={[styles.googleBtn, busy && styles.primaryBtnDisabled]}
+              onPress={onGooglePress}
+            >
+              <FontAwesome name="google" size={18} color="#DB4437" />
+              <Text style={styles.googleBtnText}>
+                {googleSubmitting ? t("login.signingIn") : t("login.continueWithGoogle")}
+              </Text>
+            </Pressable>
+          </>
+        )}
+
         <Pressable
           onPress={() => router.push("/(auth)/forgot-password")}
-          disabled={submitting}
+          disabled={busy}
           style={{ alignSelf: "center", marginTop: 8 }}
         >
           <Text style={styles.footerLink}>{t("login.forgotPassword")}</Text>
@@ -160,10 +217,7 @@ export default function LoginScreen() {
 
         <View style={styles.footerRow}>
           <Text style={styles.footerText}>{t("login.noAccount")}</Text>
-          <Pressable
-            onPress={() => router.push("/(auth)/register")}
-            disabled={submitting}
-          >
+          <Pressable onPress={() => router.push("/(auth)/register")} disabled={busy}>
             <Text style={styles.footerLink}>{t("login.registerNow")}</Text>
           </Pressable>
         </View>
