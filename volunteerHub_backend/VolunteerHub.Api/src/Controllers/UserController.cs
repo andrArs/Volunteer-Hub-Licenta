@@ -93,7 +93,7 @@ public class UsersController : ControllerBase
         return NoContent();
     }
 
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     [HttpGet]
     public async Task<ActionResult> GetAllUsers(
         [FromQuery] int pageNumber = 1,
