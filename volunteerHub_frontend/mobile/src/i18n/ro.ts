@@ -2,6 +2,7 @@ export default {
   common: {
     cancel: "Anulează",
     done: "Gata",
+    next: "Înainte",
     close: "Închide",
     back: "Înapoi",
     retry: "Reîncearcă",
