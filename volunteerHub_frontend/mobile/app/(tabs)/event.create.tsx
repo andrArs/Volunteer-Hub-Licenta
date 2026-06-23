@@ -71,7 +71,10 @@ export default function CreateEventScreen() {
 
     // iOS modal pickers
     const [showStartPickerIOS, setShowStartPickerIOS] = useState(false);
+    const [showStartTimePickerIOS, setShowStartTimePickerIOS] = useState(false);
     const [showEndPickerIOS, setShowEndPickerIOS] = useState(false);
+    const [showEndTimePickerIOS, setShowEndTimePickerIOS] = useState(false);
+    const [tempIosDate, setTempIosDate] = useState<Date>(new Date());
 
     const [CreatedAt, setCreatedAt] = useState("");
     const [CreatedById, setCreatedBy] = useState("");
@@ -206,7 +209,10 @@ export default function CreateEventScreen() {
         return;
     }
 
-        if (Platform.OS === "ios") setShowStartPickerIOS(true);
+        if (Platform.OS === "ios") {
+            setTempIosDate(new Date(StartDateTime));
+            setShowStartPickerIOS(true);
+        }
     }
 
     function openEndPicker() {
@@ -237,7 +243,10 @@ export default function CreateEventScreen() {
         return;
     }
 
-        if (Platform.OS === "ios") setShowEndPickerIOS(true);
+        if (Platform.OS === "ios") {
+            setTempIosDate(new Date(EndDateTime));
+            setShowEndPickerIOS(true);
+        }
 }
 
     const resetForm = useCallback(() => {
@@ -625,15 +634,43 @@ export default function CreateEventScreen() {
                 <Pressable style={styles.modalSheet} onPress={() => {}}>
                     <View style={styles.modalHeader}>
                     <Pressable onPress={() => setShowStartPickerIOS(false)}>
+                        <Text style={styles.modalBtn}>{t("common.cancel")}</Text>
+                    </Pressable>
+                    <Text style={styles.modalHeaderTitle}>{t("eventCreate.labelStartDateTime")}</Text>
+                    <Pressable onPress={() => { setShowStartPickerIOS(false); setShowStartTimePickerIOS(true); }}>
+                        <Text style={styles.modalBtn}>{t("common.next")}</Text>
+                    </Pressable>
+                    </View>
+                    <DateTimePicker
+                    value={tempIosDate}
+                    mode="date"
+                    display="spinner"
+                    onChange={(_e, d) => d && setTempIosDate(prev => mergeDateAndTime(d, prev))}
+                    />
+                </Pressable>
+                </Pressable>
+            </Modal>
+            ) : null}
+
+            {Platform.OS === "ios" && showStartTimePickerIOS ? (
+            <Modal visible transparent animationType="fade">
+                <Pressable style={styles.modalOverlay} onPress={() => setShowStartTimePickerIOS(false)}>
+                <Pressable style={styles.modalSheet} onPress={() => {}}>
+                    <View style={styles.modalHeader}>
+                    <Pressable onPress={() => { setShowStartTimePickerIOS(false); setShowStartPickerIOS(true); }}>
+                        <Text style={styles.modalBtn}>{t("common.back")}</Text>
+                    </Pressable>
+                    <Text style={styles.modalHeaderTitle}>{t("eventCreate.labelStartDateTime")}</Text>
+                    <Pressable onPress={() => { setStartDateTime(tempIosDate); setShowStartTimePickerIOS(false); clearError("StartDateTime"); }}>
                         <Text style={styles.modalBtn}>{t("common.done")}</Text>
                     </Pressable>
                     </View>
-
                     <DateTimePicker
-                    value={StartDateTime}
-                    mode="datetime"
+                    value={tempIosDate}
+                    mode="time"
                     display="spinner"
-                    onChange={(_e, d) => d && setStartDateTime(d)}
+                    is24Hour
+                    onChange={(_e, d) => d && setTempIosDate(prev => mergeDateAndTime(prev, d))}
                     />
                 </Pressable>
                 </Pressable>
@@ -646,15 +683,43 @@ export default function CreateEventScreen() {
                 <Pressable style={styles.modalSheet} onPress={() => {}}>
                     <View style={styles.modalHeader}>
                     <Pressable onPress={() => setShowEndPickerIOS(false)}>
+                        <Text style={styles.modalBtn}>{t("common.cancel")}</Text>
+                    </Pressable>
+                    <Text style={styles.modalHeaderTitle}>{t("eventCreate.labelEndDateTime")}</Text>
+                    <Pressable onPress={() => { setShowEndPickerIOS(false); setShowEndTimePickerIOS(true); }}>
+                        <Text style={styles.modalBtn}>{t("common.next")}</Text>
+                    </Pressable>
+                    </View>
+                    <DateTimePicker
+                    value={tempIosDate}
+                    mode="date"
+                    display="spinner"
+                    onChange={(_e, d) => d && setTempIosDate(prev => mergeDateAndTime(d, prev))}
+                    />
+                </Pressable>
+                </Pressable>
+            </Modal>
+            ) : null}
+
+            {Platform.OS === "ios" && showEndTimePickerIOS ? (
+            <Modal visible transparent animationType="fade">
+                <Pressable style={styles.modalOverlay} onPress={() => setShowEndTimePickerIOS(false)}>
+                <Pressable style={styles.modalSheet} onPress={() => {}}>
+                    <View style={styles.modalHeader}>
+                    <Pressable onPress={() => { setShowEndTimePickerIOS(false); setShowEndPickerIOS(true); }}>
+                        <Text style={styles.modalBtn}>{t("common.back")}</Text>
+                    </Pressable>
+                    <Text style={styles.modalHeaderTitle}>{t("eventCreate.labelEndDateTime")}</Text>
+                    <Pressable onPress={() => { setEndDateTime(tempIosDate); setShowEndTimePickerIOS(false); clearError("EndDateTime"); }}>
                         <Text style={styles.modalBtn}>{t("common.done")}</Text>
                     </Pressable>
                     </View>
-
                     <DateTimePicker
-                    value={EndDateTime}
-                    mode="datetime"
+                    value={tempIosDate}
+                    mode="time"
                     display="spinner"
-                    onChange={(_e, d) => d && setEndDateTime(d)}
+                    is24Hour
+                    onChange={(_e, d) => d && setTempIosDate(prev => mergeDateAndTime(prev, d))}
                     />
                 </Pressable>
                 </Pressable>

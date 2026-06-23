@@ -52,7 +52,7 @@ export default function EventStatsScreen() {
           <View style={styles.card}>
             <Row
               icon="check-circle"
-              iconColor="#059669"
+              iconColor="#3F5E95"
               label={t("eventStats.attended")}
               value={String(stats.attendedCount)}
             />
@@ -68,7 +68,7 @@ export default function EventStatsScreen() {
                 <Divider />
                 <Row
                   icon="star"
-                  iconColor="#D97706"
+                  iconColor="#3F5E95"
                   label={t("eventStats.capacity")}
                   value={String(stats.maxVolunteers)}
                 />

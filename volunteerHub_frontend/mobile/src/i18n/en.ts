@@ -2,6 +2,7 @@ export default {
   common: {
     cancel: "Cancel",
     done: "Done",
+    next: "Next",
     close: "Close",
     back: "Back",
     retry: "Retry",
